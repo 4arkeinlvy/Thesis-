@@ -1,6 +1,16 @@
-*/main.app
-*/main.exe
-*main.dll
-*/main.pdb
-*/main.lib
-*/.vscode/
+# IDE settings
+.vscode/
+
+# LaTeX auxiliary files
+*.log
+*.tex.swp
+*.bbl
+*.aux
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
+
+# Build artifacts
+*.app

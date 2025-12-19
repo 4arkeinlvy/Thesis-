@@ -1,0 +1,71 @@
+\chapter{TINJAUAN DAN REFERENSI}
+
+\section{Landasan Teori}
+
+\subsection{\textit{Smart City} dan \textit{Smart Environment}}
+\textit{Smart City} secara umum didefinisikan sebagai kerangka kerja perkotaan yang memanfaatkan teknologi untuk meningkatkan kualitas hidup warga, mengefisiensikan operasional kota, serta memastikan keberlanjutan ekonomi dan lingkungan. Menurut \citep{siretPublicComplainingBlessing2022}, esensi dari \textit{smart city} terletak pada integrasi enam pilar utama, di mana \textit{Smart Governance} dan \textit{Smart Environment} menjadi fondasi penting untuk menciptakan interaksi yang harmonis antara pemerintah dan masyarakat melalui sistem layanan publik yang responsif.
+
+Konsep Smart City dan Smart Environment kini bertransformasi melalui integrasi data multimodal yang menggabungkan informasi tekstual dan visual untuk menciptakan tata kelola kota yang lebih responsif. 
+Menurut \citep{sadiqSensingSmartCities2025}, penggunaan Multimodal \textit{Machine Learning} terbukti jauh lebih efektif dibandingkan model unimodal konvensional dalam mengidentifikasi dinamika perkotaan yang kompleks, 
+karena mampu mensinergikan berbagai teknolgi, seperti sensor data untuk pemantauan lingkungan yang lebih akurat atau pemanfaatan \textit{Artificial Intelligence} pada fasilitas publik guna meningkatkan efisiensi layanan kota.
+
+\subsection{Sistem Pelaporan dan Partisipasi Publik }
+Karena keterbatasan metode pemantauan konvensional, masalah lingkungan perkotaan yang kompleks seperti penumpukan sampah, kerusakan fasilitas umum, dan infrastruktur yang buruk sering kali tidak tertangani dengan cepat. Akibatnya, dibutuhkan sistem pelaporan masyarakat berbasis teknologi yang memungkinkan masyarakat untuk berpartisipasi aktif dalam penyebaran informasi secara \textit{real-time}. 
+
+Hasil penelitian oleh \citep{firgiaImplementasiSistemInformasi2022} menunjukkan bahwa digitalisasi sistem pengaduan melalui platform mobile dan web dapat mempercepat pengiriman data masyarakat ke pemerintah dan mengurangi kesalahan data. Selain itu, seperti yang dijelaskan oleh, partisipasi publik adalah komponen penting dari pembangunan berkelanjutan. Sistem pelaporan yang baik harus bisa mendorong partisipasi masyarakat untuk meningkatkan respon pemerintah terhadap ancaman lingkungan.
+
+\subsection{Pendekatan Metode Konvensional}
+Metode \textit {Deep Learning} konvensional menjadi standar industri untuk pemrosesan data tidak terstruktur sebelum adanya arsitektur \textit{Transformers}. Dua model konvensional yang digunakan sebagai baseline perbandingan dalam penelitian ini adalah ResNet101 untuk gambar dan FastText untuk teks. 
+\subsubsection{ResNet101}
+ResNet101 adalah arsitektur \textit{Convolutional Neural Network}. ResNet101 memiliki 101 lapisan kedalaman. ResNet memasukkan mekanisme blok residual atau skip connection untuk memecahkan masalah vanishing gradient, di mana akurasi model menurun seiring kedalaman jaringan. Koneksi ini mempermudah proses pelatihan jaringan yang sangat dalam karena memungkinkan data diteruskan langsung ke lapisan yang lebih dalam tanpa melalui transformasi non-linear yang kompleks. ResNet101 berhasil mengekstraksi fitur visual hirarkis, mulai dari tepi dan tekstur dasar hingga pola objek yang kompleks, dalam konteks klasifikasi gambar lingkungan \citep{heDeepResidualLearning2015}.
+\subsubsection{FastText}
+
+Penelitian ini mengadopsi \textit{FastText}, sebuah arsitektur \textit{word embedding} yang dikembangkan oleh \citep{joulinBagTricksEfficient2017}, sebagai representasi metode konvensional dalam ekstraksi fitur tekstual. Berbeda dengan model \textit{word-level embedding} tradisional seperti \textit{Word2Vec} yang memperlakukan setiap kata sebagai entitas atomik yang tidak terpisahkan, \textit{FastText} menggunakan pendekatan \textit{bag-of-character n-grams}. 
+
+Secara teknis, \textit{FastText} merepresentasikan sebuah kata sebagai agregasi dari vektor-vektor sub-kata (\textit{subword information}) yang membentuknya. Keunggulan arsitektur ini sangat krusial dalam konteks Bahasa Indonesia yang memiliki kompleksitas morfologi tinggi dengan sistem afiksasi yang produktif. Mekanisme \textit{n-gram} memungkinkan model untuk menangkap kesamaan semantik pada akar kata yang sama meskipun memiliki prefiks atau sufiks yang bervariasi. 
+
+Selain itu, \textit{FastText} secara efektif mengatasi kendala \textit{Out-of-Vocabulary} (OOV) sebuah limitasi kritis pada metode konvensional dengan cara mengonstruksi representasi vektor untuk token yang tidak muncul dalam korpus pelatihan berdasarkan karakter penyusunnya. Kemampuan ini sangat penting dalam menangani laporan masyarakat pada platform layanan publik yang sering kali mengandung variasi penulisan tidak baku, \textit{typo}, atau istilah lokal, sebelum hasil ekstraksi fiturnya dibandingkan dengan performa arsitektur \textit{Transformer} yang lebih \textit{robust} \citep{vaswaniAttentionAllYou2023}.
+
+\section{Arsitektur \textit{Transformer}}
+Arsitektur Transformers, yang pertama kali diperkenalkan oleh \citep{vaswaniAttentionAllYou2023}, mengubah 
+konsep pemrosesan data sekuensial. Transformer menggunakan mekanisme yang disebut \textit{Self-Attention}, yang membedakannya dari arsitektur konvensional seperti \textit{Convolutional Neural Networks} (CNN) yang terbatas pada pemrosesan fitur lokal dalam jendela reseptif statis, atau \textit{Recurrent Neural Networks} (RNN) yang memiliki kendala dalam memodelkan ketergantungan jarak jauh (\textit{long-range dependencies}) akibat sifat pemrosesan sekuensialnya. Arsitektur \textit{Transformer} mengatasi limitasi tersebut melalui mekanisme \textit{self-attention} yang memungkinkan model untuk menangkap konteks global secara paralel di seluruh elemen input, baik dalam modalitas gambar  maupun teks, tanpa terikat pada batasan spasial atau sekuensial \citep{vaswaniAttentionAllYou2023}.
+
+
+\subsubsection{Vision Transformer (ViT)}
+
+\textit{Vision Transformer} (ViT) merepresentasikan pergeseran paradigma dalam domain \textit{computer vision} dengan mengadaptasi arsitektur \textit{Transformer} yang berbasis \textit{attention mechanism} secara langsung tanpa menggunakan lapisan konvolusi. Berbeda dengan pendekatan konvensional yang memproses gambar sebagai kisi piksel (\textit{pixel grid}), ViT mendekomposisi gambar input menjadi sekumpulan potongan kecil (\textit{patches}) berukuran tetap yang bersifat \textit{non-overlapping}. Setiap \textit{patch} tersebut kemudian diproyeksikan secara linear menjadi \textit{vector embedding} satu dimensi, yang berfungsi sebagai urutan token serupa dengan representasi kata dalam pemrosesan bahasa alami (\textit{Natural Language Processing}). Pendekatan ini memungkinkan model untuk menangkap hubungan spasial global dan ketergantungan antar-fitur di seluruh bagian gambar secara simultan melalui mekanisme \textit{self-attention} \citep{dosovitskiyImageWorth16x162021}.
+
+\subsubsection{DINOv2}
+
+DINOv2 merupakan inovasi dalam domain \textit{computer vision} yang berevolusi dari paradigma DINOv1 (\textit{Self-Distillation with no labels}) \citep{caron2021emergingpropertiesselfsupervisedvision}. Model ini mengadopsi kerangka \textit{Self-Supervised Learning} (SSL) yang memungkinkan pemahaman representasi semantik gambar secara mendalam tanpa ketergantungan pada anotasi manual (\textit{annotation-free}). Secara struktural, DINOv2 dibangun di atas fondasi arsitektur \textit{Vision Transformer} (ViT) yang dioptimalkan untuk mengekstraksi fitur visual pada skala besar.
+
+Mekanisme pembelajaran DINOv2 berpusat pada kerangka \textit{Teacher-Student distillation}. Dalam proses ini, dua jaringan saraf dengan arsitektur identik namun parameter yang berbeda memproses augmentasi atau pandangan (\textit{views}) yang berbeda dari citra input yang sama. Jaringan \textit{student} dilatih untuk memprediksi \textit{output} dari jaringan \textit{teacher}, di mana jaringan \textit{teacher} diperbarui secara temporal menggunakan \textit{Exponential Moving Average} (EMA) dari parameter jaringan \textit{student}. Proses \textit{self-distillation} ini memaksa model untuk mempelajari pola visual yang invarian terhadap transformasi, sehingga menghasilkan \textit{embedding} gambar yang sangat robust \citep{oquabDINOv2LearningRobust2024}.
+
+\subsubsection{Multilingual E5}
+
+\citet{wang2024multilinguale5textembeddings} memperkenalkan \textit{Multilingual E5} (\textit{Embeddings from Bidirectional Encoder Representations}), sebuah model \textit{text embedding} mutakhir yang dirancang untuk menghasilkan representasi vektor densitas tinggi guna mendukung tugas klasifikasi dan pencarian semantik (\textit{semantic retrieval}). Berbeda dengan model \textit{embedding} tradisional, E5 dikembangkan dengan fokus pada kualitas penyelarasan makna di seluruh ruang bahasa (\textit{cross-lingual alignment}).
+
+Proses pelatihan E5 memanfaatkan dataset pasangan teks multibahasa berskala besar melalui metode \textit{weakly-supervised contrastive learning}\citep{wang2024multilinguale5textembeddings}. Secara teknis, model ini dioptimalkan untuk meminimalkan jarak pada ruang vektor antara pasangan teks yang memiliki kesamaan semantik, sekaligus menjauhkan pasangan teks yang tidak relevan. Pendekatan ini memastikan bahwa kalimat dengan intensi yang sama akan dipetakan ke dalam koordinat vektor yang berdekatan, terlepas dari variasi leksikal atau sintaksis yang digunakan.
+
+Kapasitas multibahasa dari model E5 memberikan keunggulan krusial dalam memproses laporan masyarakat yang bersifat heterogen. Model ini memiliki robustitas yang tinggi dalam memahami variasi linguistik yang mencakup campuran bahasa formal, dialek informal, hingga penggunaan istilah daerah. Kemampuan ini memungkinkan sistem untuk mempertahankan akurasi kontekstual yang konsisten dalam mengklasifikasikan keluhan lingkungan, meskipun data input memiliki ambiguitas bahasa yang tinggi.
+
+\subsubsection{ IndoBERT}
+IndoBERT adalah varian model BERT (\textit{Bidirectional Encoder Representations from Transformers)} yang dilatih dengan korpus Bahasa Indonesia. Model ini diuji dengan dataset besar (Indo4B), yang mencakup artikel web, media sosial, dan berita Indonesia \citep{koto2020indolemindobertbenchmarkdataset}.
+
+
+Arsitektur \textit{Bidirectional Encoder} pada IndoBERT memungkinkan model untuk melakukan ekstraksi fitur tekstual dengan memproses sekuens input secara simultan dari dua arah (\textit{left-to-right} dan \textit{right-to-left}). Berbeda dengan model \textit{unidirectional} konvensional, mekanisme \textit{self-attention} yang diusung oleh IndoBERT memfasilitasi pemahaman konteks semantik yang komprehensif, di mana representasi setiap token ditentukan berdasarkan ketergantungan (\textit{dependency}) terhadap seluruh kata yang mengelilinginya dalam satu \textit{window}konteks \citep{wilieIndoNLUBenchmarkResources2020}.
+
+Keunggulan utama IndoBERT terletak pada fase \textit{pre-training}-nya yang menggunakan korpus bahasa Indonesia berskala besar dan variatif \citep{wilieIndoNLUBenchmarkResources2020}. Hal ini menjadikannya jauh lebih superior dibandingkan model berbahasa Inggris atau model multibahasa generik dalam menangani data laporan masyarakat di Indonesia. IndoBERT secara inheren memiliki kemampuan untuk menangkap karakteristik linguistik lokal yang kompleks, termasuk penggunaan bahasa prokem (\textit{slang}), singkatan non-standar, serta struktur sintaksis khas Indonesia yang sering ditemukan dalam deskripsi keluhan publik. Dengan demikian, model ini mampu menghasilkan \textit{contextual embeddings} yang lebih presisi dan relevan untuk tugas klasifikasi masalah yang data teks nya berbahasa indonesia.
+
+\section{Embeddings}
+\textit{Embedding} merupakan teknik representasi data yang mentransformasikan entitas diskret seperti teks, gambar, atau objek digital lainnya ke dalam bentuk vektor kontinu dalam ruang metrik berdimensi tinggi (\textit{high-dimensional vector space}). Secara fundamental, komputer memproses informasi melalui komputasi numerik, sehingga \textit{embedding} berfungsi sebagai jembatan yang menerjemahkan semantik bahasa manusia ke dalam struktur matematika yang dapat dioperasikan oleh algoritma \citep{mikolov2013efficientestimationwordrepresentations}. Dibandingkan dengan metode tradisional seperti \textit{one-hot encoding}, \textit{embedding} menawarkan representasi yang lebih efisien dan padat (\textit{dense representation}).
+
+Mekanisme kerja \textit{embedding} secara konseptual dapat dijabarkan melalui tiga aspek utama:
+
+\begin{enumerate}
+    \item \textbf{Representasi Numerik dan Tokenisasi:} Setiap input tekstual didekomposisi menjadi unit terkecil yang disebut token. Melalui model \textit{embedding}, setiap token dipetakan ke dalam nilai numerik yang merepresentasikan fitur-fitur laten dari data tersebut. Nilai ini bukan merupakan penomoran acak, melainkan hasil ekstraksi fitur yang menangkap esensi semantik dari input.
+    
+    \item \textbf{Ruang Vektor Berdimensi Tinggi:} \textit{Embedding} memanfaatkan interpretasi geometris di mana kedekatan posisi antar-vektor mencerminkan kemiripan maknanya. Sebagai ilustrasi, dalam ruang laten, vektor untuk istilah "programmer" akan memiliki jarak euklidian (\textit{Euclidean distance}) atau \textit{cosine similarity} yang lebih dekat dengan vektor "developer" dibandingkan dengan vektor "koki". Struktur ini memungkinkan model untuk melakukan penalaran relasional antar entitas secara matematis \citep{pennington-etal-2014-glove}.
+    
+    \item \textbf{Pemodelan Konteks Kontemporer:} Berbeda dengan \textit{static embeddings}, model berbasis \textit{Transformer} memperkenalkan \textit{contextualized embeddings} yang dinamis. Mekanisme ini memungkinkan sistem untuk melakukan disambiguasi terhadap kata-kata polisemik. Sebagai contoh, representasi vektor untuk kata "bank" akan berubah secara adaptif bergantung pada token di sekitarnya, apakah merujuk pada institusi finansial atau tepian sungai \citep{vaswaniAttentionAllYou2023}.
+\end{enumerate}
