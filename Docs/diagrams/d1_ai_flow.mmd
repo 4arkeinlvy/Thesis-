@@ -1,0 +1,25 @@
+---
+title: Alur Pengembangan Model AI
+---
+flowchart TD
+    A([Mulai]) --> B[Unduh Dataset\nHuggingFace Hub\nProgrammer-RD-AI/road-issues-detection-dataset]
+    B --> C[Pembersihan & Seleksi Label\nExclude: Illegal Parking, Mixed Issues\nHasil: 7 kelas target]
+    C --> D[Penyeimbangan Kelas\nTarget 800 sampel per kelas\nBalancedClassSampler + Minority Boost]
+    D --> E[Group-Aware Stratified Split\nTrain 70% / Val 15% / Test 15%\nSeed 42]
+    E --> F{Untuk setiap\nBackbone Model}
+    F --> G1[ConvNeXt V2 Tiny]
+    F --> G2[EfficientViT B2]
+    F --> G3[MambaOut Tiny]
+    F --> G4[Hiera Tiny]
+    F --> G5[EVA-02 Tiny]
+    G1 & G2 & G3 & G4 & G5 --> H[Fine-tuning dengan Konfigurasi Seragam\nAdamW lr=3e-4 · 8 epoch · AMP FP16\nLabel Smoothing 0.05 · Early Stopping]
+    H --> I[Evaluasi per Epoch\nMonitor val macro F1\nSimpan checkpoint terbaik]
+    I --> J{Early Stopping\nPatience = 3?}
+    J -- Tidak --> H
+    J -- Ya / Epoch habis --> K[Evaluasi Final\nValidation & Test Set\nMacro F1, Accuracy, ROC-AUC]
+    K --> L[Leaderboard Komparatif\n5 Model × Semua Metrik]
+    L --> M{Model Terbaik?\nMacro F1 tertinggi}
+    M --> N([MambaOut Tiny\nTest Macro F1 = 0.9917])
+
+    style N fill:#2d6a4f,color:#fff,stroke:#1b4332
+    style A fill:#023e8a,color:#fff,stroke:#03045e

@@ -1,0 +1,415 @@
+\chapter{METODE PENELITIAN}
+
+% =====================================================================
+\section{Kerangka Berpikir}
+% =====================================================================
+
+Penelitian ini diorganisasikan dalam dua fase pengembangan utama yang berurutan namun saling bergantung: (1) fase eksperimen dan optimasi model AI, dan (2) fase pengembangan aplikasi Android. Gambar~\ref{fig:kerangka-berpikir} menyajikan kerangka berpikir penelitian secara menyeluruh.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{kerangka_berpikir.png}
+    \caption{Kerangka Berpikir Penelitian}
+    \label{fig:kerangka-berpikir}
+\end{figure}
+
+% Catatan: render diagram D1 dari Docs/diagrams/d1_kerangka.mmd ke images/diagrams/kerangka_berpikir.png
+
+Fase pertama dimulai dari pengumpulan dan persiapan dataset dari HuggingFace Hub, dilanjutkan dengan studi komparatif lima arsitektur \textit{backbone} modern melalui pelatihan dan evaluasi sistematis, hingga pemilihan model terbaik. Fase kedua mencakup ekspor model terpilih ke format ONNX, integrasi ke dalam aplikasi Android Flutter, dan pengujian fungsional sistem secara menyeluruh.
+
+% =====================================================================
+\section{Pengembangan Model \textit{Artificial Intelligence}}
+% =====================================================================
+
+Alur pengembangan kecerdasan buatan dalam penelitian ini dipaparkan secara sistematis pada Gambar~\ref{fig:alur-ai}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{alur_ai.png}
+    \caption{Alur Pengembangan Model AI}
+    \label{fig:alur-ai}
+\end{figure}
+
+% Catatan: render diagram D1 dari Docs/diagrams/d1_ai_flow.mmd ke images/diagrams/alur_ai.png
+
+\subsection{Dataset}
+
+\subsubsection{Sumber Data}
+
+Data yang digunakan dalam penelitian ini diperoleh dari dataset publik yang tersedia di platform HuggingFace Hub dengan identitas repositori \texttt{Programmer-RD-AI/road-issues-detection-dataset}. Dataset ini berisi gambar-gambar kondisi lingkungan perkotaan yang telah dilabeli ke dalam berbagai kategori masalah. Proses pengunduhan dilakukan menggunakan fungsi \texttt{snapshot\_download} dari \textit{library} \texttt{huggingface\_hub}, yang mengunduh seluruh isi repositori dataset---termasuk gambar dan metadata---ke direktori lokal.
+
+\subsubsection{Seleksi Label dan Kelas Target}
+
+Dari keseluruhan label yang tersedia dalam dataset, penelitian ini menggunakan \textbf{tujuh kelas} masalah lingkungan perkotaan yang memiliki representasi visual yang cukup jelas dan tidak ambigu. Dua kategori dikecualikan secara eksplisit:
+
+\begin{itemize}
+    \item \textbf{\textit{Illegal Parking Issues}}: Dikecualikan karena ambiguitas visual yang tinggi---gambar parkir liar seringkali sulit dibedakan dari kondisi normal jalan pada resolusi yang terbatas.
+    \item \textbf{\textit{Mixed Issues}}: Dikecualikan karena merupakan label campuran yang tidak merepresentasikan satu kategori masalah tunggal, sehingga tidak cocok untuk tugas klasifikasi multi-kelas yang definitif.
+\end{itemize}
+
+Tabel~\ref{tab:label-kelas} merinci kelas-kelas yang digunakan beserta deskripsi singkatnya.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Kelas Dataset yang Digunakan}
+    \label{tab:label-kelas}
+    \begin{tabular}{cll}
+        \toprule
+        \textbf{No.} & \textbf{Label Dataset} & \textbf{Deskripsi} \\
+        \midrule
+        1 & \textit{Accident Issues} & Kecelakaan lalu lintas di jalan \\
+        2 & \textit{Littering Garbage on Public Places Issues} & Sampah di tempat umum \\
+        3 & \textit{Vandalism Issues} & Vandalisme pada fasilitas publik \\
+        4 & \textit{Pothole Issues} & Lubang pada permukaan jalan \\
+        5 & \textit{Damaged Road Issues} & Kerusakan permukaan jalan \\
+        6 & \textit{Broken Road Sign Issues} & Rambu lalu lintas yang rusak \\
+        7 & \textit{Fallen Tree Issues} & Pohon tumbang \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Penyeimbangan Kelas}
+
+Dataset asli memiliki distribusi kelas yang tidak seimbang, dengan beberapa kategori memiliki sampel jauh lebih banyak dari yang lain. Untuk mengatasi hal ini, penelitian ini menerapkan strategi penyeimbangan dengan \textbf{target 800 sampel per kelas} (\textit{target\_samples\_per\_class = 800}). Bagi kelas yang memiliki lebih dari 800 sampel, dilakukan pengambilan sampel acak (\textit{undersampling}). Bagi kelas minoritas yang memiliki kurang dari 800 sampel, teknik \textit{oversampling} implisit diterapkan melalui \textit{BalancedClassSampler} dan augmentasi khusus kelas minoritas selama pelatihan.
+
+\subsubsection{Pembagian Dataset dan \textit{Group-Aware Split}}
+
+Dataset dibagi menjadi tiga partisi dengan rasio: \textbf{70\% pelatihan (\textit{train})}, \textbf{15\% validasi (\textit{validation})}, dan \textbf{15\% pengujian (\textit{test})}, dengan \textit{seed} acak yang ditetapkan pada nilai 42 untuk reprodusibilitas.
+
+Aspek kritis dalam pembagian dataset ini adalah penerapan \textbf{\textit{group-aware stratified split}}. Beberapa gambar dalam dataset merupakan gambar yang diaugmentasi (diperbesar secara sintetis) dari gambar sumber yang sama, khususnya untuk kelas kecelakaan (\textit{Accident Issues}). Jika gambar asli dan turunan augmentasinya dimasukkan ke partisi yang berbeda (\textit{train} dan \textit{test}), model akan mendapatkan gambaran yang terlalu optimis tentang kemampuan generalisasinya---fenomena ini disebut \textit{data leakage}.
+
+Untuk mencegah hal ini, setiap gambar augmentasi ditandai dengan \textit{group key} yang menunjukkan gambar sumber asalnya (ditandai dengan penanda \texttt{\_\_source\_\_} pada nama file). Pembagian dataset kemudian dilakukan pada tingkat grup, bukan tingkat gambar individual, sehingga seluruh gambar yang berasal dari satu sumber yang sama selalu berada dalam partisi yang sama.
+
+\subsection{Augmentasi Data}
+
+Augmentasi data diterapkan secara berbeda antara set pelatihan dan set evaluasi:
+
+\begin{enumerate}
+    \item \textbf{Transformasi Pelatihan (Training Transform)}: Diterapkan secara acak pada setiap gambar dalam set pelatihan untuk meningkatkan keberagaman data. Mencakup: \textit{random horizontal flip}, \textit{random vertical flip}, \textit{random crop} dengan \textit{padding}, \textit{random color jitter} (kecerahan, kontras, saturasi), serta normalisasi menggunakan \textit{mean} dan \textit{std} yang spesifik untuk setiap model backbone (diambil dari \texttt{timm data\_config}).
+
+    \item \textbf{Transformasi Kelas Minoritas (Minority Transform)}: Kelas yang memiliki rasio jumlah sampel terhadap target di bawah ambang 60\% (\textit{minority\_threshold\_ratio = 0.6}) mendapatkan transformasi augmentasi yang lebih agresif. Ini bertujuan untuk secara efektif melipatgandakan keberagaman visual kelas minoritas tanpa pengulangan data yang identik.
+
+    \item \textbf{Transformasi Evaluasi (Evaluation Transform)}: Hanya berisi \textit{center crop}, \textit{resize}, dan normalisasi---tanpa augmentasi acak---untuk memastikan evaluasi yang deterministik dan reprodusibel.
+\end{enumerate}
+
+\subsection{Konfigurasi Eksperimen}
+
+\subsubsection{Model yang Dibandingkan}
+
+Lima arsitektur \textit{backbone} visual modern yang digunakan dalam studi komparatif ini, beserta detail teknisnya, disajikan dalam Tabel~\ref{tab:model-backbone}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Detail Arsitektur \textit{Backbone} yang Dibandingkan}
+    \label{tab:model-backbone}
+    \begin{tabular}{lllc}
+        \toprule
+        \textbf{Nama Model} & \textbf{Kunci \texttt{timm}} & \textbf{Keluarga} & \textbf{Tahun} \\
+        \midrule
+        ConvNeXt V2 Tiny   & \texttt{convnextv2\_tiny}       & ConvNet              & 2023 \\
+        EfficientViT B2    & \texttt{efficientvit\_b2}       & Efficient Transformer & 2023 \\
+        MambaOut Tiny      & \texttt{mambaout\_tiny}          & Hybrid State Space   & 2024 \\
+        Hiera Tiny         & \texttt{hiera\_tiny\_224}        & Hierarchical ViT     & 2023 \\
+        EVA-02 Tiny        & \texttt{eva02\_tiny\_patch14\_224} & Foundation ViT       & 2023 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Semua model diinisialisasi dengan bobot pra-latih (\textit{pretrained = True}) dari ImageNet melalui \textit{library} \texttt{timm}. Lapisan kepala klasifikasi (\textit{classification head}) setiap model diganti dengan lapisan \textit{linear} baru yang sesuai dengan jumlah kelas target.
+
+\subsubsection{Hiperparameter Pelatihan}
+
+Konfigurasi hiperparameter yang digunakan identik untuk semua model, memastikan perbandingan yang adil. Tabel~\ref{tab:hyperparameter} merangkum seluruh hiperparameter yang digunakan.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Konfigurasi Hiperparameter Pelatihan}
+    \label{tab:hyperparameter}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Hiperparameter} & \textbf{Nilai} \\
+        \midrule
+        Optimizer              & AdamW \\
+        \textit{Learning rate} & $3 \times 10^{-4}$ \\
+        \textit{Weight decay}  & $5 \times 10^{-2}$ \\
+        \textit{Label smoothing} & $0{,}05$ \\
+        \textit{Gradient clip norm} & $1{,}0$ \\
+        Epoch maksimum         & 8 \\
+        \textit{Batch size}    & 24 \\
+        \textit{Early stopping patience} & 3 epoch \\
+        \textit{Drop path rate} & $0{,}1$ \\
+        \textit{LR Scheduler}  & Cosine Annealing \\
+        \textit{Automatic Mixed Precision} & FP16 (CUDA) \\
+        \textit{Pretrained weights} & ImageNet (via \texttt{timm}) \\
+        \textit{Balanced Sampler} & Diaktifkan \\
+        \textit{Minority Boost} & Diaktifkan (threshold 0,6) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Kriteria Pemilihan Model Terbaik}
+
+Pemilihan \textit{checkpoint} model terbaik selama pelatihan dan peringkat akhir \textit{leaderboard} didasarkan pada \textbf{\textit{macro F1-score}} pada set validasi. Pilihan ini didasari oleh kemampuan \textit{macro F1-score} dalam memberikan bobot yang setara kepada semua kelas, sehingga model yang unggul di semua kelas---bukan hanya kelas mayoritas---akan mendapatkan skor yang lebih tinggi.
+
+\subsection{Metrik Evaluasi}
+
+Evaluasi komprehensif dilakukan pada set validasi dan set uji menggunakan metrik berikut (lihat Bab~\ref{ch:tinjauan} untuk definisi matematis):
+
+\begin{itemize}
+    \item \textbf{\textit{Macro F1-score}} (metrik utama)
+    \item \textbf{Akurasi (\textit{Accuracy})}
+    \item \textbf{\textit{Balanced Accuracy}}
+    \item \textbf{\textit{Macro ROC-AUC}}, \textit{Weighted ROC-AUC}, \textit{Micro ROC-AUC}
+    \item \textbf{\textit{Confusion Matrix}} (untuk analisis per-kelas)
+    \item \textbf{Presisi, \textit{Recall}, F1 per-kelas}
+\end{itemize}
+
+% =====================================================================
+\section{Pipeline Ekspor Model ONNX}
+% =====================================================================
+
+Setelah model terbaik diidentifikasi, dilakukan ekspor ke format ONNX untuk mempersiapkan \textit{deployment} di aplikasi Android. Gambar~\ref{fig:onnx-pipeline} mengilustrasikan alur ekspor ini.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{onnx_pipeline.png}
+    \caption{Alur Ekspor dan Validasi Model ONNX}
+    \label{fig:onnx-pipeline}
+\end{figure}
+
+% Catatan: render diagram D8 dari Docs/diagrams/d8_onnx_export.mmd ke images/diagrams/onnx_pipeline.png
+
+\subsection{Proses Ekspor}
+
+Ekspor dilakukan melalui skrip \texttt{export\_onnx.py} dengan langkah-langkah berikut:
+
+\begin{enumerate}
+    \item \textbf{Pemuatan \textit{Checkpoint}}: \textit{Checkpoint} model PyTorch (\texttt{best\_model.pt}) dimuat ke dalam kelas \texttt{RoadIssueClassifier}, yang mengenkapsulasi model, spesifikasi arsitektur, nama kelas, dan konfigurasi normalisasi data.
+
+    \item \textbf{Ekspor ONNX}: Fungsi \texttt{torch.onnx.export} digunakan dengan konfigurasi:
+    \begin{itemize}
+        \item \textit{Opset} versi 17 (untuk kompatibilitas dengan \textit{ONNX Runtime} versi terkini)
+        \item \texttt{do\_constant\_folding = True}: mengeliminasi subgraf konstan pada \textit{compile time}
+        \item Nama input: \texttt{input}; nama output: \texttt{logits}
+        \item \textit{Dynamic batch axis}: memungkinkan inferensi dengan ukuran \textit{batch} yang bervariasi
+    \end{itemize}
+
+    \item \textbf{Validasi Model ONNX}: Model ONNX yang dihasilkan divalidasi menggunakan \texttt{onnx.checker.check\_model} untuk memastikan konsistensi grafik operator.
+
+    \item \textbf{Ekspor Metadata}: File \texttt{.metadata.json} ditulis bersamaan dengan file ONNX, berisi:
+    \begin{itemize}
+        \item Kunci dan nama model
+        \item Nama kelas keluaran (\texttt{class\_names})
+        \item Ukuran input (\texttt{input\_size}), \textit{mean} dan \textit{std} normalisasi
+        \item Pemetaan dari label dataset mentah ke kategori semantik aplikasi (\texttt{raw\_label\_to\_app\_category})
+    \end{itemize}
+
+    \item \textbf{Validasi Paritas Numerik}: Jika gambar sampel tersedia, logit dari model PyTorch dan model ONNX dibandingkan. Perbedaan absolut maksimum (\textit{max abs diff}) dihitung dan dicatat dalam laporan JSON. Nilai ambang yang dapat diterima adalah di bawah $10^{-5}$, yang memastikan bahwa prediksi kelas teratas (\textit{top-1}) antara kedua model selalu identik.
+\end{enumerate}
+
+\subsection{Integrasi Aset ke Flutter}
+
+File \texttt{mambaout\_tiny.onnx} dan \texttt{mambaout\_tiny.metadata.json} yang dihasilkan dikemas ke dalam direktori aset aplikasi Flutter di \texttt{assets/models/}. Pada saat \textit{build} aplikasi, Flutter akan menyertakan file-file ini ke dalam paket APK Android, memungkinkan \textit{ONNX Runtime} membaca model langsung dari aset tanpa memerlukan akses internet atau unduhan tambahan.
+
+% =====================================================================
+\section{Arsitektur Sistem Aplikasi Android}
+% =====================================================================
+
+\subsection{Gambaran Umum Sistem (Diagram Konteks C4)}
+
+Gambar~\ref{fig:c4-context} mengilustrasikan konteks sistem pada level tertinggi, menunjukkan aktor dan sistem eksternal yang berinteraksi dengan aplikasi.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.80\textwidth]{c4_context.png}
+    \caption{Diagram Konteks C4 --- Smart City Reporter App}
+    \label{fig:c4-context}
+\end{figure}
+
+% Catatan: render diagram D2 dari Docs/diagrams/d2_c4_context.mmd ke images/diagrams/c4_context.png
+
+Sistem memiliki satu aktor utama---\textbf{Masyarakat} sebagai pelapor---yang berinteraksi dengan aplikasi melalui antarmuka pengguna. Aplikasi mengakses dua layanan eksternal perangkat: \textbf{GPS/Location API} untuk memperoleh koordinat geografis lokasi kejadian, dan \textbf{Kamera/Galeri} untuk mengambil foto bukti masalah. Tidak ada interaksi dengan server eksternal dalam alur utama, menjadikan sistem sepenuhnya \textit{offline-capable} untuk fungsi pelaporan dan klasifikasi.
+
+\subsection{Arsitektur Internal (Diagram Kontainer C4)}
+
+Gambar~\ref{fig:c4-container} merinci komponen-komponen utama di dalam aplikasi beserta hubungannya.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{c4_container.png}
+    \caption{Diagram Kontainer C4 --- Komponen Internal Aplikasi}
+    \label{fig:c4-container}
+\end{figure}
+
+% Catatan: render diagram D3 dari Docs/diagrams/d3_c4_container.mmd ke images/diagrams/c4_container.png
+
+Arsitektur internal aplikasi terdiri dari delapan komponen utama:
+
+\begin{enumerate}
+    \item \textbf{Flutter UI Layer}: Lapisan antarmuka pengguna yang dibangun sepenuhnya dalam Dart menggunakan \textit{framework} Flutter. Terdiri dari layar-layar dalam modul fitur (\texttt{features/}).
+
+    \item \textbf{Riverpod State Layer}: Lapisan manajemen \textit{state} yang menjembatani antara UI dan \textit{service layer}. Setiap \textit{provider} merepresentasikan satu unit \textit{state} atau \textit{service} yang dapat diobservasi oleh widget.
+
+    \item \textbf{On-Device AI Service} (\texttt{on\_device\_ai\_classification\_service.dart}): \textit{Bridge} antara Flutter (Dart) dan \textit{ONNX Runtime} (Android). Memuat model ONNX dari aset, melakukan pra-pemrosesan gambar (resize, crop, normalisasi), menjalankan sesi inferensi, dan menerjemahkan \textit{logit} keluaran menjadi objek \texttt{AiPrediction}.
+
+    \item \textbf{Classification Routing Engine} (\texttt{classification\_routing.dart}): Modul yang memetakan hasil klasifikasi AI ke panduan perutean instansi. Beroperasi secara murni \textit{in-memory} tanpa akses jaringan.
+
+    \item \textbf{Local Database Service} (\texttt{local\_database\_service.dart}): Lapisan akses SQLite melalui sqflite. Mengelola tabel \texttt{users}, \texttt{reports}, dan \texttt{report\_history}.
+
+    \item \textbf{Local File Storage Service} (\texttt{local\_file\_storage\_service.dart}): Mengelola penyimpanan file gambar laporan dan foto profil di direktori sistem Android.
+
+    \item \textbf{Location Service} (\texttt{location\_service.dart}): Mengakses GPS perangkat untuk memperoleh koordinat geografis lokasi laporan.
+
+    \item \textbf{ONNX Model Asset}: File \texttt{mambaout\_tiny.onnx} dan \texttt{mambaout\_tiny.metadata.json} yang dikemas dalam APK.
+\end{enumerate}
+
+\subsection{Alur Klasifikasi AI (Diagram Sekuens UML)}
+
+Gambar~\ref{fig:sequence-ai} mengilustrasikan alur terinci dari proses klasifikasi AI, mulai dari pengguna mengambil foto hingga laporan tersimpan.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{sequence_ai.png}
+    \caption{Diagram Sekuens --- Alur Klasifikasi AI dan Penyimpanan Laporan}
+    \label{fig:sequence-ai}
+\end{figure}
+
+% Catatan: render diagram D6 dari Docs/diagrams/d6_sequence_ai.mmd ke images/diagrams/sequence_ai.png
+
+Alur proses klasifikasi berlangsung sebagai berikut:
+
+\begin{enumerate}
+    \item Pengguna mengambil foto melalui kamera atau memilih gambar dari galeri pada \texttt{CreateReportScreen}.
+    \item \texttt{CreateReportScreen} memanggil metode \texttt{classify(imagePath)} pada \texttt{OnDeviceAIService}.
+    \item \texttt{OnDeviceAIService} melakukan pra-pemrosesan gambar: resize ke ukuran input model, normalisasi piksel, dan konversi ke tensor.
+    \item Tensor input dikirim ke \textit{ONNX Runtime} yang mengeksekusi inferensi pada model \texttt{mambaout\_tiny.onnx}.
+    \item \textit{ONNX Runtime} mengembalikan \textit{logit} untuk ketujuh kelas.
+    \item \texttt{OnDeviceAIService} menerapkan fungsi \textit{softmax}, mengidentifikasi prediksi teratas, dan membungkus hasil dalam objek \texttt{AiPrediction}.
+    \item Pengguna dialihkan ke \texttt{AiResultReviewScreen} yang menampilkan hasil klasifikasi beserta tingkat kepercayaan dan visual \textit{top predictions}.
+    \item Secara paralel, \texttt{ClassificationRoutingGuidance} dibangun dari \texttt{AiPrediction}, menghasilkan daftar rekomendasi instansi dan kluster operasional.
+    \item Pengguna dapat mengonfirmasi atau mengoreksi kategori secara manual.
+    \item Setelah konfirmasi, laporan disimpan ke SQLite melalui \texttt{LocalDatabaseService}.
+\end{enumerate}
+
+\subsection{Model Domain (Diagram Kelas UML)}
+
+Gambar~\ref{fig:class-diagram} mengilustrasikan struktur kelas domain utama dalam aplikasi.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{class_diagram.png}
+    \caption{Diagram Kelas --- Domain Model Aplikasi}
+    \label{fig:class-diagram}
+\end{figure}
+
+% Catatan: render diagram D7 dari Docs/diagrams/d7_class.mmd ke images/diagrams/class_diagram.png
+
+Kelas-kelas domain utama adalah:
+
+\begin{itemize}
+    \item \textbf{\texttt{Report}}: Entitas utama yang merepresentasikan satu laporan. Atribut: \texttt{id}, \texttt{userId}, \texttt{category} (IssueCategory), \texttt{description}, \texttt{latitude}, \texttt{longitude}, \texttt{imagePath}, \texttt{createdAt}, \texttt{status}.
+
+    \item \textbf{\texttt{User}}: Entitas pengguna untuk autentikasi lokal. Atribut: \texttt{id}, \texttt{name}, \texttt{email}, \texttt{passwordHash}, \texttt{profileImagePath}.
+
+    \item \textbf{\texttt{AiPrediction}}: Hasil inferensi model ONNX. Atribut: \texttt{category} (IssueCategory), \texttt{confidence} (double 0--1), \texttt{rawPayload} (Map berisi label mentah dan top predictions).
+
+    \item \textbf{\texttt{IssueCategory}}: Enum yang merepresentasikan lima kategori semantik aplikasi: \texttt{garbage}, \texttt{vandalism}, \texttt{pothole}, \texttt{accident}, \texttt{fallenTree}. Label dataset mentah (7 kelas) dipetakan ke enum ini oleh metadata model.
+
+    \item \textbf{\texttt{ClassificationRoutingGuidance}}: Hasil mesin perutean. Atribut: \texttt{cluster} (RoutingCluster), \texttt{operationalLabel}, \texttt{summary}, \texttt{routingReason}, \texttt{agencies} (List\textless AgencyRecommendation\textgreater), \texttt{reviewNote}.
+
+    \item \textbf{\texttt{AgencyRecommendation}}: Rekomendasi instansi individual. Atribut: \texttt{name}, \texttt{role}, \texttt{priorityLabel}.
+\end{itemize}
+
+\subsection{Kasus Penggunaan (Diagram \textit{Use Case} UML)}
+
+Gambar~\ref{fig:usecase} merangkum seluruh fungsionalitas sistem yang dapat diakses oleh pengguna.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.80\textwidth]{usecase.png}
+    \caption{Diagram \textit{Use Case} --- Fungsionalitas Aplikasi}
+    \label{fig:usecase}
+\end{figure}
+
+% Catatan: render diagram D5 dari Docs/diagrams/d5_usecase.mmd ke images/diagrams/usecase.png
+
+Kasus penggunaan utama yang tersedia bagi \textbf{Masyarakat} adalah:
+
+\begin{enumerate}
+    \item \textbf{Registrasi dan Login}: Autentikasi berbasis penyimpanan lokal (tanpa server).
+    \item \textbf{Buat Laporan Baru}: Mengambil foto, mengisi deskripsi opsional, mengaktifkan klasifikasi AI.
+    \item \textbf{Tinjau Hasil Klasifikasi AI}: Melihat kategori prediksi, \textit{confidence}, dan koreksi jika diperlukan.
+    \item \textbf{Lihat Rekomendasi Instansi}: Melihat instansi yang direkomendasikan beserta alasan perutean.
+    \item \textbf{Simpan Laporan}: Menyimpan laporan dengan data foto, GPS, kategori, dan metadata ke SQLite.
+    \item \textbf{Lihat Riwayat Laporan}: Menelusuri laporan-laporan yang telah dibuat sebelumnya.
+    \item \textbf{Kelola Profil}: Memperbarui informasi profil pengguna.
+\end{enumerate}
+
+% =====================================================================
+\section{Mekanisme Perutean Instansi}
+% =====================================================================
+
+Modul \texttt{classification\_routing.dart} mengimplementasikan mekanisme perutean berbasis aturan (\textit{rule-based routing}) yang memetakan hasil klasifikasi AI ke rekomendasi instansi pemerintah daerah. Mekanisme ini beroperasi dalam dua tahap:
+
+\textbf{Tahap 1 --- Normalisasi Label}: Label mentah (\textit{raw label}) dari model ONNX disesuaikan dengan kasus-kasus khusus yang memerlukan penanganan berbeda dari pemetaan kategori standar. Misalnya, label \texttt{Accident Issues} secara eksplisit diarahkan ke kluster keselamatan lalu lintas dengan layanan darurat sebagai prioritas utama, terlepas dari kategori IssueCategory yang dipetakan secara otomatis.
+
+\textbf{Tahap 2 --- Pemetaan ke Kluster}: Setiap laporan diarahkan ke salah satu dari \textbf{empat kluster operasional}, sebagaimana disajikan pada Tabel~\ref{tab:routing-cluster}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Kluster Operasional Perutean Instansi}
+    \label{tab:routing-cluster}
+    \begin{tabular}{p{4cm}p{4cm}p{5cm}}
+        \toprule
+        \textbf{Kluster} & \textbf{Label Operasional} & \textbf{Instansi Utama} \\
+        \midrule
+        \textit{Cleanliness \& Public Order} &
+        Kebersihan \& Ketertiban Lingkungan &
+        Dinas Lingkungan Hidup (utama) + Satpol PP (pendukung) \\[0.5em]
+
+        \textit{Road Infrastructure} &
+        Jalan \& Prasarana Umum &
+        Dinas Bina Marga / PUPR (utama) + Dishub (pendukung) \\[0.5em]
+
+        \textit{Traffic Safety} &
+        Keselamatan Lalu Lintas \& Respons Darurat &
+        PSC 119 + Kepolisian 110 (darurat) + Dishub (pendukung) \\[0.5em]
+
+        \textit{Trees \& Emergency} &
+        Pohon Tumbang \& Respons Cepat &
+        BPBD (utama) + Dinas Pertamanan (pendukung) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Untuk prediksi dengan label \texttt{Mixed Issues} (yang tidak dikecualikan dari model dalam \textit{deployment} aktual), sistem menggunakan prediksi kelas tertinggi kedua (\textit{secondary top prediction}) sebagai dasar perutean, disertai catatan peninjauan manual (\textit{review note}) kepada pengguna.
+
+Seluruh logika perutean bersifat deterministik dan beroperasi sepenuhnya \textit{in-memory} tanpa akses jaringan, memastikan rekomendasi tersedia secara instan bahkan dalam kondisi tanpa koneksi internet.
+
+% =====================================================================
+\section{Struktur Modul Aplikasi Flutter}
+% =====================================================================
+
+Aplikasi Flutter menggunakan arsitektur berbasis fitur (\textit{feature-based architecture}) di bawah direktori \texttt{lib/}. Setiap fitur mengenkapsulasi layar, \textit{provider} Riverpod, dan model yang relevan. Tabel~\ref{tab:flutter-features} merangkum modul fitur utama.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Modul Fitur Aplikasi Flutter}
+    \label{tab:flutter-features}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Modul Fitur} & \textbf{Fungsi Utama} \\
+        \midrule
+        \texttt{auth}        & Registrasi, login, dan manajemen sesi lokal \\
+        \texttt{splash}      & Layar pembuka dan inisialisasi aplikasi \\
+        \texttt{onboarding}  & Panduan pengguna baru \\
+        \texttt{dashboard}   & Ringkasan laporan dan navigasi utama \\
+        \texttt{reports}     & Pembuatan laporan, klasifikasi AI, dan riwayat \\
+        \texttt{profile}     & Manajemen profil pengguna \\
+        \texttt{settings}    & Pengaturan aplikasi \\
+        \texttt{testing}     & Pengujian inferensi model ONNX secara mandiri \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Modul \texttt{reports} merupakan fitur inti yang mengintegrasikan seluruh komponen utama sistem: kamera, GPS, inferensi ONNX, perutean instansi, dan penyimpanan data lokal. Alur kerja dalam modul ini terdiri dari tiga layar berurutan: \texttt{CreateReportScreen} $\rightarrow$ \texttt{AiResultReviewScreen} $\rightarrow$ konfirmasi dan penyimpanan.

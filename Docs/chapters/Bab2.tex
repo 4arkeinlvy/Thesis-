@@ -1,0 +1,187 @@
+\chapter{TINJAUAN PUSTAKA}
+\label{ch:tinjauan}
+
+\section{Landasan Teori}
+
+% =====================================================================
+\subsection{\textit{Smart City} dan \textit{Smart Environment}}
+% =====================================================================
+
+\textit{Smart City} secara umum didefinisikan sebagai kerangka kerja perkotaan yang memanfaatkan teknologi informasi dan komunikasi untuk meningkatkan kualitas hidup warga, mengefisiensikan operasional kota, serta memastikan keberlanjutan ekonomi dan lingkungan. Esensi dari \textit{smart city} terletak pada integrasi enam pilar utama, di mana \textit{Smart Governance} dan \textit{Smart Environment} menjadi fondasi penting untuk menciptakan interaksi yang harmonis antara pemerintah dan masyarakat melalui sistem layanan publik yang responsif \citep{siretPublicComplainingBlessing2022}.
+
+Salah satu tantangan terbesar dalam mewujudkan \textit{Smart Environment} adalah pengelolaan laporan masalah lingkungan perkotaan yang datang dari berbagai sumber secara bersamaan. Menurut \citet{sadiqSensingSmartCities2025}, kota-kota pintar bergantung pada infrastruktur penginderaan yang beragam---mulai dari perangkat IoT, kamera pengawas, hingga \textit{smartphone} warga---yang menghasilkan data dalam jumlah masif. Kemampuan untuk memproses dan menginterpretasi data visual dari lingkungan perkotaan secara otomatis merupakan komponen kritis dalam membangun sistem tata kelola kota yang adaptif. Penelitian \citet{shenSmartCityGovernance2025} secara khusus mendemonstrasikan bahwa integrasi model pengenalan citra berbasis kecerdasan buatan ke dalam sistem tata kelola kota mampu meningkatkan akurasi identifikasi kejadian secara signifikan dan mengurangi beban kerja manual petugas dalam proses kategorisasi laporan masuk.
+
+% =====================================================================
+\subsection{Sistem Pelaporan dan Partisipasi Publik}
+% =====================================================================
+
+Masalah lingkungan perkotaan yang kompleks---seperti penumpukan sampah, kerusakan fasilitas umum, dan infrastruktur yang buruk---sering kali tidak tertangani dengan cepat akibat keterbatasan metode pemantauan konvensional yang bersifat reaktif dan bergantung pada laporan manual. Akibatnya, dibutuhkan sistem pelaporan masyarakat berbasis teknologi yang memungkinkan warga berpartisipasi aktif dalam penyebaran informasi secara \textit{real-time}.
+
+Hasil penelitian \citet{firgiaImplementasiSistemInformasi2022} menunjukkan bahwa digitalisasi sistem pengaduan melalui platform \textit{mobile} dan web dapat mempercepat pengiriman data dari masyarakat ke pemerintah sekaligus mengurangi kesalahan data yang disebabkan oleh proses manual. Partisipasi publik merupakan komponen esensial dalam pembangunan berkelanjutan; sistem pelaporan yang dirancang dengan baik harus mampu mendorong keterlibatan warga untuk meningkatkan respons pemerintah terhadap ancaman lingkungan. Integrasi kecerdasan buatan ke dalam sistem pelaporan---khususnya melalui klasifikasi citra otomatis---membawa dimensi baru yang memungkinkan laporan diproses, dikategorikan, dan didistribusikan ke instansi yang tepat tanpa intervensi manual dari operator.
+
+% =====================================================================
+\section{Arsitektur \textit{Transformer} dan \textit{Vision Transformer}}
+% =====================================================================
+
+Arsitektur \textit{Transformer}, yang pertama kali diperkenalkan oleh \citet{vaswaniAttentionAllYou2023}, merevolusi cara pemrosesan data sekuensial dengan menggunakan mekanisme \textit{self-attention}. Berbeda dari arsitektur \textit{Convolutional Neural Networks} (CNN) yang terbatas pada pemrosesan fitur lokal dalam jendela reseptif statis, maupun \textit{Recurrent Neural Networks} (RNN) yang menghadapi kendala dalam memodelkan ketergantungan jarak jauh (\textit{long-range dependencies}), \textit{Transformer} mampu menangkap konteks global secara paralel di seluruh elemen input.
+
+\textit{Vision Transformer} (ViT) \citep{dosovitskiyImageWorth16x162021} mengadaptasi paradigma ini ke domain \textit{computer vision} dengan mendekomposisi gambar input menjadi sekumpulan potongan kecil (\textit{patches}) berukuran tetap yang bersifat \textit{non-overlapping}. Setiap \textit{patch} diproyeksikan secara linear menjadi \textit{vector embedding} satu dimensi, berfungsi sebagai urutan token yang analog dengan representasi kata dalam pemrosesan bahasa alami. Mekanisme \textit{self-attention} global kemudian memungkinkan model menangkap hubungan spasial di seluruh bagian gambar secara simultan. ViT menjadi fondasi penting bagi berbagai arsitektur modern yang dikembangkan sesudahnya, termasuk beberapa model yang digunakan dalam penelitian ini.
+
+% =====================================================================
+\section{Arsitektur \textit{Backbone} Visual Modern}
+% =====================================================================
+
+Penelitian ini melakukan studi komparatif terhadap lima arsitektur \textit{backbone} visual modern yang dipilih untuk merepresentasikan berbagai paradigma desain jaringan saraf yang sedang berkembang. Semua model diakses melalui \textit{library} \texttt{timm} (\textit{PyTorch Image Models}) dengan bobot pra-latih (\textit{pre-trained weights}) dari ImageNet.
+
+% -----------------------------------------------------------------
+\subsection{ConvNeXt V2}
+% -----------------------------------------------------------------
+
+ConvNeXt V2 \citep{liuConvNeXtV22023} merupakan generasi kedua dari keluarga arsitektur ConvNeXt yang memodernisasi jaringan konvolusi murni (\textit{pure ConvNet}) dengan mengadopsi prinsip desain dari arsitektur \textit{Transformer}. Berbeda dari pendahulunya ConvNeXt V1 yang menggunakan \textit{supervised pre-training}, ConvNeXt V2 dilatih menggunakan kerangka \textit{Fully Convolutional Masked Autoencoder} (FCMAE)---sebuah pendekatan \textit{self-supervised pre-training} yang menggabungkan \textit{masked image modeling} dengan \textit{feature response normalization} baru yang disebut \textit{Global Response Normalization} (GRN).
+
+GRN berperan sebagai mekanisme yang meningkatkan kompetisi antar-fitur dan mengurangi redundansi representasi dalam setiap lapisan, yang merupakan permasalahan yang sering muncul ketika \textit{masked autoencoder} diterapkan pada arsitektur konvolusi. Arsitektur ini tetap sepenuhnya konvolusional tanpa menggunakan mekanisme \textit{attention}, sehingga unggul dari segi efisiensi komputasi. Pada skala \textit{tiny}, ConvNeXt V2 Tiny menunjukkan akurasi yang kompetitif terhadap model berbasis \textit{Transformer} sekelasnya dengan \textit{throughput} yang lebih tinggi.
+
+% -----------------------------------------------------------------
+\subsection{EfficientViT}
+% -----------------------------------------------------------------
+
+EfficientViT \citep{liuEfficientViT2023} adalah arsitektur \textit{Vision Transformer} yang dirancang dengan tujuan utama efisiensi memori dan kecepatan inferensi pada perangkat keras. Inovasi kunci dari EfficientViT terletak pada modul \textit{Efficient Multi-Scale Attention} (EMA) yang menggantikan mekanisme \textit{self-attention} standar dengan pendekatan \textit{linear attention} berbasis \textit{cascaded group attention}.
+
+\textit{Linear attention} memungkinkan kompleksitas komputasi yang tumbuh secara linear terhadap panjang sekuens (berbeda dengan \textit{softmax attention} standar yang tumbuh secara kuadratik), sehingga signifikan mengurangi konsumsi memori pada resolusi gambar tinggi. Modul \textit{multi-scale} memungkinkan model untuk secara bersamaan memproses fitur dari berbagai skala spasial, meningkatkan kemampuan representasi fitur hierarkis tanpa biaya komputasi yang besar. Karakteristik ini membuat EfficientViT sangat relevan untuk skenario \textit{deployment} pada perangkat dengan sumber daya terbatas.
+
+% -----------------------------------------------------------------
+\subsection{MambaOut}
+% -----------------------------------------------------------------
+
+MambaOut \citep{yuMambaOut2024} adalah arsitektur yang lahir dari eksplorasi teoritis tentang peran \textit{State Space Models} (SSM) dalam pengenalan citra. Arsitektur ini dikembangkan dengan mempertanyakan apakah komponen SSM (pemindaian sekuensial / \textit{sequential scan}) benar-benar diperlukan untuk tugas \textit{image classification}---berbeda dari tugas pemodelan bahasa atau video di mana urutan sekuensial lebih relevan.
+
+MambaOut membuktikan bahwa dengan \textit{menghilangkan} komponen SSM dari blok Mamba dan hanya mempertahankan \textit{gated spatial mixing} serta \textit{channel mixing}, model justru mencapai akurasi yang lebih tinggi pada \textit{benchmark} klasifikasi gambar standar. Hasilnya adalah arsitektur yang secara struktural menyerupai \textit{ConvNet} modern dengan \textit{gated convolution}, namun berakar dari kerangka \textit{State Space}. MambaOut Tiny---varian yang digunakan dalam penelitian ini---tersedia stabil di \textit{library} \texttt{timm} dan merupakan model dengan performa terbaik dalam eksperimen \textit{benchmark} yang dilakukan, mencapai \textit{test macro F1-score} sebesar \textbf{0,9917}.
+
+% -----------------------------------------------------------------
+\subsection{Hiera}
+% -----------------------------------------------------------------
+
+Hiera (\textit{Hierarchical Vision Transformer}) \citep{ryaliHiera2023} memperkenalkan pendekatan yang berlawanan dengan tren umum yang terus menambahkan kompleksitas ke arsitektur \textit{Vision Transformer}: Hiera justru menyederhanakan ViT dengan \textit{menghilangkan} komponen-komponen yang tidak diperlukan.
+
+Inovasi utama Hiera adalah penghapusan \textit{positional embedding} eksplisit dan penggunaan \textit{pooling attention} hierarkis yang terinspirasi dari \textit{Masked Autoencoders} (MAE). Pooling yang berjalan secara progresif di seluruh lapisan menghasilkan representasi hierarkis seperti pyramid fitur pada CNN, namun tetap dalam kerangka \textit{Transformer} yang murni. Hasilnya adalah model yang lebih sederhana, lebih cepat pada waktu pelatihan dan inferensi, serta lebih mudah disesuaikan untuk berbagai skala tanpa kehilangan akurasi yang signifikan.
+
+% -----------------------------------------------------------------
+\subsection{EVA-02}
+% -----------------------------------------------------------------
+
+EVA-02 \citep{fangEVA022023} adalah \textit{vision foundation model} generasi kedua dari seri EVA yang menggabungkan dua paradigma pra-latihan yang kuat: \textit{Masked Image Modeling} (MIM) dan penyelarasan dengan representasi CLIP (\textit{Contrastive Language-Image Pre-training}). Inovasi utama EVA-02 terletak pada penggunaan fitur CLIP yang telah dilatih dari data multimodal sebagai target sinyal supervisory dalam proses MIM, menggantikan piksel atau representasi statistik gambar yang biasa digunakan.
+
+Pendekatan ini memaksa model untuk mempelajari representasi semantik yang lebih kaya dan lebih \textit{transferable} dibandingkan model yang dilatih dengan MIM standar. Bahkan pada varian \textit{Tiny} dengan jumlah parameter yang sangat terbatas, EVA-02 mampu menghasilkan fitur visual dengan kualitas yang mendekati \textit{foundation model} berukuran jauh lebih besar, berkat kekayaan pengetahuan semantik yang ditransfer dari sumber CLIP multimodal.
+
+% =====================================================================
+\section{ONNX dan Inferensi \textit{On-Device}}
+% =====================================================================
+
+\subsection{\textit{Open Neural Network Exchange} (ONNX)}
+
+\textit{Open Neural Network Exchange} (ONNX) adalah standar format terbuka yang dirancang sebagai jembatan interoperabilitas antar-\textit{framework} \textit{machine learning} \citep{onnxruntime2024}. ONNX mendefinisikan sebuah grafik komputasi (\textit{computation graph}) yang bersifat \textit{framework-agnostic}, memungkinkan model yang dikembangkan dalam PyTorch, TensorFlow, atau \textit{framework} lainnya untuk diekspor ke representasi tunggal yang dapat dieksekusi oleh berbagai \textit{runtime} di berbagai platform.
+
+Representasi ONNX terdiri dari serangkaian \textit{operator} standar yang didefinisikan dalam spesifikasi \textit{opset} bernomor. \textit{Opset} versi 17---yang digunakan dalam penelitian ini---mendukung set operator yang komprehensif dan stabil, termasuk semua operator yang diperlukan oleh arsitektur MambaOut Tiny. Saat ekspor, PyTorch melakukan \textit{tracing} grafik komputasi model dan menerjemahkannya ke operator ONNX yang setara, dengan opsi optimasi seperti \textit{constant folding} yang mengeliminasi subgraf konstan untuk mengurangi ukuran model dan latensi inferensi.
+
+\subsection{\textit{ONNX Runtime for Android}}
+
+\textit{ONNX Runtime} adalah \textit{inference engine} lintas platform yang dioptimalkan untuk mengeksekusi model ONNX secara efisien \citep{onnxruntime2024}. Untuk platform Android, \textit{ONNX Runtime} tersedia sebagai paket AAR (\textit{Android Archive}) yang dapat diintegrasikan langsung ke dalam proyek Android melalui \textit{dependency manager} Gradle. \textit{Runtime} ini mendukung akselerasi perangkat keras melalui berbagai \textit{execution provider}---termasuk NNAPI (\textit{Android Neural Networks API}) untuk akselerasi \textit{on-chip}---yang memungkinkan model berukuran kecil berjalan dengan latensi yang dapat diterima bahkan pada perangkat kelas menengah.
+
+Pola \textit{companion metadata} juga menjadi praktik penting dalam \textit{deployment} ONNX: sebuah file JSON yang diekspor bersamaan dengan model ONNX menyimpan informasi normalisasi (\textit{mean} dan \textit{std} setiap kanal warna), nama kelas keluaran, serta pemetaan dari label dataset mentah ke kategori semantik aplikasi. Pemisahan metadata dari bobot model memungkinkan pembaruan nama kelas atau logika pemetaan tanpa perlu mengekspor ulang model ONNX.
+
+% =====================================================================
+\section{Flutter dan Arsitektur Aplikasi \textit{Mobile}}
+% =====================================================================
+
+\subsection{Flutter}
+
+Flutter adalah \textit{framework} pengembangan aplikasi lintas platform berbasis bahasa Dart yang dikembangkan oleh Google \citep{flutterdoc2024}. Berbeda dari pendekatan \textit{hybrid} yang membungkus komponen antarmuka platform (seperti React Native), Flutter menggunakan \textit{rendering engine} sendiri (Skia/Impeller) untuk menggambar setiap piksel, menghasilkan tampilan yang konsisten di semua platform tanpa bergantung pada komponen antarmuka asli (\textit{native widgets}).
+
+Dalam konteks penelitian ini, Flutter dipilih karena kemampuannya mengintegrasikan kode Dart dengan kode platform asli (Java/Kotlin untuk Android) melalui mekanisme \textit{Platform Channel}. Integrasi \textit{ONNX Runtime}---yang menyediakan API Java/Kotlin---ke dalam aplikasi Flutter dilakukan melalui \textit{bridge} ini, memungkinkan inferensi model berjalan dalam konteks Android asli dengan performa optimal sambil tetap menggunakan antarmuka pengguna yang dibangun sepenuhnya di Dart.
+
+\subsection{Riverpod}
+
+Riverpod adalah \textit{library} manajemen \textit{state} untuk Flutter yang menawarkan keamanan tipe kompilasi (\textit{compile-time type safety}) dan reaktivitas yang fleksibel \citep{riverpoddoc2024}. Berbeda dari pendahulunya Provider, Riverpod tidak bergantung pada hierarki \textit{widget} untuk mendistribusikan \textit{state}, melainkan menggunakan konsep \textit{provider} yang berdiri sendiri dan dapat diakses dari mana saja dalam kode aplikasi.
+
+Dalam arsitektur aplikasi penelitian ini, Riverpod digunakan sebagai lapisan manajemen \textit{state} utama yang menjembatani antara lapisan \textit{service} (inferensi ONNX, akses basis data, lokasi GPS) dan lapisan antarmuka pengguna. Pola \textit{provider} Riverpod memungkinkan setiap komponen aplikasi bereaksi secara otomatis terhadap perubahan \textit{state}---misalnya, hasil klasifikasi yang baru saja diterima dari model ONNX---tanpa memerlukan pengelolaan \textit{lifecycle} yang eksplisit.
+
+\subsection{GoRouter}
+
+GoRouter adalah \textit{library} navigasi deklaratif untuk Flutter yang menyediakan sistem navigasi berbasis \textit{URL path} yang serupa dengan navigasi web. Pendekatan deklaratif ini memungkinkan alur navigasi aplikasi---dari layar laporan baru, ke layar hasil AI, ke layar konfirmasi instansi---didefinisikan secara terpusat dalam satu konfigurasi \textit{router}, meningkatkan keterbacaan kode dan memudahkan pengelolaan alur \textit{deep link}.
+
+\subsection{SQLite dan sqflite}
+
+SQLite adalah sistem manajemen basis data relasional yang ringan dan \textit{serverless}, yang disematkan langsung ke dalam proses aplikasi. Penggunaan SQLite memungkinkan aplikasi menyimpan data secara persisten di perangkat tanpa memerlukan koneksi ke server basis data eksternal---pendekatan yang sesuai dengan desain sistem penelitian ini yang sepenuhnya lokal. Pada Flutter, SQLite diakses melalui \textit{library} sqflite yang menyediakan API asinkron Dart untuk operasi CRUD pada tabel \texttt{users}, \texttt{reports}, dan \texttt{report\_history}.
+
+% =====================================================================
+\section{Metrik Evaluasi Klasifikasi Multi-Kelas}
+% =====================================================================
+
+\subsection{\textit{Macro F1-Score}}
+
+Dalam konteks klasifikasi multi-kelas dengan distribusi kelas yang tidak sepenuhnya seimbang, \textit{macro F1-score} merupakan metrik evaluasi yang lebih informatif dibandingkan akurasi sederhana. Sementara akurasi menghitung rasio prediksi benar terhadap total sampel---yang dapat terlihat tinggi meski model gagal pada kelas minoritas---\textit{macro F1-score} memberikan bobot yang setara kepada setiap kelas tanpa memperhatikan frekuensi relatifnya.
+
+\textit{F1-score} untuk setiap kelas $c$ didefinisikan sebagai rata-rata harmonik antara \textit{precision} dan \textit{recall}:
+
+\begin{equation}
+    F1_c = \frac{2 \cdot \text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+\end{equation}
+
+di mana:
+\begin{equation}
+    \text{Precision}_c = \frac{TP_c}{TP_c + FP_c}, \quad \text{Recall}_c = \frac{TP_c}{TP_c + FN_c}
+\end{equation}
+
+\textit{Macro F1-score} kemudian dihitung sebagai rata-rata aritmetika dari $F1_c$ seluruh kelas $K$:
+
+\begin{equation}
+    \text{Macro F1} = \frac{1}{K} \sum_{c=1}^{K} F1_c
+\end{equation}
+
+Dalam penelitian ini, \textit{macro F1-score} digunakan sebagai kriteria utama pemilihan \textit{checkpoint} model terbaik selama pelatihan (berdasarkan nilai pada set validasi) maupun peringkat akhir dalam \textit{leaderboard} perbandingan model (berdasarkan nilai pada set uji).
+
+\subsection{Metrik Pendukung}
+
+Selain \textit{macro F1-score}, beberapa metrik pendukung juga dihitung untuk memberikan gambaran evaluasi yang lebih komprehensif:
+
+\begin{enumerate}
+    \item \textbf{Akurasi (\textit{Accuracy})}: Proporsi prediksi benar dari keseluruhan sampel. Berguna sebagai indikator umum performa model.
+
+    \begin{equation}
+        \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+    \end{equation}
+
+    \item \textbf{\textit{Balanced Accuracy}}: Rata-rata \textit{recall} per kelas. Lebih robust terhadap ketidakseimbangan kelas dibandingkan akurasi standar.
+
+    \begin{equation}
+        \text{Balanced Accuracy} = \frac{1}{K} \sum_{c=1}^{K} \text{Recall}_c
+    \end{equation}
+
+    \item \textbf{\textit{Macro ROC-AUC}}: Rata-rata \textit{Area Under the Receiver Operating Characteristic Curve} untuk setiap kelas dalam skenario \textit{one-vs-rest}. Mengukur kemampuan model membedakan setiap kelas dari semua kelas lainnya secara probabilistik.
+
+    \item \textbf{\textit{Confusion Matrix}}: Matriks $K \times K$ yang memvisualisasikan distribusi prediksi benar dan salah untuk setiap pasangan kelas, memungkinkan identifikasi pola kesalahan spesifik antar kelas yang saling memiliki kemiripan visual.
+\end{enumerate}
+
+% =====================================================================
+\section{Teknik Pelatihan Model}
+% =====================================================================
+
+\subsection{Transfer Learning dan Fine-tuning}
+
+\textit{Transfer learning} adalah paradigma pelatihan di mana bobot model yang telah dilatih pada dataset skala besar (umumnya ImageNet dengan 1,2 juta gambar dan 1.000 kelas) digunakan sebagai inisialisasi untuk melatih model pada dataset target yang lebih kecil \citep{dosovitskiyImageWorth16x162021}. Pendekatan ini terbukti secara konsisten menghasilkan konvergensi yang lebih cepat dan akurasi akhir yang lebih tinggi dibandingkan pelatihan dari awal (\textit{training from scratch}), terutama ketika data target terbatas.
+
+Dalam penelitian ini, seluruh model diinisialisasi dengan bobot pra-latih dari ImageNet melalui API \texttt{timm} (\textit{pretrained=True}). Proses \textit{fine-tuning} dilakukan dengan melatih ulang seluruh bobot model---bukan hanya lapisan kepala klasifikasi---menggunakan \textit{learning rate} yang kecil (3$\times 10^{-4}$) untuk menjaga representasi fitur yang telah dipelajari selama pra-latih sambil mengadaptasinya ke domain masalah lingkungan perkotaan.
+
+\subsection{AdamW dan \textit{Cosine Annealing}}
+
+Optimizer AdamW \citep{loshchilovDecoupledWeightDecay2019} merupakan varian dari Adam yang memisahkan penerapan \textit{weight decay} dari pembaruan adaptif gradien. Dalam Adam standar, \textit{weight decay} diterapkan melalui regularisasi L2 yang diintegrasikan ke dalam gradien, sehingga berinteraksi dengan mekanisme adaptif dan menghasilkan efek regularisasi yang berbeda dari yang diharapkan. AdamW memperbaiki hal ini dengan menerapkan \textit{weight decay} secara langsung pada bobot, terlepas dari gradien, menghasilkan regularisasi yang lebih bersih dan performa yang lebih baik pada sebagian besar skenario \textit{fine-tuning}.
+
+\textit{Cosine Annealing Learning Rate Scheduler} menjadwalkan penurunan \textit{learning rate} mengikuti fungsi kosinus dari nilai awal hingga mendekati nol sepanjang $T_{max}$ epoch. Penurunan bertahap ini memungkinkan model menjelajahi ruang parameter secara halus pada tahap akhir pelatihan, meningkatkan konvergensi ke titik minimum yang lebih baik.
+
+\subsection{\textit{Automatic Mixed Precision} (AMP)}
+
+\textit{Automatic Mixed Precision} adalah teknik yang secara otomatis memilih apakah suatu operasi dalam grafik komputasi dieksekusi dengan presisi penuh (\textit{float32}) atau presisi setengah (\textit{float16}), berdasarkan sensitivitas numerik operasi tersebut. Operasi yang sensitif terhadap presisi---seperti fungsi aktivasi dan normalisasi---tetap dijalankan dalam \textit{float32}, sementara operasi yang dominan seperti perkalian matriks dijalankan dalam \textit{float16}. Hasilnya adalah percepatan pelatihan yang signifikan pada GPU modern dengan CUDA tanpa kehilangan akurasi model, karena \textit{GradScaler} secara dinamis menyesuaikan skala gradien untuk mencegah \textit{underflow}.
+
+\subsection{\textit{Label Smoothing}}
+
+\textit{Label smoothing} adalah teknik regularisasi yang mengubah label \textit{one-hot} keras menjadi distribusi probabilitas halus: label target yang benar mendapatkan probabilitas $1 - \varepsilon$, sementara sisa probabilitas $\varepsilon$ didistribusikan secara merata ke semua kelas lainnya. Dengan nilai $\varepsilon = 0{,}05$ yang digunakan dalam penelitian ini, teknik ini mencegah model dari terlalu yakin (\textit{overconfident}) terhadap prediksinya, mengurangi \textit{overfitting}, dan meningkatkan generalisasi pada data uji \citep{szegedyRethinkingInceptionArchitecture2016}.

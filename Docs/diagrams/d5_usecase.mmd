@@ -1,0 +1,45 @@
+---
+title: Diagram Use Case — Fungsionalitas Aplikasi Smart City Reporter
+---
+graph LR
+    Actor["👤\nMasyarakat"]
+
+    subgraph System ["Smart City Reporter App"]
+        UC1(["Registrasi Akun"])
+        UC2(["Login / Logout"])
+        UC3(["Buat Laporan Baru"])
+        UC4(["Klasifikasi Gambar via AI"])
+        UC5(["Tinjau & Koreksi Hasil AI"])
+        UC6(["Lihat Rekomendasi Instansi"])
+        UC7(["Simpan Laporan ke Perangkat"])
+        UC8(["Lihat Riwayat Laporan"])
+        UC9(["Kelola Profil"])
+    end
+
+    subgraph AI ["Sistem AI (On-Device)"]
+        AI1(["Inferensi ONNX Runtime"])
+        AI2(["Perutean Kluster Instansi"])
+    end
+
+    Actor --- UC1
+    Actor --- UC2
+    Actor --- UC3
+    Actor --- UC5
+    Actor --- UC8
+    Actor --- UC9
+
+    UC3 -->|include| UC4
+    UC3 -->|include| UC5
+    UC5 -->|include| UC6
+    UC5 -->|include| UC7
+
+    UC4 -->|uses| AI1
+    UC6 -->|uses| AI2
+
+    classDef actor fill:#08519c,color:#fff,stroke:#08306b
+    classDef usecase fill:#e3f2fd,color:#000,stroke:#1565c0
+    classDef ai fill:#e8f5e9,color:#000,stroke:#1b5e20
+
+    class Actor actor
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9 usecase
+    class AI1,AI2 ai

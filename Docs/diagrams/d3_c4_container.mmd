@@ -1,0 +1,43 @@
+---
+title: Diagram Kontainer C4 — Komponen Internal Aplikasi
+---
+graph TD
+    User["👤 Masyarakat"]
+
+    subgraph App ["📱 Smart City Reporter App (Flutter/Android)"]
+        UI["Flutter UI Layer\n[Dart / Flutter]\n―――――――――――――\nLayar laporan, hasil AI,\nriwayat, profil, dashboard"]
+
+        State["Riverpod State Layer\n[Dart / Riverpod]\n―――――――――――――\nProvider reaktif\nManajemen state global"]
+
+        AIService["On-Device AI Service\n[Dart ↔ Java/Kotlin]\n―――――――――――――\nONNX Runtime bridge\nPraproses gambar\nInferensi & decode"]
+
+        Routing["Classification Routing Engine\n[Dart]\n―――――――――――――\n4 kluster operasional\nRekomendasi instansi\nRule-based in-memory"]
+
+        DB["Local Database Service\n[sqflite / SQLite]\n―――――――――――――\nTabel: users\nTabel: reports\nTabel: report_history"]
+
+        FileStorage["Local File Storage\n[Dart I/O]\n―――――――――――――\nGambar laporan\nFoto profil"]
+
+        Location["Location Service\n[Android GPS API]\n―――――――――――――\nKoordinat lat/lng\nWaktu akuisisi"]
+
+        Model["ONNX Model Asset\n[mambaout_tiny.onnx]\n―――――――――――――\n+ metadata.json\nDikemas dalam APK"]
+    end
+
+    User --> UI
+    UI <--> State
+    State <--> AIService
+    State <--> DB
+    State <--> FileStorage
+    State <--> Location
+    AIService --> Routing
+    AIService --> Model
+
+    classDef ui fill:#1565c0,color:#fff,stroke:#0d47a1
+    classDef service fill:#00695c,color:#fff,stroke:#004d40
+    classDef data fill:#4a148c,color:#fff,stroke:#311b92
+    classDef asset fill:#bf360c,color:#fff,stroke:#870000
+
+    class UI ui
+    class State,Routing ui
+    class AIService,Location service
+    class DB,FileStorage data
+    class Model asset

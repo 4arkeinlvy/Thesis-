@@ -1,0 +1,41 @@
+---
+title: Diagram Komponen C4 — Modul Reports (Fitur Inti)
+---
+graph LR
+    User["👤 Masyarakat"]
+
+    subgraph Reports ["Modul: reports (lib/features/reports/)"]
+        Create["CreateReportScreen\n―――――――――――――\nInput: foto + deskripsi\nTrigger GPS capture\nPanggil AI Service"]
+
+        AIResult["AiResultReviewScreen\n―――――――――――――\nTampilkan: kategori + confidence\nTop predictions bar chart\nMap pin lokasi\nTombol koreksi manual"]
+
+        Routing["ClassificationRoutingGuidance\n[classification_routing.dart]\n―――――――――――――\nBangun panduan instansi\ndari AiPrediction\nDetil kluster + review note"]
+
+        Models["Report Domain Models\n[report_models.dart]\n―――――――――――――\nReport, AiPrediction\nIssueCategory enum\nAgencyRecommendation"]
+    end
+
+    subgraph Core ["lib/core/services/"]
+        ONNX["OnDeviceAIClassificationService\n[on_device_ai_classification_service.dart]\n―――――――――――――\nLoad ONNX + metadata\nPreprocess → Inference → Decode"]
+
+        DB["LocalDatabaseService\n[local_database_service.dart]\n―――――――――――――\nCRUD: reports, users\nreport_history"]
+
+        Loc["LocationService\n[location_service.dart]\n―――――――――――――\nAkuisisi GPS\nFormat koordinat"]
+    end
+
+    User --> Create
+    Create --> ONNX
+    Create --> Loc
+    ONNX --> AIResult
+    AIResult --> Routing
+    AIResult --> DB
+    Create --> Models
+    AIResult --> Models
+    Routing --> Models
+
+    classDef screen fill:#1565c0,color:#fff,stroke:#0d47a1
+    classDef service fill:#1b5e20,color:#fff,stroke:#004d00
+    classDef model fill:#4a148c,color:#fff,stroke:#311b92
+
+    class Create,AIResult screen
+    class Routing,Models model
+    class ONNX,DB,Loc service

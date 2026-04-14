@@ -1,0 +1,79 @@
+---
+title: Diagram Kelas — Domain Model Aplikasi
+---
+classDiagram
+    direction TB
+
+    class Report {
+        +String id
+        +String userId
+        +IssueCategory category
+        +String description
+        +double latitude
+        +double longitude
+        +String imagePath
+        +DateTime createdAt
+        +String status
+        +toMap() Map
+        +fromMap(Map) Report$
+    }
+
+    class User {
+        +String id
+        +String name
+        +String email
+        +String passwordHash
+        +String? profileImagePath
+        +toMap() Map
+        +fromMap(Map) User$
+    }
+
+    class AiPrediction {
+        +IssueCategory category
+        +double confidence
+        +Map rawPayload
+        +String? rawLabel
+        +List topPredictions
+    }
+
+    class IssueCategory {
+        <<enumeration>>
+        garbage
+        vandalism
+        pothole
+        accident
+        fallenTree
+    }
+
+    class RoutingCluster {
+        <<enumeration>>
+        cleanlinessAndPublicOrder
+        roadInfrastructure
+        trafficSafety
+        treesAndEmergency
+    }
+
+    class ClassificationRoutingGuidance {
+        +RoutingCluster cluster
+        +String operationalLabel
+        +String summary
+        +String routingReason
+        +List~AgencyRecommendation~ agencies
+        +IssueCategory baseCategory
+        +String? reviewNote
+        +String? sourceNote
+        +bool isMergedOperationalLabel
+    }
+
+    class AgencyRecommendation {
+        +String name
+        +String role
+        +String priorityLabel
+    }
+
+    Report "1" --> "1" IssueCategory : category
+    AiPrediction "1" --> "1" IssueCategory : category
+    ClassificationRoutingGuidance "1" --> "1" RoutingCluster : cluster
+    ClassificationRoutingGuidance "1" --> "1" IssueCategory : baseCategory
+    ClassificationRoutingGuidance "1" o-- "1..*" AgencyRecommendation : agencies
+    Report "many" --> "1" User : userId

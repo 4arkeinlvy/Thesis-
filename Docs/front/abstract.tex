@@ -1,0 +1,96 @@
+% ==================================================================
+% BAGIAN 1: ABSTRAK INGGRIS
+% ==================================================================
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{ABSTRAK}
+\thispagestyle{plain}
+\vspace*{-1cm}
+
+\begin{center}
+
+{\fontfamily{ptm}\selectfont\bfseries
+Universitas Bina Nusantara\\[0.1cm]
+\rule{\textwidth}{0.8pt}\\[0.2cm]
+
+Computer Science Program\\
+Computer Science Study Program\\
+School of Computer Science\\
+Skripsi Sarjana Teknik Informatika\\[0.5cm]
+
+% --- TITLE ---
+DEVELOPMENT OF AN ENVIRONMENTAL PROBLEM REPORTING SYSTEM\\
+INTEGRATING IMAGE DATA TO SUPPORT SMART CITY INITIATIVES\\[0.8cm]
+}
+
+% --- AUTHORS ---
+{\fontfamily{ptm}\selectfont\bfseries
+\begin{tabular}{p{7cm} l}
+Brian Theodore & 2602080030 \\[0.1cm]
+Moh. Khoirul Umam Al Amin & 2602198472 \\[0.1cm]
+Andrea Octaviani & 2602075895
+\end{tabular}
+}
+\end{center}
+
+\vspace{0.3cm}
+
+% --- HEADING ABSTRACT ---
+\begin{center}
+{\fontfamily{ptm}\selectfont\bfseries\itshape ABSTRACT}
+\end{center}
+
+% --- ISI ABSTRACT ---
+{\fontfamily{ptm}\selectfont\itshape
+\noindent The slow manual triage process in urban environmental complaint systems---where a single incoming report can take nearly two hours to be routed to the responsible government agency---represents a critical bottleneck in smart city governance. This research proposes an Android application that addresses this bottleneck through on-device AI image classification, eliminating the need for server-side inference and the associated latency, cost, and privacy risks. A comparative benchmark of five modern vision backbone architectures---ConvNeXt V2, EfficientViT, MambaOut, Hiera, and EVA-02---was conducted on a balanced dataset of seven urban environmental issue categories (800 samples per class) sourced from HuggingFace Hub. All models were trained under identical configurations using the AdamW optimizer, cosine annealing scheduling, and automatic mixed precision. MambaOut Tiny achieved the highest performance with a test macro F1-score of \textbf{0.9917}. The winning model was exported to ONNX format (opset 17) and integrated into a Flutter Android application via ONNX Runtime, achieving numerical parity with the original PyTorch model. The application provides automatic agency routing through a rule-based engine mapping classification results to four operational clusters---corresponding to relevant Indonesian local government agencies (Dinas Lingkungan Hidup, Dinas Bina Marga, Dinas Perhubungan, BPBD)---enabling near-instant report distribution without human intervention. The system is fully offline-capable, with local SQLite storage for report persistence and GPS-based location capture.
+
+\noindent\textbf{Keywords:} smart city, on-device AI, image classification, ONNX Runtime, Flutter, MambaOut, vision backbone benchmark.
+}
+
+% ==================================================================
+% BAGIAN 2: ABSTRAK INDONESIA
+% ==================================================================
+\newpage
+\thispagestyle{plain}
+\vspace*{-1cm}
+
+\begin{center}
+{\fontfamily{ptm}\selectfont\bfseries
+Universitas Bina Nusantara\\[0.1cm]
+\rule{\textwidth}{0.8pt}\\[0.2cm]
+
+Computer Science Program\\
+Computer Science Study Program\\
+School of Computer Science\\
+Skripsi Sarjana Teknik Informatika\\[0.5cm]
+
+% --- TITLE---
+PENGEMBANGAN SISTEM PELAPORAN MASALAH LINGKUNGAN DENGAN\\
+INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}\\[0.8cm]
+}
+
+% --- AUTHORS ---
+{\fontfamily{ptm}\selectfont\bfseries
+\begin{tabular}{p{7cm} l}
+Brian Theodore & 2602080030 \\[0.1cm]
+Moh. Khoirul Umam Al Amin & 2602198472 \\[0.1cm]
+Andrea Octaviani & 2602075895
+\end{tabular}
+}
+\end{center}
+
+\vspace{0.3cm}
+
+% --- HEADING ABSTRAK ---
+\begin{center}
+{\fontfamily{ptm}\selectfont\bfseries ABSTRAK}
+\end{center}
+
+% --- ISI ABSTRAK ---
+{\fontfamily{ptm}\selectfont
+\noindent Proses triase manual dalam sistem pelaporan masalah lingkungan perkotaan---di mana satu laporan yang masuk dapat memerlukan waktu hampir dua jam untuk diteruskan ke instansi pemerintah yang bertanggung jawab---merupakan hambatan kritis dalam tata kelola \textit{smart city}. Penelitian ini mengusulkan aplikasi Android yang mengatasi hambatan tersebut melalui klasifikasi citra berbasis AI secara \textit{on-device}, menghilangkan kebutuhan inferensi di sisi server beserta latensi, biaya, dan risiko privasi yang menyertainya. Studi \textit{benchmark} komparatif dilakukan terhadap lima arsitektur \textit{backbone} visual modern---ConvNeXt V2, EfficientViT, MambaOut, Hiera, dan EVA-02---pada dataset seimbang tujuh kategori masalah lingkungan perkotaan (800 sampel per kelas) yang bersumber dari HuggingFace Hub. Semua model dilatih dengan konfigurasi identik menggunakan optimizer AdamW, \textit{cosine annealing scheduling}, dan \textit{automatic mixed precision}. MambaOut Tiny mencapai performa tertinggi dengan \textit{test macro F1-score} sebesar \textbf{0,9917}. Model terpilih diekspor ke format ONNX (\textit{opset} 17) dan diintegrasikan ke dalam aplikasi Android Flutter melalui \textit{ONNX Runtime}, dengan paritas numerik yang terverifikasi terhadap model PyTorch aslinya. Aplikasi ini menyediakan perutean instansi otomatis melalui mesin berbasis aturan yang memetakan hasil klasifikasi ke empat kluster operasional---sesuai dengan instansi pemerintah daerah Indonesia yang relevan (Dinas Lingkungan Hidup, Dinas Bina Marga, Dinas Perhubungan, BPBD)---memungkinkan distribusi laporan hampir instan tanpa intervensi manusia. Sistem sepenuhnya dapat beroperasi secara \textit{offline} dengan penyimpanan lokal SQLite untuk persistensi laporan dan akuisisi lokasi berbasis GPS.
+
+\noindent\textbf{Kata Kunci:} \textit{smart city}, AI \textit{on-device}, klasifikasi citra, \textit{ONNX Runtime}, Flutter, MambaOut, \textit{benchmark backbone} visual.
+}
+
+\newpage

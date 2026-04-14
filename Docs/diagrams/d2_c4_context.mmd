@@ -1,0 +1,25 @@
+---
+title: Diagram Konteks C4 — Smart City Reporter App
+---
+graph TB
+    User["👤 Masyarakat\n―――――――――\nPelapor masalah\nlingkungan perkotaan"]
+
+    subgraph System ["🏙️ Smart City Reporter Android App"]
+        App["📱 Aplikasi Android\n―――――――――――――――――\nKlasifikasi gambar on-device AI\nRekomendasi instansi otomatis\nPenyimpanan laporan lokal"]
+    end
+
+    GPS["📍 GPS / Location API\n―――――――――――――\nLayanan lokasi Android\nKoordinat geografis"]
+
+    Camera["📷 Kamera / Galeri\n―――――――――――――\nFoto bukti masalah\nMedia picker Android"]
+
+    User -- "Buat laporan\nambil foto\nlihat hasil AI" --> App
+    App -- "Baca koordinat\nlokasi kejadian" --> GPS
+    App -- "Akses foto\nkamera/galeri" --> Camera
+
+    classDef person fill:#08519c,color:#fff,stroke:#08306b,rx:50
+    classDef system fill:#2c7bb6,color:#fff,stroke:#1a5276
+    classDef external fill:#6c757d,color:#fff,stroke:#495057
+
+    class User person
+    class App system
+    class GPS,Camera external

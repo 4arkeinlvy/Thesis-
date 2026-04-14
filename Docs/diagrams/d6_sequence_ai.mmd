@@ -1,0 +1,49 @@
+---
+title: Diagram Sekuens — Alur Klasifikasi AI dan Penyimpanan Laporan
+---
+sequenceDiagram
+    actor User as 👤 Masyarakat
+    participant CRS as CreateReportScreen
+    participant LS as LocationService
+    participant AI as OnDeviceAIService
+    participant ORT as ONNX Runtime\n(mambaout_tiny.onnx)
+    participant ARR as AiResultReviewScreen
+    participant RE as ClassificationRoutingEngine
+    participant DB as LocalDatabaseService
+
+    User->>CRS: Ambil foto (kamera/galeri)
+    CRS->>LS: getCurrentLocation()
+    LS-->>CRS: {latitude, longitude}
+
+    CRS->>AI: classify(imagePath)
+    activate AI
+    AI->>AI: loadModel() [jika belum dimuat]
+    AI->>AI: preprocessImage()\n resize → crop → normalize → tensor
+    AI->>ORT: run(input_tensor)
+    activate ORT
+    ORT-->>AI: logits[7]
+    deactivate ORT
+    AI->>AI: softmax(logits)\nidentifikasi top-k predictions
+    AI->>AI: mapRawLabel → IssueCategory\n(via metadata.json)
+    AI-->>CRS: AiPrediction {category, confidence, rawPayload}
+    deactivate AI
+
+    CRS->>ARR: navigate(AiPrediction, location, imagePath)
+    activate ARR
+
+    ARR->>RE: buildRoutingGuidance(AiPrediction)
+    activate RE
+    RE->>RE: normalizeRawLabel()\npetakan ke RoutingCluster
+    RE-->>ARR: ClassificationRoutingGuidance\n{cluster, operationalLabel, agencies}
+    deactivate RE
+
+    ARR-->>User: Tampilkan:\n• Kategori + confidence\n• Top predictions\n• Rekomendasi instansi
+    User->>ARR: Konfirmasi / Koreksi kategori
+
+    ARR->>DB: saveReport(Report)
+    activate DB
+    DB-->>ARR: reportId
+    deactivate DB
+    deactivate ARR
+
+    ARR-->>User: Laporan tersimpan ✓

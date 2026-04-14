@@ -1,0 +1,35 @@
+---
+title: Alur Ekspor dan Validasi Model ONNX
+---
+flowchart TD
+    A([Mulai Ekspor]) --> B[Muat Checkpoint PyTorch\nbest_model.pt\nRoadIssueClassifier]
+
+    B --> C[torch.onnx.export\nopset=17\ndo_constant_folding=True\ndynamic batch axis]
+
+    C --> D[mambaout_tiny.onnx\nArtifact ONNX]
+
+    D --> E[onnx.checker.check_model\nValidasi grafik operator]
+
+    E --> F{Validasi\nberhasil?}
+    F -- Tidak --> X([Error: perbaiki ekspor])
+    F -- Ya --> G[Tulis metadata.json\nclass_names, input_size\nmean, std, interpolation\nraw_label_to_app_category]
+
+    G --> H{Gambar sampel\ntersedia?}
+
+    H -- Ya --> I[Muat gambar sampel\nJalankan PyTorch inference\nJalankan ONNX Runtime inference]
+    I --> J[Hitung max abs diff\nlogit PyTorch vs ONNX]
+    J --> K{max_abs_diff\n< 1e-5 ?}
+    K -- Tidak --> X2([Peringatan: divergensi numerik])
+    K -- Ya --> L[top-1 prediction identik ✓]
+    H -- Tidak --> L
+
+    L --> M[Tulis export_report.json\ncheckpoint, model_key\nonnx_path, validasi]
+
+    M --> N[Salin ke Flutter assets\nassets/models/mambaout_tiny.onnx\nassets/models/mambaout_tiny.metadata.json]
+
+    N --> O([Siap Deployment Android])
+
+    style O fill:#2d6a4f,color:#fff,stroke:#1b4332
+    style A fill:#023e8a,color:#fff,stroke:#03045e
+    style X fill:#c62828,color:#fff,stroke:#b71c1c
+    style X2 fill:#e65100,color:#fff,stroke:#bf360c

@@ -1,0 +1,136 @@
+\chapter{PENDAHULUAN}
+
+% =====================================================================
+\section{Latar Belakang}
+% =====================================================================
+
+Pelaporan masalah lingkungan oleh masyarakat saat ini masih menghadapi hambatan struktural yang signifikan. Berdasarkan analisis data yang dikumpulkan oleh tim peneliti pada portal pengaduan masyarakat kota besar di Indonesia, rata-rata waktu yang dibutuhkan untuk merespons satu laporan masuk---mulai dari penerimaan hingga penugasan ke instansi yang bertanggung jawab---mencapai hampir dua jam. Keterlambatan tersebut bukan semata disebabkan oleh keterbatasan kapasitas instansi, melainkan oleh sifat manual dari proses triase: petugas harus membaca setiap laporan yang masuk, menginterpretasinya, lalu secara manual menentukan instansi yang paling tepat untuk menanganinya. Dengan volume laporan yang terus meningkat seiring dengan pertumbuhan populasi perkotaan, pendekatan manual ini tidak lagi berkelanjutan \citep{siretPublicComplainingBlessing2022}.
+
+Masalah lingkungan perkotaan seperti jalanan rusak, kecelakaan, sampah menumpuk, vandalisme, dan pohon tumbang memiliki karakteristik yang khas: masalah-masalah ini dapat dideteksi secara visual. Seorang warga yang menemukan lubang besar di jalan tepat di depannya memiliki bukti visual yang jauh lebih kuat daripada deskripsi teks mana pun. Namun, sistem pelaporan berbasis teks atau formulir tidak mampu memanfaatkan informasi visual tersebut; sistem hanya menerima apa yang dituliskan pelapor, yang kerap singkat, ambigu, atau tidak konsisten. Kondisi ini menyebabkan keterlambatan penanganan atau kesalahan dalam prioritas penanganan masalah, terutama ketika laporan yang masuk berjumlah besar \citep{firgiaImplementasiSistemInformasi2022}.
+
+Solusi yang muncul secara alami adalah integrasi \textit{Artificial Intelligence} (AI) berbasis pengenalan citra ke dalam sistem pelaporan. Dengan kemajuan arsitektur \textit{deep learning} modern, sebuah model yang telah dilatih dengan data gambar masalah lingkungan mampu mengklasifikasikan jenis masalah secara otomatis hanya dari foto yang diambil oleh pelapor---tanpa memerlukan interpretasi manual dari petugas. Klasifikasi otomatis ini menjadi fondasi untuk penugasan laporan ke instansi yang tepat secara instan, memangkas waktu respons secara dramatis. Hasil penelitian \citet{shenSmartCityGovernance2025} menunjukkan bahwa penerapan model pengenalan citra berbasis kecerdasan buatan dalam tata kelola kota mampu meningkatkan akurasi identifikasi kejadian secara signifikan dibandingkan dengan proses manual konvensional, sekaligus mereduksi beban kerja petugas dalam proses kategorisasi laporan.
+
+Kendati demikian, pendekatan berbasis server konvensional---di mana gambar dikirim ke server pusat untuk diproses oleh model AI---menghadirkan tantangan tersendiri: latensi jaringan yang tidak dapat diprediksi, biaya infrastruktur server GPU yang tinggi, serta risiko privasi karena gambar lokasi kejadian harus dikirim ke pihak ketiga. Perkembangan terbaru dalam bidang \textit{on-device machine learning} menawarkan alternatif yang lebih efisien: model AI yang berjalan langsung di perangkat \textit{smartphone} pengguna tanpa memerlukan koneksi internet untuk proses inferensi \citep{sadiqSensingSmartCities2025}.
+
+Kemajuan ini dimungkinkan oleh dua faktor yang berkembang secara bersamaan. Pertama, munculnya arsitektur jaringan saraf visual yang ringan namun sangat akurat---seperti keluarga \textit{Hybrid State Space Models} (MambaOut), \textit{Hierarchical Vision Transformers} (Hiera), \textit{modern ConvNets} (ConvNeXt V2), \textit{Efficient Vision Transformers} (EfficientViT), dan \textit{Foundation Vision Models} (EVA-02)---yang dirancang untuk efisiensi komputasi tanpa mengorbankan akurasi \citep{yuMambaOut2024,ryaliHiera2023,liuConvNeXtV22023}. Kedua, standar pertukaran model \textit{Open Neural Network Exchange} (ONNX) yang memungkinkan model yang dilatih di Python dengan PyTorch untuk dieksekusi di platform Android melalui \textit{ONNX Runtime} tanpa modifikasi arsitektur \citep{onnxruntime2024}.
+
+Dengan mengombinasikan kemajuan ini, dimungkinkan untuk membangun sebuah aplikasi Android yang mengklasifikasikan masalah lingkungan langsung di perangkat pengguna, secara \textit{real-time}, tanpa mengirimkan gambar ke server mana pun. Hasil klasifikasi kemudian secara otomatis merekomendasikan instansi pemerintah daerah yang tepat---seperti Dinas Bina Marga, Dinas Lingkungan Hidup, Satpol PP, Dinas Perhubungan, atau BPBD---untuk ditindaklanjuti. Pendekatan ini selaras dengan visi \textit{smart city} yang tidak hanya memanfaatkan teknologi, tetapi juga membangun ekosistem partisipasi publik yang responsif, efisien, dan dapat diakses secara luas oleh seluruh lapisan masyarakat.
+
+Penelitian ini oleh karenanya mengusulkan pengembangan prototipe sistem pelaporan masalah lingkungan berbasis kecerdasan buatan \textit{on-device} dengan judul: \textbf{``PENGEMBANGAN SISTEM PELAPORAN MASALAH LINGKUNGAN DENGAN INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}''}.
+
+% =====================================================================
+\section{Rumusan Masalah}
+% =====================================================================
+
+Berdasarkan uraian latar belakang di atas, penelitian ini merumuskan empat pertanyaan penelitian utama:
+
+\begin{enumerate}
+    \item Bagaimana merancang dan membangun sistem pelaporan masalah lingkungan berbasis \textit{mobile} yang mengintegrasikan kecerdasan buatan \textit{on-device} untuk mengklasifikasikan jenis masalah secara otomatis dari gambar?
+
+    \item \textit{Backbone} arsitektur jaringan saraf visual manakah---dari kandidat ConvNeXt V2, EfficientViT, MambaOut, Hiera, dan EVA-02---yang menghasilkan performa klasifikasi terbaik pada dataset delapan kelas masalah lingkungan perkotaan?
+
+    \item Bagaimana mengekspor model yang telah dilatih ke format ONNX dan mengintegrasikannya ke dalam aplikasi Android Flutter tanpa kehilangan akurasi inferensi yang signifikan?
+
+    \item Bagaimana merancang mekanisme perutean laporan otomatis yang dapat merekomendasikan instansi pemerintah daerah yang tepat berdasarkan hasil klasifikasi AI?
+\end{enumerate}
+
+% =====================================================================
+\section{Ruang Lingkup}
+% =====================================================================
+
+Ruang lingkup penelitian ini dibatasi sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{Jenis Masalah Lingkungan}
+    \begin{enumerate}
+        \item Penelitian berfokus pada delapan kategori masalah yang dapat diidentifikasi secara visual, yaitu: \textit{Accident Issues} (kecelakaan lalu lintas), \textit{Littering Garbage on Public Places Issues} (sampah di tempat umum), \textit{Vandalism Issues} (vandalisme), \textit{Pothole Issues} (lubang jalan), \textit{Damaged Road Issues} (kerusakan permukaan jalan), \textit{Broken Road Sign Issues} (rambu lalu lintas rusak), dan \textit{Fallen Tree Issues} (pohon tumbang).
+        \item Kategori \textit{Illegal Parking Issues} dan \textit{Mixed Issues} dikecualikan karena memiliki ambiguitas visual yang tinggi dan berpotensi menurunkan kualitas pelatihan model secara keseluruhan.
+        \item Tidak mencakup masalah lingkungan yang tidak dapat diidentifikasi secara visual, seperti polusi udara dan pencemaran air secara kimiawi.
+    \end{enumerate}
+
+    \item \textbf{Data}
+    \begin{enumerate}
+        \item Data gambar masalah lingkungan diperoleh dari dataset publik yang tersedia di platform HuggingFace Hub (\texttt{Programmer-RD-AI/road-issues-detection-dataset}).
+        \item Teks deskripsi laporan dikumpulkan sebagai konteks laporan, namun tidak dimasukkan sebagai input ke dalam model AI.
+    \end{enumerate}
+
+    \item \textbf{Platform dan Teknologi}
+    \begin{enumerate}
+        \item Sistem diimplementasikan sebagai aplikasi Android menggunakan \textit{framework} Flutter.
+        \item Inferensi AI berjalan sepenuhnya \textit{on-device} menggunakan \textit{ONNX Runtime for Android}, tanpa ketergantungan pada server eksternal untuk proses klasifikasi.
+        \item Penyimpanan data bersifat lokal menggunakan basis data SQLite melalui \textit{library} sqflite---tidak ada \textit{backend} server.
+    \end{enumerate}
+
+    \item \textbf{Fitur Utama Aplikasi}
+    \begin{enumerate}
+        \item Pengguna dapat mengambil foto atau memilih gambar dari galeri sebagai bukti visual masalah lingkungan.
+        \item Sistem mengklasifikasikan gambar secara otomatis ke salah satu dari delapan kategori, beserta tingkat kepercayaan (\textit{confidence}) dan peringkat prediksi teratas (\textit{top predictions}).
+        \item Berdasarkan hasil klasifikasi, sistem merekomendasikan instansi pemerintah daerah yang paling relevan untuk menindaklanjuti laporan.
+        \item Pengguna dapat mengoreksi hasil klasifikasi secara manual sebelum menyimpan laporan.
+        \item Riwayat laporan beserta koordinat GPS lokasi kejadian disimpan secara lokal di perangkat pengguna.
+    \end{enumerate}
+
+    \item \textbf{Pengguna}
+    \begin{enumerate}
+        \item Masyarakat umum sebagai pelapor masalah lingkungan perkotaan.
+    \end{enumerate}
+
+    \item \textbf{Limitasi}
+    \begin{enumerate}
+        \item Sistem yang dibangun merupakan prototipe dan belum terintegrasi dengan sistem informasi pemerintah daerah yang sesungguhnya.
+        \item Pengujian terbatas pada platform Android; iOS tidak termasuk dalam lingkup penelitian ini.
+        \item Performa model AI bergantung pada kualitas foto yang diambil; gambar yang sangat buram, gelap, atau diambil dari sudut yang tidak representatif dapat menurunkan akurasi klasifikasi.
+    \end{enumerate}
+\end{enumerate}
+
+% =====================================================================
+\section{Tujuan dan Manfaat Penelitian}
+% =====================================================================
+
+\subsection{Tujuan Penelitian}
+
+Berdasarkan rumusan masalah yang telah diuraikan, penelitian ini memiliki empat tujuan utama:
+
+\begin{enumerate}
+    \item Mengembangkan prototipe aplikasi Android untuk pelaporan masalah lingkungan yang mengintegrasikan klasifikasi gambar berbasis AI secara \textit{on-device}.
+
+    \item Melakukan studi komparatif terhadap lima arsitektur \textit{backbone} jaringan saraf visual modern---ConvNeXt V2, EfficientViT, MambaOut, Hiera, dan EVA-02---untuk mengidentifikasi model dengan performa terbaik pada domain klasifikasi masalah lingkungan perkotaan, diukur dengan \textit{macro F1-score}.
+
+    \item Membangun \textit{pipeline} ekspor model dari PyTorch ke format ONNX dan memvalidasi kesesuaian numerik hasil inferensi antara model PyTorch asli dan model ONNX yang berjalan di Android.
+
+    \item Merancang mekanisme perutean laporan otomatis yang memetakan hasil klasifikasi AI ke rekomendasi instansi pemerintah daerah berdasarkan empat kluster operasional.
+\end{enumerate}
+
+\subsection{Manfaat Penelitian}
+
+\begin{enumerate}
+    \item \textbf{Manfaat bagi Masyarakat:} Aplikasi ini mempermudah proses pelaporan masalah lingkungan melalui panduan klasifikasi otomatis berbasis AI, sehingga laporan yang dihasilkan lebih terstruktur dan informatif bagi instansi terkait.
+
+    \item \textbf{Manfaat bagi Pemerintah Daerah:} Mekanisme perutean otomatis memiliki potensi untuk memangkas waktu triase manual secara signifikan---dari rata-rata hampir dua jam menjadi hampir instan---memungkinkan laporan didistribusikan ke instansi yang tepat tanpa intervensi manusia.
+
+    \item \textbf{Manfaat bagi Ilmu Pengetahuan:} Penelitian ini memberikan kontribusi berupa hasil \textit{benchmark} komparatif antara lima arsitektur \textit{backbone} visual modern pada domain spesifik klasifikasi masalah lingkungan perkotaan, serta demonstrasi \textit{pipeline} lengkap dari pelatihan model berbasis PyTorch hingga inferensi \textit{on-device} di Android menggunakan ONNX Runtime.
+
+    \item \textbf{Manfaat bagi Ekosistem \textit{Smart City}:} Sistem ini membuktikan bahwa kecerdasan buatan yang berjalan di perangkat pengguna---tanpa infrastruktur \textit{cloud}---merupakan jalur yang layak untuk membangun layanan publik cerdas yang inklusif, hemat biaya, dan tidak bergantung pada konektivitas internet yang stabil.
+\end{enumerate}
+
+% =====================================================================
+\section{Metode Penelitian}
+% =====================================================================
+
+Metodologi penelitian ini disusun dalam empat tahap utama yang saling berkesinambungan.
+
+\subsection{Pengumpulan dan Persiapan Data}
+
+Dataset gambar masalah lingkungan perkotaan diperoleh dari HuggingFace Hub melalui \textit{snapshot download} ke direktori lokal. Data kemudian diproses melalui tahapan pembersihan label, penyeimbangan kelas menggunakan teknik \textit{balanced sampling} dengan target 800 sampel per kelas, dan pembagian data secara stratifikasi dengan mempertimbangkan kelompok asal gambar (\textit{group-aware stratified split}) untuk mencegah kebocoran data antar partisi \textit{train}, \textit{validation}, dan \textit{test}.
+
+\subsection{Benchmarking Model AI}
+
+Pada tahap ini dilakukan studi komparatif terhadap lima arsitektur \textit{backbone} modern yang diakses melalui \textit{library} \texttt{timm} (\textit{PyTorch Image Models}): ConvNeXt V2 Tiny, EfficientViT B2, MambaOut Tiny, Hiera Tiny, dan EVA-02 Tiny. Setiap model dilatih dengan konfigurasi yang identik---optimizer AdamW, \textit{cosine annealing learning rate}, \textit{early stopping}, dan \textit{automatic mixed precision} FP16---untuk memastikan perbandingan yang adil dan terukur. Seleksi model terbaik didasarkan pada metrik \textit{macro F1-score} pada set validasi.
+
+\subsection{Ekspor Model ke ONNX dan Validasi}
+
+Model terbaik hasil \textit{benchmark} diekspor ke format ONNX menggunakan \texttt{torch.onnx.export} dengan \textit{opset} versi 17 dan optimasi \textit{constant folding}. Validasi numerik dilakukan dengan membandingkan \textit{logit} keluaran model PyTorch dan model ONNX pada gambar sampel yang sama. Model beserta metadata normalisasi (\textit{mean}, \textit{std}, nama kelas, pemetaan label ke kategori) dikemas menjadi aset dalam aplikasi Flutter.
+
+\subsection{Pengembangan Aplikasi Android dengan Flutter}
+
+Aplikasi Android dibangun menggunakan \textit{framework} Flutter dengan arsitektur berbasis fitur (\textit{feature-based architecture}), manajemen \textit{state} Riverpod, navigasi deklaratif GoRouter, dan penyimpanan lokal sqflite. Model ONNX diintegrasikan melalui \textit{bridge on-device AI classification service} yang memanfaatkan \textit{ONNX Runtime for Android}. Mekanisme perutean instansi diimplementasikan dalam modul \textit{classification routing} yang memetakan hasil klasifikasi AI ke empat kluster operasional instansi pemerintah daerah.
