@@ -1,0 +1,76 @@
+' ============================================================
+' Shared visual style for thesis diagrams (PlantUML)
+' Included via: !include _thesis_style.puml
+' ============================================================
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 12
+skinparam roundCorner 12
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+skinparam componentStyle uml2
+
+skinparam activity {
+    BackgroundColor #EAF2F8
+    BorderColor #2E4053
+    BorderThickness 1.1
+    DiamondBackgroundColor #F4F6F7
+    DiamondBorderColor #2E4053
+    DiamondFontColor #1B2631
+    StartColor #1E8449
+    EndColor #7B241C
+    BarColor #2E4053
+    FontColor #1B2631
+}
+skinparam swimlane {
+    BorderColor #2E4053
+    TitleFontStyle bold
+}
+skinparam partition {
+    BorderColor #2E4053
+    FontStyle bold
+}
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #2E4053
+    HeaderBackgroundColor #2E4053
+    HeaderFontColor #FFFFFF
+    AttributeFontColor #1B2631
+    FontColor #1B2631
+}
+skinparam component {
+    BackgroundColor #EAF2F8
+    BorderColor #2E4053
+    FontColor #1B2631
+}
+skinparam node {
+    BackgroundColor #FFFFFF
+    BorderColor #2E4053
+    FontColor #1B2631
+}
+skinparam database {
+    BackgroundColor #D6EAF8
+    BorderColor #2E4053
+    FontColor #1B2631
+}
+skinparam rectangle {
+    BackgroundColor #EAF2F8
+    BorderColor #2E4053
+    FontColor #1B2631
+}
+skinparam sequence {
+    ParticipantBackgroundColor #EAF2F8
+    ParticipantBorderColor #2E4053
+    ParticipantFontColor #1B2631
+    LifeLineBackgroundColor #FFFFFF
+    LifeLineBorderColor #95A5A6
+    ArrowColor #5D6D7E
+    ActorBackgroundColor #EAF2F8
+    ActorBorderColor #2E4053
+}
+skinparam entity {
+    BackgroundColor #FFFFFF
+    BorderColor #2E4053
+}

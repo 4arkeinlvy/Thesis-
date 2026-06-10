@@ -1,0 +1,71 @@
+@startuml kerangka_deployment
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 12
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+skinparam roundCorner 14
+skinparam ActivityMargin 14
+skinparam activity {
+    BackgroundColor #EAF2F8
+    BorderColor #2E4053
+    BorderThickness 1.1
+    DiamondBackgroundColor #F4F6F7
+    DiamondBorderColor #2E4053
+    DiamondFontColor #1B2631
+    StartColor #1E8449
+    EndColor #7B241C
+    BarColor #2E4053
+    FontColor #1B2631
+}
+skinparam partition {
+    BorderColor #2E4053
+    FontStyle bold
+}
+
+start
+:Pilih model terbaik dari notebook
+(DINOv3 + mE5 + CatBoost+PGS);
+:Ekspor encoder dan classifier
+ke artefak ONNX;
+:Validasi paritas numerik
+antara training dan ONNX;
+
+if (Paritas terpenuhi?) then (ya)
+  :Bangun Docker image
+FastAPI backend;
+else (tidak)
+  :Perbaiki konfigurasi ekspor
+atau operator ONNX;
+  stop
+endif
+
+:FastAPI memuat artefak model
+sekali saat startup;
+:Sajikan endpoint /health dan /predict
+melalui HTTP/HTTPS;
+
+partition "Runtime laporan" {
+  :SmartCityApps mengirim
+foto + narasi + latitude + longitude;
+  :FastAPI menjalankan pra-proses
+dan inferensi multiclass di server;
+  :FastAPI menghitung confidence
+dan probabilitas seluruh kelas;
+  :FastAPI memilih instansi terdekat
+berdasarkan kelas + koordinat;
+  :SmartCityApps menampilkan prediksi,
+confidence, dan assignment;
+  :Simpan laporan, prediksi, assignment,
+status, dan metadata bukti ke Supabase;
+}
+
+:Petugas mengunggah foto bukti
+sebelum status diubah ke selesai;
+:Pengujian end-to-end Android, backend,
+basis data, dan alur bukti penyelesaian;
+stop
+
+@enduml

@@ -1,0 +1,52 @@
+@startuml kerangka_akuisisi
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+skinparam activity {
+    BackgroundColor #ffffff
+    BorderColor #2c3e50
+    DiamondBackgroundColor #fef9e7
+    DiamondBorderColor #b7950b
+    StartColor #27ae60
+    EndColor #c0392b
+    ArrowColor #34495e
+    FontColor #2c3e50
+}
+skinparam shadowing false
+skinparam roundCorner 12
+
+title Diagram Alir Tahap Akuisisi dan Persiapan Data
+
+start
+:Inventarisasi kanal pengaduan publik\nJakarta CRM (13 kanal terintegrasi);
+:Web scraping data laporan dari portal\ncrm.jakarta.go.id (citra, narasi, label\nSKPD, lokasi, timestamp);
+:Penyaringan duplikat berbasis hash\ncitra dan teks;
+:Pembersihan teks: normalisasi unicode,\nlowercasing opsional, whitespace\ncollapsing, penghapusan tanda baca\nberlebih;
+
+partition "Pemetaan Label" {
+    :487 nama SKPD mentah dipetakan\nke sembilan instansi target operasional;
+    :Validasi pemetaan oleh peneliti\n(spot check 50 sampel per kategori);
+    if (Distribusi kelas seimbang?) then (tidak)
+        :Hitung class weights menggunakan\nformula inverse frequency
+        (Persamaan 3.1);
+    else (ya)
+    endif
+}
+
+partition "Pembagian Data Stratifikasi" {
+    :Stratified split berdasarkan label_id;
+    fork
+        :train.csv\n(43.241 sampel);
+    fork again
+        :val.csv\n(9.266 sampel);
+    fork again
+        :test.csv\n(9.266 sampel);
+    end fork
+    :Simpan ke artifacts/splits/\ndengan row_id unik per sampel;
+}
+
+:Dataset siap untuk tahap pelatihan\n(lihat Gambar Kerangka Pelatihan);
+stop
+
+@enduml

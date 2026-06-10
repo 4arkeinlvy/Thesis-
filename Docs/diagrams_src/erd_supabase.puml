@@ -1,0 +1,95 @@
+@startuml erd_supabase
+!include _thesis_style.puml
+
+entity "auth.users\n(Supabase Auth)" as Users {
+    * id : uuid <<PK>>
+    --
+    email
+    created_at
+}
+
+entity "profiles" as Profiles {
+    * id : uuid <<PK, FK>>
+    --
+    full_name : text
+    email : text
+    phone_number : text
+    role : enum
+    assigned_agency : issue_category
+    created_at : timestamptz
+    updated_at : timestamptz
+}
+
+entity "reports" as Reports {
+    * id : uuid <<PK>>
+    --
+    user_id : uuid <<FK>>
+    reporter_name : text
+    category : issue_category
+    image_url : text
+    description : text
+    latitude : double
+    longitude : double
+    address : text
+    status : report_status
+    --
+    ai_prediction : text
+    ai_confidence : numeric
+    ai_probabilities : jsonb
+    ai_model_name : text
+    ai_model_version : text
+    --
+    assigned_agency_id : text
+    assigned_agency_name : text
+    assigned_agency_category : issue_category
+    assigned_distance_meters : double
+    routing_method : text
+    --
+    resolution_evidence_photo_url : text
+    resolution_note : text
+    resolved_by : uuid <<FK>>
+    resolved_at : timestamptz
+    created_at : timestamptz
+    updated_at : timestamptz
+}
+
+entity "report_history" as History {
+    * id : uuid <<PK>>
+    --
+    report_id : uuid <<FK>>
+    status : report_status
+    note : text
+    updated_by : uuid <<FK>>
+    created_at : timestamptz
+}
+
+entity "Supabase Storage\nbucket: report-images" as Storage {
+    * path : text <<PK>>
+    --
+    report image
+    resolution evidence photo
+    uploaded_by : uuid
+    created_at : timestamptz
+}
+
+Users ||--|| Profiles : "shared id"
+Profiles ||--o{ Reports : "user_id"
+Profiles ||--o{ Reports : "resolved_by"
+Profiles ||--o{ History : "updated_by"
+Reports ||--o{ History : "report_id"
+Reports ||..o{ Storage : "image_url"
+Reports ||..o{ Storage : "resolution_evidence_photo_url"
+
+note bottom of Reports
+Prediction stores multiclass output:
+predicted class, confidence, and
+all class probabilities.
+
+Assignment stores nearest relevant
+agency selected from latitude and longitude.
+
+Status resolved/selesai requires
+resolution_evidence_photo_url.
+end note
+
+@enduml

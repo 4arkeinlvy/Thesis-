@@ -1,0 +1,29 @@
+digraph flow_inferensi {
+    rankdir=LR;
+    graph [bgcolor="#FFFFFF", fontname="Helvetica", fontsize=12,
+           nodesep=0.45, ranksep=0.85, splines=ortho, pad=0.25];
+    node  [shape=box, style="rounded,filled", fontname="Helvetica",
+           fontsize=12, color="#2E4053", penwidth=1.3, margin="0.20,0.13"];
+    edge  [color="#5D6D7E", penwidth=1.3, arrowsize=0.85];
+
+    // --- Input layer ---
+    img_in  [label="Citra laporan (JPEG)\lresize 224×224 + square padding\lnormalisasi ImageNet\l", fillcolor="#FDEBD0"];
+    txt_in  [label="Narasi laporan (Bahasa Indonesia)\ltokenisasi, maks. 256 token\l", fillcolor="#FDEBD0"];
+
+    // --- Encoder layer (frozen) ---
+    img_enc [label="Encoder citra\lDINOv3 large (ONNX, frozen)\lembedding 1024-d\l", fillcolor="#D6EAF8"];
+    txt_enc [label="Encoder teks\lmultilingual-E5 large (ONNX, frozen)\lembedding 1024-d\l", fillcolor="#D6EAF8"];
+
+    // --- Fusion + head ---
+    concat  [label="Fusi awal\lkonkatenasi → vektor 2048-d", fillcolor="#E8DAEF"];
+    clf     [label="Classifier head\lCatBoost + PGS (ONNX)\lsoftmax 9 instansi + confidence\l", fillcolor="#D5F5E3"];
+    route   [label="Routing backend\lHaversine: koordinat laporan\l→ kantor instansi terdekat\l", fillcolor="#FCF3CF"];
+    out     [label="Keluaran ke SmartCityApps\linstansi prediksi + confidence\l+ instansi terdekat + jarak\l", fillcolor="#D5F5E3"];
+
+    img_in -> img_enc -> concat;
+    txt_in -> txt_enc -> concat;
+    concat -> clf -> route -> out;
+
+    { rank=same; img_in; txt_in; }
+    { rank=same; img_enc; txt_enc; }
+}

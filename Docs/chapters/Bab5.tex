@@ -1,0 +1,44 @@
+\chapter{SIMPULAN DAN SARAN}
+\label{ch:simpulan}
+
+% =====================================================================
+\section{Simpulan}
+\label{sec:simpulan}
+% =====================================================================
+
+Penelitian ini telah membangun prototipe sistem pelaporan masalah lingkungan berbasis fusi multimodal citra dan teks yang siap diintegrasikan dengan ekosistem aplikasi pemerintah daerah. Berdasarkan rumusan masalah yang dipaparkan pada Bab~\ref{ch:pendahuluan}, simpulan penelitian ini adalah sebagai berikut.
+
+\begin{enumerate}
+    \item \textbf{Arsitektur klien-server berbasis Flutter, FastAPI, dan Supabase.} Sistem prototipe SmartCityApps berhasil diimplementasikan dengan klien Android berbasis Flutter, server inferensi FastAPI yang memuat tiga \textit{artifact} ONNX, dan \textit{backend} Supabase yang menyediakan otentikasi, basis data PostgreSQL, dan penyimpanan berkas. Tiga peran pengguna (Warga Pelapor, Operator Instansi, dan Moderator) berhasil dilayani dengan akses yang dibatasi melalui Row Level Security pada tabel \texttt{profiles}, \texttt{reports}, dan \texttt{report\_history}. Konsumsi sumber daya pada perangkat pengguna tetap minimum karena seluruh komputasi inferensi dipusatkan di server.
+
+    \item \textbf{Kombinasi DINOv3 \textit{large}, \textit{multilingual-E5 large}, dan CatBoost dengan PGS.} Pada set uji yang berisi 9.266 sampel Jakarta CRM, konfigurasi terbaik mencapai \textit{balanced accuracy} sebesar 0,8074 dan \textit{macro F1 score} sebesar 0,7747, mengungguli baseline modalitas teks saja (\textit{macro F1} 0,7515) sebesar 2,32 \textit{percentage point} dan baseline modalitas citra saja (\textit{macro F1} 0,5973) sebesar 17,74 \textit{percentage point}. Hasil ini menunjukkan bahwa skema fusi awal dengan \textit{classifier head} CatBoost yang dikalibrasi PGS efektif untuk klasifikasi laporan multimodal Bahasa Indonesia.
+
+    \item \textbf{Paritas numerik PyTorch terhadap ONNX.} Validasi paritas pada seluruh komponen \textit{pipeline} (image encoder, text encoder, dan classifier head) memberikan selisih probabilitas absolut maksimum di bawah ambang $10^{-5}$, yang memastikan prediksi top-1 identik antara jalur pelatihan PyTorch dan jalur produksi ONNX. Server FastAPI dapat dipakai sebagai jalur inferensi produksi tanpa risiko divergensi numerik dengan jalur pelatihan.
+
+    \item \textbf{Routing instansi terdekat.} Backend berhasil menggabungkan keluaran model 9 instansi dengan koordinat latitude-longitude laporan untuk memilih instansi tujuan terdekat yang relevan. Hasil routing yang disimpan mencakup identitas instansi, nama instansi, kategori instansi, estimasi jarak, dan metode routing, sehingga laporan tidak hanya diklasifikasikan, tetapi juga diarahkan ke unit penanganan yang paling dekat dengan lokasi kejadian.
+
+    \item \textbf{Pemilihan inferensi \textit{on-server} terhadap \textit{on-device}.} Skema inferensi \textit{on-server} berbasis FastAPI dipilih karena total ukuran \textit{artifact} ONNX, dengan komponen \textit{image encoder} DINOv3 \textit{large} saja sebesar 1,15 GB, jauh melampaui batas wajar paket aplikasi Android. Konsekuensi dari pemilihan ini adalah ketergantungan pada ketersediaan jaringan dan pada layanan FastAPI sebagai titik inferensi tunggal, sekaligus keuntungan berupa pembaruan model yang terpusat tanpa harus merilis ulang aplikasi pada \textit{Play Store}, konsumsi daya yang rendah pada perangkat pengguna, dan kemampuan menjalankan model berskala besar yang tidak praktis untuk \textit{deployment} sepenuhnya \textit{on-device}.
+\end{enumerate}
+
+% =====================================================================
+\section{Saran}
+\label{sec:saran}
+% =====================================================================
+
+Berdasarkan temuan dan keterbatasan penelitian ini, beberapa arah penelitian lanjutan diusulkan sebagai berikut.
+
+\begin{enumerate}
+    \item \textbf{Distilasi dan kuantisasi untuk varian \textit{on-device}.} Penelitian lanjutan dapat menelaah distilasi pengetahuan dari DINOv3 \textit{large} ke arsitektur ringan seperti DINOv3 ViT-Small atau DINOv3 ViT-Base, dipadu dengan kuantisasi INT8 menggunakan ONNX Runtime Mobile. Varian ringan ini dapat dipakai sebagai jalur \textit{fallback} ketika koneksi jaringan tidak tersedia, sehingga warga pelapor tetap dapat memperoleh prediksi awal walaupun dengan akurasi yang sedikit lebih rendah.
+
+    \item \textbf{Penambahan modalitas tambahan.} Dataset pelaporan publik dapat diperkaya dengan modalitas tambahan, contohnya audio (suara latar dari lokasi kejadian) yang berguna untuk laporan kebisingan, geolokasi yang dipakai sebagai fitur eksplisit pada vektor fusi sehingga model dapat memanfaatkan pola spasial, dan metadata waktu pelaporan untuk menangkap pola harian atau musiman.
+
+    \item \textbf{Active learning dengan koreksi manual pengguna.} Mekanisme koreksi kategori secara manual oleh pengguna pada layar tinjauan AI dapat diubah menjadi sumber sinyal label baru. Setiap koreksi yang konsisten lintas pengguna dapat dipakai untuk melakukan pelatihan ulang model secara periodik, sehingga akurasi model meningkat dari waktu ke waktu seiring penggunaan aplikasi.
+
+    \item \textbf{Integrasi dengan API resmi pemerintah.} Penelitian lanjutan dapat melakukan integrasi langsung dengan API resmi platform LAPOR! SP4N yang dikelola oleh KemenPANRB atau platform JAKI yang dikelola oleh Pemerintah Provinsi DKI Jakarta. Dengan integrasi tersebut, hasil triase otomatis dapat langsung diteruskan ke kanal pemerintah, sehingga prototipe ini dapat berfungsi sebagai \textit{front-end} pelaporan multimodal yang melengkapi sistem yang sudah ada.
+
+    \item \textbf{Perluasan dataset lintas daerah.} Dataset Jakarta CRM dapat diperluas dengan menambahkan dataset dari platform LaporGub Jawa Tengah \citep{zahroFairerPublicComplaint2025} atau dari pemerintah daerah lain di Indonesia. Perluasan ini memberikan kesempatan untuk menguji generalisasi model terhadap pola pelaporan di daerah dengan struktur instansi yang berbeda.
+
+    \item \textbf{Penanganan kelas minoritas.} Tiga kelas minoritas pada Jakarta CRM (Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, serta Dinas Sumber Daya Air) menyumbang akurasi yang lebih rendah pada \textit{confusion matrix}. Teknik seperti \textit{focal loss} \citep{zahroFairerPublicComplaint2025}, \textit{class-balanced sampling} yang lebih agresif, atau augmentasi data berbasis sintesis dapat diuji untuk meningkatkan kinerja pada kategori tersebut.
+
+    \item \textbf{Replikasi server dan kebijakan ketersediaan.} Karena server FastAPI menjadi titik inferensi tunggal, kebijakan ketersediaan layanan perlu dirancang dengan cermat. Penelitian lanjutan dapat melakukan replikasi server pada beberapa region, menambahkan \textit{circuit breaker} dan \textit{retry policy} pada klien Flutter, serta merancang prosedur fallback ketika server tidak dapat dijangkau dalam waktu yang lama.
+\end{enumerate}

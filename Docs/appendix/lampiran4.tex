@@ -1,0 +1,117 @@
+% =====================================================================
+% LAMPIRAN D: SKEMA BASIS DATA SUPABASE LENGKAP
+% =====================================================================
+\chapter{Skema Basis Data Supabase Lengkap}
+\label{app:db-schema-detail}
+
+Lampiran ini menampilkan rincian kolom seluruh tabel basis data Supabase, daftar \textit{enum} pendukung, dan kebijakan \textit{Row Level Security} (RLS) yang diringkas pada Bagian~\ref{sec:db-schema}. Pemisahan dilakukan agar pembahasan rancangan sistem pada Bab~\ref{ch:metode} tetap padat sementara skema penuh tetap dapat diaudit secara mendetail.
+
+\section*{D.1 Tabel \texttt{profiles}}
+
+Tabel \texttt{profiles} memuat informasi profil pengguna yang terhubung satu-ke-satu dengan tabel sistem \texttt{auth.users} milik Supabase Auth. Atribut utama dirangkum pada Tabel~\ref{tab:profiles}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{profiles}.}
+\label{tab:profiles}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Mengacu ke \texttt{auth.users.id}. \\
+full\_name & text & Nama lengkap pengguna. \\
+email & text & Alamat email pengguna. \\
+phone\_number & text & Nomor telepon kontak. \\
+profile\_photo\_url & text & URL foto profil pada Supabase Storage. \\
+is\_moderator & bool & Penanda peran moderator. \\
+role & user\_role & \textit{Enum} peran (warga, operator, moderator). \\
+assigned\_agency & issue\_category & \textit{Enum} instansi penugasan operator. \\
+created\_at & timestamptz & Waktu pembuatan profil. \\
+updated\_at & timestamptz & Waktu perubahan terakhir. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.2 Tabel \texttt{reports}}
+
+Tabel \texttt{reports} adalah tabel utama yang menyimpan setiap laporan warga beserta hasil klasifikasi AI dan metadata lokasi. Atribut utama dirangkum pada Tabel~\ref{tab:reports}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{reports}.}
+\label{tab:reports}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik laporan. \\
+user\_id & uuid (FK) & Mengacu ke \texttt{profiles.id}. \\
+reporter\_name & text & Nama pelapor saat mengirim. \\
+reporter\_email & text & Email pelapor saat mengirim. \\
+category & issue\_category & \textit{Enum} kategori dinas akhir. \\
+ai\_prediction & text & Kategori dinas yang diprediksi AI. \\
+ai\_confidence & numeric & Tingkat keyakinan model (0..1). \\
+ai\_probabilities & jsonb & Skor probabilitas untuk setiap dari sembilan instansi target. \\
+ai\_model\_* & text & Metadata model server-side, mencakup nama dan versi model. \\
+assigned\_* & text/float8 & Hasil routing instansi terdekat, mencakup identitas, nama, kategori, jarak, dan metode routing. \\
+image\_url & text & URL gambar pada Supabase Storage. \\
+description & text & Narasi laporan dalam Bahasa Indonesia. \\
+latitude & float8 & Koordinat lintang lokasi kejadian. \\
+longitude & float8 & Koordinat bujur lokasi kejadian. \\
+address & text & Alamat hasil \textit{reverse geocoding}. \\
+status & report\_status & \textit{Enum} status (\textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}). \\
+verified\_by & uuid (FK) & Operator yang memverifikasi laporan. \\
+verified\_at & timestamptz & Waktu verifikasi. \\
+rejection\_reason & text & Alasan penolakan bila status \textit{rejected}. \\
+resolution\_* & text/uuid/timestamptz & Bukti dan metadata penyelesaian, mencakup foto bukti, catatan, petugas, dan waktu selesai. \\
+created\_at & timestamptz & Waktu laporan dikirim. \\
+updated\_at & timestamptz & Waktu perubahan terakhir. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.3 Tabel \texttt{report\_history}}
+
+Tabel \texttt{report\_history} mencatat setiap perubahan status pada laporan agar jejak audit (\textit{audit trail}) dapat ditelusuri dari awal pengiriman hingga penyelesaian. Atribut utama dirangkum pada Tabel~\ref{tab:report-history}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_history}.}
+\label{tab:report-history}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik catatan riwayat. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+status & report\_status & Status baru pada langkah ini. \\
+note & text & Catatan operator atau sistem. \\
+updated\_by & uuid & Pengguna yang memicu perubahan. \\
+created\_at & timestamptz & Waktu perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.4 \textit{Enum} Pendukung}
+
+Skema mendefinisikan tiga \textit{enum} kustom PostgreSQL yang dipakai bersama oleh tabel-tabel di atas, yaitu:
+
+\begin{itemize}
+    \item \texttt{issue\_category}: kategori dinas dengan nilai sesuai sembilan kategori target pada Tabel~\ref{tab:kategori-target}.
+    \item \texttt{report\_status}: status siklus hidup laporan, yaitu \textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}.
+    \item \texttt{user\_role}: peran pengguna, yaitu \textit{citizen}, \textit{agency\_admin}, \textit{super\_admin}.
+\end{itemize}
+
+\section*{D.5 \textit{Row Level Security}}
+
+Kebijakan \textit{Row Level Security} (RLS) diaktifkan pada ketiga tabel agar akses data terkontrol pada level baris. Beberapa kebijakan utama yang dirancang adalah:
+
+\begin{itemize}
+    \item Setiap pelapor hanya dapat membaca dan memperbarui baris \texttt{reports} miliknya sendiri (\(\texttt{auth.uid()} = \texttt{user\_id}\)).
+    \item Petugas dengan \texttt{role = 'agency\_admin'} dapat membaca dan memperbarui laporan pada \texttt{assigned\_agency} yang sesuai dengan \texttt{category}.
+    \item Admin dengan \texttt{role = 'super\_admin'} memiliki akses lintas instansi, termasuk koreksi penugasan.
+    \item Tabel \texttt{report\_history} hanya dapat ditulis melalui pemicu (\textit{trigger}) basis data saat status \texttt{reports} berubah.
+\end{itemize}

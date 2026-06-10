@@ -1,49 +1,55 @@
 This is BibTeX, Version 0.99e (TeX Live 2026)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
-A level-1 auxiliary file: chapters/bab1.aux
-A level-1 auxiliary file: chapters/bab2.aux
-A level-1 auxiliary file: chapters/bab3.aux
+A level-1 auxiliary file: chapters/Bab1.aux
+A level-1 auxiliary file: chapters/Bab2.aux
+A level-1 auxiliary file: chapters/Bab3.aux
+A level-1 auxiliary file: chapters/Bab4.aux
+A level-1 auxiliary file: chapters/Bab5.aux
 The style file: apalike.bst
 Database file #1: references/references.bib
-You've used 16 entries,
+Warning--there's a number but no volume in audebertMultimodalDoc2019
+Warning--there's a number but no volume in ofliMultimodalDisaster2020
+Warning--there's a number but no volume in wangCognitiveEdgeComputing2025
+You've used 68 entries,
             1935 wiz_defined-function locations,
-            572 strings with 7661 characters,
-and the built_in function-call counts, 6523 in all, are:
-= -- 622
-> -- 414
-< -- 11
-+ -- 149
-- -- 146
-* -- 561
-:= -- 1201
-add.period$ -- 44
-call.type$ -- 16
-change.case$ -- 151
-chr.to.int$ -- 15
-cite$ -- 16
-duplicate$ -- 204
-empty$ -- 330
-format.name$ -- 172
-if$ -- 1218
-int.to.chr$ -- 2
+            920 strings with 24109 characters,
+and the built_in function-call counts, 30553 in all, are:
+= -- 2976
+> -- 1706
+< -- 48
++ -- 617
+- -- 606
+* -- 2573
+:= -- 5371
+add.period$ -- 235
+call.type$ -- 68
+change.case$ -- 637
+chr.to.int$ -- 63
+cite$ -- 71
+duplicate$ -- 1077
+empty$ -- 1770
+format.name$ -- 692
+if$ -- 5947
+int.to.chr$ -- 6
 int.to.str$ -- 0
-missing$ -- 4
-newline$ -- 77
-num.names$ -- 50
-pop$ -- 125
+missing$ -- 49
+newline$ -- 357
+num.names$ -- 208
+pop$ -- 577
 preamble$ -- 1
-purify$ -- 151
+purify$ -- 640
 quote$ -- 0
-skip$ -- 170
+skip$ -- 843
 stack$ -- 0
-substring$ -- 316
-swap$ -- 25
-text.length$ -- 3
+substring$ -- 1674
+swap$ -- 206
+text.length$ -- 19
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 96
-warning$ -- 0
-while$ -- 43
+type$ -- 394
+warning$ -- 3
+while$ -- 208
 width$ -- 0
-write$ -- 190
+write$ -- 911
+(There were 3 warnings)

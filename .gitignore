@@ -1,6 +1,33 @@
 # IDE settings
 .vscode/
 
+# OS / env junk
+.DS_Store
+.venv/
+
+# Scratch logs & temp output
+*.error
+erroronnx.log
+hf_upload.log
+retry.txt
+
+# Reference PDFs of other people's theses (large, not ours)
+/18221100*.pdf
+/skripsi*.pdf
+
+# Secrets / credentials — never commit
+SupabaseCreds.txt
+*.env
+.env.*
+credentials.json
+token.json
+
+# Scraper output (large)
+smartCityReport/artifacts/crm_jakarta/
+# Flutter dart-define JSON files (keep .example.json committed)
+smartCityReport/smart_city_reporter_app/env/*.json
+!smartCityReport/smart_city_reporter_app/env/*.example.json
+
 # LaTeX auxiliary files
 *.log
 *.tex.swp

@@ -1,415 +1,742 @@
 \chapter{METODE PENELITIAN}
+\label{ch:metode}
+
+Bab ini memaparkan metodologi penelitian yang digunakan untuk membangun sistem pelaporan masalah lingkungan berbasis fusi multimodal citra dan teks. Pemaparan diawali dengan diagram alir kerangka berpikir yang menyatukan seluruh tahap penelitian, dilanjutkan dengan analisis kebutuhan, akuisisi dan persiapan dataset Jakarta CRM, lingkungan komputasi pelatihan, pra-proses dan ekstraksi \textit{embedding}, fusi multimodal, algoritma klasifikasi CatBoost dengan \textit{Posterior Gaussian Sampling} (PGS), rancangan eksperimen komparatif, metrik evaluasi, ekspor ONNX, perancangan server FastAPI, perancangan aplikasi Flutter SmartCityApps beserta UML, mekanisme perutean instansi terdekat, dan perancangan layar. Pendekatan fusi awal yang diadopsi merujuk pada metodologi yang dipublikasikan oleh \citet{hanifPenugasanOtomatis2024}.
 
 % =====================================================================
-\section{Kerangka Berpikir}
+\section{Diagram Alir Kerangka Berpikir}
+\label{sec:kerangka}
 % =====================================================================
 
-Penelitian ini diorganisasikan dalam dua fase pengembangan utama yang berurutan namun saling bergantung: (1) fase eksperimen dan optimasi model AI, dan (2) fase pengembangan aplikasi Android. Gambar~\ref{fig:kerangka-berpikir} menyajikan kerangka berpikir penelitian secara menyeluruh.
+Penelitian ini disusun ke dalam tiga tahap besar yang saling berkesinambungan, yaitu (1) tahap akuisisi dan persiapan data, (2) tahap pelatihan model, dan (3) tahap \textit{deployment}. Diagram alir sederhana pada Gambar~\ref{fig:kerangka-berpikir} merangkum alur keseluruhan dari perolehan data mentah, pelatihan model 9 instansi, \textit{deployment} inferensi pada backend FastAPI, hingga aplikasi Android SmartCityApps yang berinteraksi dengan pengguna akhir sebagai klien.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{kerangka_berpikir.png}
-    \caption{Kerangka Berpikir Penelitian}
+    \includegraphics[width=0.98\textwidth]{bab_3/kerangka_berpikir.png}
+    \caption{Diagram alir kerangka berpikir penelitian secara keseluruhan.}
     \label{fig:kerangka-berpikir}
 \end{figure}
 
-% Catatan: render diagram D1 dari Docs/diagrams/d1_kerangka.mmd ke images/diagrams/kerangka_berpikir.png
+\subsection{Kerangka Berpikir Tahap Akuisisi Data}
 
-Fase pertama dimulai dari pengumpulan dan persiapan dataset dari HuggingFace Hub, dilanjutkan dengan studi komparatif lima arsitektur \textit{backbone} modern melalui pelatihan dan evaluasi sistematis, hingga pemilihan model terbaik. Fase kedua mencakup ekspor model terpilih ke format ONNX, integrasi ke dalam aplikasi Android Flutter, dan pengujian fungsional sistem secara menyeluruh.
-
-% =====================================================================
-\section{Pengembangan Model \textit{Artificial Intelligence}}
-% =====================================================================
-
-Alur pengembangan kecerdasan buatan dalam penelitian ini dipaparkan secara sistematis pada Gambar~\ref{fig:alur-ai}.
+Tahap akuisisi data mencakup proses \textit{web scraping} portal aduan Jakarta CRM, pembersihan dan normalisasi label dinas, pemetaan label mentah ke sembilan kategori target, serta pembagian data secara stratifikasi. Diagram alir tahap ini ditunjukkan pada Gambar~\ref{fig:kerangka-akuisisi}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{alur_ai.png}
-    \caption{Alur Pengembangan Model AI}
-    \label{fig:alur-ai}
+    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/brian_akuisisi_data.png}
+    \caption{Diagram alir tahap akuisisi data dari \textit{web scraping} portal CRM Jakarta sampai pembagian data stratifikasi.}
+    \label{fig:kerangka-akuisisi}
 \end{figure}
 
-% Catatan: render diagram D1 dari Docs/diagrams/d1_ai_flow.mmd ke images/diagrams/alur_ai.png
+\subsection{Kerangka Berpikir Tahap Pelatihan Model}
 
-\subsection{Dataset}
+Tahap pelatihan model dilakukan di lingkungan komputasi awan (\textit{cloud}) RunPod yang diakses melalui SSH. Tahap ini mencakup ekstraksi \textit{embedding} citra dengan empat \textit{encoder} kandidat, ekstraksi \textit{embedding} teks dengan empat \textit{encoder} kandidat, fusi awal melalui konkatenasi vektor ter-normalisasi L2, pelatihan algoritma CatBoost dengan PGS, dan evaluasi pada metrik \textit{macro F1-score}. Karena alur pelatihan terdiri atas dua fase yang panjang, diagram aktivitas dibagi menjadi dua bagian, yaitu fase persiapan (Gambar~\ref{fig:kerangka-pelatihan-setup}) dan fase eksperimen (Gambar~\ref{fig:kerangka-pelatihan-eksperimen}).
 
-\subsubsection{Sumber Data}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/brian_runpod_setup.png}
+    \caption{Fase persiapan pelatihan: setup pod RunPod, instalasi dependensi, dan ekstraksi \textit{embedding} citra dan teks ke berkas \textit{cache}.}
+    \label{fig:kerangka-pelatihan-setup}
+\end{figure}
 
-Data yang digunakan dalam penelitian ini diperoleh dari dataset publik yang tersedia di platform HuggingFace Hub dengan identitas repositori \texttt{Programmer-RD-AI/road-issues-detection-dataset}. Dataset ini berisi gambar-gambar kondisi lingkungan perkotaan yang telah dilabeli ke dalam berbagai kategori masalah. Proses pengunduhan dilakukan menggunakan fungsi \texttt{snapshot\_download} dari \textit{library} \texttt{huggingface\_hub}, yang mengunduh seluruh isi repositori dataset---termasuk gambar dan metadata---ke direktori lokal.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/activity_runpod_train_export.png}
+    \caption{Fase eksperimen: pelatihan \textit{classifier head} CatBoost+PGS untuk 16 pasangan \textit{encoder}, pemilihan model terbaik, dan ekspor ONNX dengan validasi paritas numerik.}
+    \label{fig:kerangka-pelatihan-eksperimen}
+\end{figure}
 
-\subsubsection{Seleksi Label dan Kelas Target}
+\subsection{Kerangka Berpikir Tahap Deployment}
 
-Dari keseluruhan label yang tersedia dalam dataset, penelitian ini menggunakan \textbf{tujuh kelas} masalah lingkungan perkotaan yang memiliki representasi visual yang cukup jelas dan tidak ambigu. Dua kategori dikecualikan secara eksplisit:
+Tahap \textit{deployment} mencakup ekspor model ke format ONNX, pembungkusan ke kontainer Docker, peluncuran server FastAPI, integrasi ke aplikasi Flutter SmartCityApps, dan perutean instansi terdekat berdasarkan koordinat laporan. Diagram alir tahap ini ditunjukkan pada Gambar~\ref{fig:kerangka-deployment}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.55\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/kerangka_deployment.png}
+    \caption{Diagram aktivitas tahap \textit{deployment} mencakup ekspor ONNX, server FastAPI untuk inferensi server-side, aplikasi Android SmartCityApps sebagai klien, perutean instansi terdekat, dan pengujian sistem.}
+    \label{fig:kerangka-deployment}
+\end{figure}
+
+% =====================================================================
+\section{Analisis Kebutuhan}
+\label{sec:kebutuhan}
+% =====================================================================
+
+\subsection{Analisis User}
+
+Pengguna utama sistem ini adalah masyarakat Jakarta yang berinteraksi langsung dengan aplikasi mobile untuk melaporkan masalah lingkungan, beserta operator instansi pemerintah daerah yang menerima laporan setelah perutean otomatis. Karakteristik kedua kelompok pengguna dirangkum sebagai berikut.
+
+\begin{enumerate}
+    \item \textbf{Warga Pelapor}: pengguna umum yang menemukan kejadian di lingkungan kota, contohnya jalan rusak, sampah menumpuk, atau pohon tumbang. Mereka memiliki perangkat \textit{smartphone} dengan kamera dan akses GPS, kemampuan menulis narasi singkat dalam Bahasa Indonesia, serta kebutuhan akan respons cepat dari pihak yang berwenang.
+    \item \textbf{Operator Instansi}: petugas dinas pemerintah daerah yang menerima laporan setelah dirutekan oleh sistem. Mereka membutuhkan laporan yang sudah terkategorisasi dengan benar, lengkap dengan koordinat lokasi dan bukti visual, agar dapat segera ditindaklanjuti.
+\end{enumerate}
+
+\subsubsection{Latar Belakang Institusi}
+
+Penelitian ini berorientasi pada konteks tata kelola Pemerintah Provinsi DKI Jakarta yang memiliki kanal aduan publik berbasis CRM. Struktur instansi yang menjadi target perutean meliputi Dinas Bina Marga, Dinas Perhubungan, Dinas Lingkungan Hidup, Satpol PP, Dinas Pertamanan dan Hutan Kota, Badan Pembina BUMD, Dinas Cipta Karya Tata Ruang dan Pertanahan, Dinas Sumber Daya Air, dan Kelurahan, beserta kategori \textit{Instansi Lain} sebagai kelas \textit{catch-all} untuk laporan di luar kelas utama.
+
+\subsection{Analisis Aplikasi Sejenis}
+
+Beberapa aplikasi pelaporan publik yang sudah berjalan menjadi pembanding pada penelitian ini, sebagaimana dirangkum pada Tabel~\ref{tab:aplikasi-sejenis}. Aplikasi-aplikasi tersebut secara umum sudah mendukung pelaporan berbasis foto dan teks, namun belum memanfaatkan fusi multimodal antara citra dan teks untuk mengotomatisasi kategorisasi laporan ke instansi yang tepat.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan aplikasi pelaporan publik sejenis.}
+\label{tab:aplikasi-sejenis}
+\begin{tabular}{p{2.4cm} p{3.0cm} p{3.0cm} p{3.6cm}}
+\toprule
+\textbf{Aplikasi} & \textbf{Modalitas Masukan} & \textbf{Klasifikasi Otomatis} & \textbf{Catatan} \\
+\midrule
+JAKI (DKI Jakarta) & Foto, teks, lokasi & Manual oleh petugas & Kategori dipilih warga \\
+LAPOR! (Nasional) & Teks, lampiran & Manual oleh \textit{back office} & Kanal lintas instansi \\
+Qlue & Foto, teks, lokasi & Sebagian otomatis & Klasifikasi berbasis aturan \\
+Penelitian ini & Foto, teks, lokasi & Otomatis berbasis fusi multimodal & DINOv3 + mE5 + CatBoost+PGS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Rumusan dan Solusi Kebutuhan}
+
+Setiap pertanyaan penelitian (RQ) yang diajukan pada Bab~\ref{ch:pendahuluan} dipetakan ke komponen solusi yang dirancang dalam metodologi ini. Pemetaan tersebut dirangkum pada Tabel~\ref{tab:rumusan-solusi}.
+
+\begin{table}[htbp]
+\centering
+\caption{Pemetaan rumusan masalah ke komponen solusi.}
+\label{tab:rumusan-solusi}
+\begin{tabular}{p{0.7cm} p{6.5cm} p{6.5cm}}
+\toprule
+\textbf{RQ} & \textbf{Rumusan Masalah} & \textbf{Solusi yang Dirancang} \\
+\midrule
+RQ1 & Bagaimana merancang aplikasi pelaporan multimodal? & Aplikasi Flutter dengan layar buat laporan, tinjauan AI, riwayat, dan peta. \\
+RQ2 & Bagaimana arsitektur fusi awal yang efektif? & DINOv3 + mE5 + konkatenasi 2048-d + CatBoost+PGS. \\
+RQ3 & Bagaimana ekspor ke ONNX dan server inferensi? & \textit{Pipeline} ONNX \textit{opset} 17 + FastAPI multipart + Docker. \\
+RQ4 & Bagaimana mekanisme perutean otomatis? & Routing instansi terdekat berdasarkan kelas prediksi 9 instansi dan koordinat latitude-longitude laporan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{Akuisisi dan Persiapan Dataset}
+\label{sec:dataset}
+% =====================================================================
+
+\subsection{Sumber Data CRM Jakarta}
+
+Dataset penelitian diperoleh dari portal aduan publik Jakarta yang berfungsi sebagai sistem CRM (\textit{Citizen Relationship Management}). Setiap laporan disusun dari tiga komponen utama, yaitu (1) gambar lampiran sebagai bukti visual kejadian, (2) narasi tekstual dalam Bahasa Indonesia yang ditulis bebas oleh warga, dan (3) label dinas yang menunjukkan instansi pemerintah daerah penanggung jawab. Volume data mentah hasil pengumpulan adalah \textbf{88.302 laporan} yang terdistribusi pada \textbf{487 nama instansi (SKPD)} berbeda.
+
+\subsection{Struktur Data Multimodal}
+
+Setiap baris dataset memuat sepasang masukan multimodal (gambar dan teks) yang berasal dari satu kejadian yang sama, beserta label dinas sebagai target klasifikasi. Satu contoh baris representatif ditampilkan pada Gambar~\ref{fig:sample-row-1}; dua contoh tambahan dengan karakteristik berbeda (saluran air mampet dengan narasi panjang dan pembatas jalan pudar dengan permohonan pengecatan ulang) disajikan pada Lampiran~\ref{app:sample-multimodal}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{sample_row_1.png}
+    \caption{Contoh struktur data multimodal: foto ojek parkir di area halte bus, narasi singkat warga, dan label \textit{Dinas Perhubungan}. Tiga kolom yang ditampilkan adalah kolom \textit{Gambar}, kolom \textit{Laporan}, dan kolom \textit{Label}.}
+    \label{fig:sample-row-1}
+\end{figure}
+
+Tiga kolom inti yang menjadi masukan dan keluaran sistem dirangkum sebagai berikut.
 
 \begin{itemize}
-    \item \textbf{\textit{Illegal Parking Issues}}: Dikecualikan karena ambiguitas visual yang tinggi---gambar parkir liar seringkali sulit dibedakan dari kondisi normal jalan pada resolusi yang terbatas.
-    \item \textbf{\textit{Mixed Issues}}: Dikecualikan karena merupakan label campuran yang tidak merepresentasikan satu kategori masalah tunggal, sehingga tidak cocok untuk tugas klasifikasi multi-kelas yang definitif.
+    \item \textbf{Kolom Gambar}: foto kejadian yang diambil oleh warga menggunakan kamera ponsel. Karakteristik visual sangat beragam, mulai dari foto siang hari beresolusi tinggi, foto malam hari dengan pencahayaan rendah, hingga foto sudut tidak biasa dengan oklusi. Resolusi piksel berkisar dari 100 hingga 4.000 piksel pada sisi terlebar.
+    \item \textbf{Kolom Laporan}: narasi tekstual yang ditulis bebas oleh warga dalam Bahasa Indonesia. Narasi sering kali pendek dan informal, kadang memuat singkatan, sapaan, atau campuran ragam bahasa daerah. Contohnya, narasi \textit{``ojol parkir di area halte bus tolong dibantu tindaklanjuti laporan ini''} secara semantik merujuk pada pelanggaran parkir kendaraan di area halte bus, sehingga relevan bagi Dinas Perhubungan, sekalipun narasi tidak menyebut nama dinas tersebut.
+    \item \textbf{Kolom Label}: nama dinas penanggung jawab yang berasal dari proses pemetaan oleh operator portal CRM. Label ini menjadi target klasifikasi multikelas pada sembilan kategori akhir setelah pemetaan (Bagian~\ref{sec:dataset}).
 \end{itemize}
 
-Tabel~\ref{tab:label-kelas} merinci kelas-kelas yang digunakan beserta deskripsi singkatnya.
+Sifat multimodal dan komplementer kedua modalitas terlihat pada contoh Gambar~\ref{fig:sample-row-1}: foto memperlihatkan kendaraan terparkir di sekitar halte bus, sementara narasi memberi konteks bahwa kendaraan tersebut adalah \textit{ojol} dan tindakannya berstatus pelanggaran. Dua contoh tambahan pada Lampiran~\ref{app:sample-multimodal} memperkuat pola yang sama, yaitu narasi panjang yang menjelaskan dampak banjir dari saluran air mampet (label Kelurahan) serta foto pembatas jalan pudar yang disertai permohonan pengecatan ulang (label Dinas Perhubungan). Ketiga contoh tersebut mengilustrasikan bahwa baik citra maupun teks membawa informasi yang tidak sepenuhnya saling tergantikan, sehingga fusi multimodal diperlukan untuk klasifikasi yang akurat.
 
-\begin{table}[htbp]
-    \centering
-    \caption{Kelas Dataset yang Digunakan}
-    \label{tab:label-kelas}
-    \begin{tabular}{cll}
-        \toprule
-        \textbf{No.} & \textbf{Label Dataset} & \textbf{Deskripsi} \\
-        \midrule
-        1 & \textit{Accident Issues} & Kecelakaan lalu lintas di jalan \\
-        2 & \textit{Littering Garbage on Public Places Issues} & Sampah di tempat umum \\
-        3 & \textit{Vandalism Issues} & Vandalisme pada fasilitas publik \\
-        4 & \textit{Pothole Issues} & Lubang pada permukaan jalan \\
-        5 & \textit{Damaged Road Issues} & Kerusakan permukaan jalan \\
-        6 & \textit{Broken Road Sign Issues} & Rambu lalu lintas yang rusak \\
-        7 & \textit{Fallen Tree Issues} & Pohon tumbang \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+\subsection{Metadata Tambahan}
 
-\subsubsection{Penyeimbangan Kelas}
+Selain tiga kolom inti di atas, setiap laporan juga menyimpan metadata tambahan yang berguna untuk audit dan analisis, yaitu identitas unik laporan, koordinat lokasi (lintang dan bujur), waktu pengiriman, dan tautan ke berkas gambar. Metadata ini tidak menjadi masukan langsung bagi model klasifikasi, namun digunakan untuk pembagian data, analisis kesalahan, dan rekonstruksi konteks pada tahap evaluasi.
 
-Dataset asli memiliki distribusi kelas yang tidak seimbang, dengan beberapa kategori memiliki sampel jauh lebih banyak dari yang lain. Untuk mengatasi hal ini, penelitian ini menerapkan strategi penyeimbangan dengan \textbf{target 800 sampel per kelas} (\textit{target\_samples\_per\_class = 800}). Bagi kelas yang memiliki lebih dari 800 sampel, dilakukan pengambilan sampel acak (\textit{undersampling}). Bagi kelas minoritas yang memiliki kurang dari 800 sampel, teknik \textit{oversampling} implisit diterapkan melalui \textit{BalancedClassSampler} dan augmentasi khusus kelas minoritas selama pelatihan.
+\subsection{Web Scraping}
 
-\subsubsection{Pembagian Dataset dan \textit{Group-Aware Split}}
-
-Dataset dibagi menjadi tiga partisi dengan rasio: \textbf{70\% pelatihan (\textit{train})}, \textbf{15\% validasi (\textit{validation})}, dan \textbf{15\% pengujian (\textit{test})}, dengan \textit{seed} acak yang ditetapkan pada nilai 42 untuk reprodusibilitas.
-
-Aspek kritis dalam pembagian dataset ini adalah penerapan \textbf{\textit{group-aware stratified split}}. Beberapa gambar dalam dataset merupakan gambar yang diaugmentasi (diperbesar secara sintetis) dari gambar sumber yang sama, khususnya untuk kelas kecelakaan (\textit{Accident Issues}). Jika gambar asli dan turunan augmentasinya dimasukkan ke partisi yang berbeda (\textit{train} dan \textit{test}), model akan mendapatkan gambaran yang terlalu optimis tentang kemampuan generalisasinya---fenomena ini disebut \textit{data leakage}.
-
-Untuk mencegah hal ini, setiap gambar augmentasi ditandai dengan \textit{group key} yang menunjukkan gambar sumber asalnya (ditandai dengan penanda \texttt{\_\_source\_\_} pada nama file). Pembagian dataset kemudian dilakukan pada tingkat grup, bukan tingkat gambar individual, sehingga seluruh gambar yang berasal dari satu sumber yang sama selalu berada dalam partisi yang sama.
-
-\subsection{Augmentasi Data}
-
-Augmentasi data diterapkan secara berbeda antara set pelatihan dan set evaluasi:
+Pengumpulan data dilakukan dengan teknik \textit{web scraping} berbasis Python sesuai prinsip yang diuraikan oleh \citet{mitchellWebScraping2018}. Skrip \textit{scraping} dikembangkan menggunakan kombinasi pustaka \texttt{requests} untuk pengiriman permintaan HTTP, \texttt{BeautifulSoup} dan \texttt{lxml} untuk penguraian HTML, serta \texttt{Selenium} untuk halaman yang dirender oleh JavaScript secara dinamis. Tahap-tahap utama \textit{scraping} adalah:
 
 \begin{enumerate}
-    \item \textbf{Transformasi Pelatihan (Training Transform)}: Diterapkan secara acak pada setiap gambar dalam set pelatihan untuk meningkatkan keberagaman data. Mencakup: \textit{random horizontal flip}, \textit{random vertical flip}, \textit{random crop} dengan \textit{padding}, \textit{random color jitter} (kecerahan, kontras, saturasi), serta normalisasi menggunakan \textit{mean} dan \textit{std} yang spesifik untuk setiap model backbone (diambil dari \texttt{timm data\_config}).
-
-    \item \textbf{Transformasi Kelas Minoritas (Minority Transform)}: Kelas yang memiliki rasio jumlah sampel terhadap target di bawah ambang 60\% (\textit{minority\_threshold\_ratio = 0.6}) mendapatkan transformasi augmentasi yang lebih agresif. Ini bertujuan untuk secara efektif melipatgandakan keberagaman visual kelas minoritas tanpa pengulangan data yang identik.
-
-    \item \textbf{Transformasi Evaluasi (Evaluation Transform)}: Hanya berisi \textit{center crop}, \textit{resize}, dan normalisasi---tanpa augmentasi acak---untuk memastikan evaluasi yang deterministik dan reprodusibel.
+    \item \textbf{Identifikasi sumber}: pemetaan URL halaman daftar laporan dan halaman rincian laporan, beserta pola \textit{pagination}.
+    \item \textbf{Pengunduhan}: pengiriman permintaan GET dengan pembatasan laju (\textit{rate limit}) maksimum satu permintaan per detik dan \textit{user-agent} yang mengidentifikasi tujuan akademik.
+    \item \textbf{Penguraian}: ekstraksi medan teks laporan, label dinas, tanggal, koordinat, dan tautan gambar.
+    \item \textbf{Pengunduhan gambar}: penyimpanan gambar lampiran laporan ke struktur direktori berdasar label dinas.
+    \item \textbf{Penyimpanan}: penulisan metadata terstruktur ke berkas CSV dan unduhan gambar ke struktur direktori berbasis label dinas.
+    \item \textbf{Penanganan kegagalan}: \textit{retry} dengan \textit{exponential backoff} pada kesalahan jaringan dan \textit{logging} permintaan yang gagal.
 \end{enumerate}
 
-\subsection{Konfigurasi Eksperimen}
+\textit{Scraping} menghormati berkas \texttt{robots.txt} dan \textit{Terms of Service} portal sumber, serta tidak mengumpulkan data yang dapat mengidentifikasi individu di luar narasi laporan publik.
 
-\subsubsection{Model yang Dibandingkan}
+\subsection{Pembersihan dan Normalisasi}
 
-Lima arsitektur \textit{backbone} visual modern yang digunakan dalam studi komparatif ini, beserta detail teknisnya, disajikan dalam Tabel~\ref{tab:model-backbone}.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Detail Arsitektur \textit{Backbone} yang Dibandingkan}
-    \label{tab:model-backbone}
-    \begin{tabular}{lllc}
-        \toprule
-        \textbf{Nama Model} & \textbf{Kunci \texttt{timm}} & \textbf{Keluarga} & \textbf{Tahun} \\
-        \midrule
-        ConvNeXt V2 Tiny   & \texttt{convnextv2\_tiny}       & ConvNet              & 2023 \\
-        EfficientViT B2    & \texttt{efficientvit\_b2}       & Efficient Transformer & 2023 \\
-        MambaOut Tiny      & \texttt{mambaout\_tiny}          & Hybrid State Space   & 2024 \\
-        Hiera Tiny         & \texttt{hiera\_tiny\_224}        & Hierarchical ViT     & 2023 \\
-        EVA-02 Tiny        & \texttt{eva02\_tiny\_patch14\_224} & Foundation ViT       & 2023 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-Semua model diinisialisasi dengan bobot pra-latih (\textit{pretrained = True}) dari ImageNet melalui \textit{library} \texttt{timm}. Lapisan kepala klasifikasi (\textit{classification head}) setiap model diganti dengan lapisan \textit{linear} baru yang sesuai dengan jumlah kelas target.
-
-\subsubsection{Hiperparameter Pelatihan}
-
-Konfigurasi hiperparameter yang digunakan identik untuk semua model, memastikan perbandingan yang adil. Tabel~\ref{tab:hyperparameter} merangkum seluruh hiperparameter yang digunakan.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Konfigurasi Hiperparameter Pelatihan}
-    \label{tab:hyperparameter}
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Hiperparameter} & \textbf{Nilai} \\
-        \midrule
-        Optimizer              & AdamW \\
-        \textit{Learning rate} & $3 \times 10^{-4}$ \\
-        \textit{Weight decay}  & $5 \times 10^{-2}$ \\
-        \textit{Label smoothing} & $0{,}05$ \\
-        \textit{Gradient clip norm} & $1{,}0$ \\
-        Epoch maksimum         & 8 \\
-        \textit{Batch size}    & 24 \\
-        \textit{Early stopping patience} & 3 epoch \\
-        \textit{Drop path rate} & $0{,}1$ \\
-        \textit{LR Scheduler}  & Cosine Annealing \\
-        \textit{Automatic Mixed Precision} & FP16 (CUDA) \\
-        \textit{Pretrained weights} & ImageNet (via \texttt{timm}) \\
-        \textit{Balanced Sampler} & Diaktifkan \\
-        \textit{Minority Boost} & Diaktifkan (threshold 0,6) \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\subsubsection{Kriteria Pemilihan Model Terbaik}
-
-Pemilihan \textit{checkpoint} model terbaik selama pelatihan dan peringkat akhir \textit{leaderboard} didasarkan pada \textbf{\textit{macro F1-score}} pada set validasi. Pilihan ini didasari oleh kemampuan \textit{macro F1-score} dalam memberikan bobot yang setara kepada semua kelas, sehingga model yang unggul di semua kelas---bukan hanya kelas mayoritas---akan mendapatkan skor yang lebih tinggi.
-
-\subsection{Metrik Evaluasi}
-
-Evaluasi komprehensif dilakukan pada set validasi dan set uji menggunakan metrik berikut (lihat Bab~\ref{ch:tinjauan} untuk definisi matematis):
+Tahap pembersihan dilakukan dengan langkah-langkah berikut:
 
 \begin{itemize}
-    \item \textbf{\textit{Macro F1-score}} (metrik utama)
-    \item \textbf{Akurasi (\textit{Accuracy})}
-    \item \textbf{\textit{Balanced Accuracy}}
-    \item \textbf{\textit{Macro ROC-AUC}}, \textit{Weighted ROC-AUC}, \textit{Micro ROC-AUC}
-    \item \textbf{\textit{Confusion Matrix}} (untuk analisis per-kelas)
-    \item \textbf{Presisi, \textit{Recall}, F1 per-kelas}
+    \item \textbf{Deduplikasi teks}: penghapusan baris dengan kolom \texttt{laporan} yang persis sama. Tahap ini menghilangkan sekitar 30\% laporan yang merupakan duplikat hasil \textit{copy-paste} (terutama dari kanal Kelurahan).
+    \item \textbf{Normalisasi nama dinas}: penyeragaman ejaan dan kapitalisasi nama instansi yang ditulis berbeda-beda pada data sumber.
+    \item \textbf{Pembersihan teks}: pemotongan URL via \textit{regex} \texttt{https?://\textbackslash S+|www\textbackslash .\textbackslash S+}, normalisasi unicode ke bentuk NFC, dan \textit{whitespace collapsing}.
+    \item \textbf{Validasi gambar}: pengecekan keterbacaan berkas gambar dan penghapusan baris dengan gambar rusak.
 \end{itemize}
 
+Setelah pembersihan, dataset bersih berukuran \textbf{61.773 laporan} siap dipakai untuk tahap berikutnya.
+
+\subsection{Pemetaan ke Sembilan Instansi Target}
+
+\paragraph{Definisi terminologi.} Untuk menghindari kerancuan istilah pada bab-bab selanjutnya, ditetapkan tiga definisi berikut yang dipakai secara konsisten di seluruh manuskrip:
+
+\begin{itemize}
+    \item \textbf{Instansi (dinas)}: nama lembaga pemerintah daerah yang menjadi target klasifikasi. Sembilan instansi target pada penelitian ini adalah Dinas Bina Marga, Satuan Polisi Pamong Praja (Satpol PP), Dinas Perhubungan, Kelurahan, Dinas Pertamanan dan Hutan, Dinas Sumber Daya Air, Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, dan Instansi Lain.
+    \item \textbf{Instansi prediksi} (\texttt{predicted\_dinas}): keluaran langsung model klasifikasi multimodal berupa salah satu dari sembilan instansi di atas, beserta probabilitas masing-masing kelas.
+    \item \textbf{Instansi tujuan terdekat}: hasil tahap routing setelah inferensi. Backend menggunakan \texttt{predicted\_dinas} serta koordinat latitude dan longitude laporan untuk memilih kantor atau unit instansi aktif yang paling dekat dan relevan. Tahap ini \textbf{bukan} agregasi label model; model tetap menghasilkan keluaran pada granularitas sembilan instansi penuh (lihat \texttt{TARGET\_CLASSES} pada \texttt{src/crm/\_\_init\_\_.py}).
+\end{itemize}
+
+Istilah ``kategori'' dan ``kelas'' dipakai hanya pada konteks teori klasifikasi (\textit{multi-class problem}, \textit{class weight}, \textit{per-class precision}), bukan sebagai sinonim ``instansi''. Pada bab Hasil dan Pembahasan istilah \textbf{instansi prediksi} digunakan untuk merujuk keluaran model dan \textbf{instansi tujuan terdekat} untuk merujuk hasil perutean berbasis lokasi.
+
+Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{multi-class} dengan jumlah sampel yang tidak seimbang, label dinas mentah dipetakan ke sembilan instansi target yang lebih representatif dan operasional. Pemetaan dan distribusi sampel per instansi dirangkum pada Tabel~\ref{tab:kategori-target}.
+
+\begin{table}[htbp]
+\centering
+\caption{Distribusi sampel per instansi target setelah pemetaan.}
+\label{tab:kategori-target}
+\begin{tabular}{p{0.7cm} p{6.5cm} r r}
+\toprule
+\textbf{ID} & \textbf{Kategori (Dinas)} & \textbf{Jumlah} & \textbf{Persen} \\
+\midrule
+0 & Dinas Bina Marga & 13.525 & 21,9\% \\
+1 & Dinas Perhubungan (termasuk UP Perparkiran, UPSL) & 11.678 & 18,9\% \\
+2 & Kelurahan & 11.980 & 19,4\% \\
+3 & Satuan Polisi Pamong Praja & 8.405 & 13,6\% \\
+4 & Dinas Pertamanan dan Hutan Kota & 6.000 & 9,7\% \\
+5 & Dinas Sumber Daya Air & 2.605 & 4,2\% \\
+6 & Badan Pembina BUMD (TransJakarta, Pasar Jaya, PAM Jaya) & 1.684 & 2,7\% \\
+7 & Dinas Cipta Karya Tata Ruang dan Pertanahan & 1.475 & 2,4\% \\
+8 & Instansi Lain (\textit{catch-all}) & 4.421 & 7,2\% \\
+\midrule
+& \textbf{Total} & \textbf{61.773} & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pembagian Data Stratifikasi}
+
+Dataset bersih dibagi ke dalam tiga partisi (\textit{train}, \textit{validation}, \textit{test}) dengan rasio \textbf{70:15:15}, menggunakan fungsi \texttt{StratifiedShuffleSplit} dari pustaka \texttt{scikit-learn} untuk menjaga proporsi setiap kelas pada masing-masing partisi. Hasil pembagian dirangkum pada Tabel~\ref{tab:split}, dan diverifikasi bahwa selisih proporsi kelas antar partisi tidak melampaui 0{,}01\%.
+
+\begin{table}[htbp]
+\centering
+\caption{Pembagian dataset stratifikasi.}
+\label{tab:split}
+\begin{tabular}{l r r}
+\toprule
+\textbf{Partisi} & \textbf{Jumlah Sampel} & \textbf{Persentase} \\
+\midrule
+Train & 43.241 & 70\% \\
+Validation & 9.266 & 15\% \\
+Test & 9.266 & 15\% \\
+\midrule
+\textbf{Total} & \textbf{61.773} & \textbf{100\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Setiap baris pada partisi diberi anotasi \texttt{row\_id} unik agar \textit{cache embedding} dapat disejajarkan kembali dengan label saat pelatihan algoritma klasifikasi.
+
+\subsection{Bobot Kelas}
+
+Karena distribusi kelas tidak seimbang, pelatihan algoritma CatBoost menggunakan \textit{class weights} berdasarkan formula yang juga dipakai oleh \citet{hanifPenugasanOtomatis2024}:
+
+\begin{equation}
+    w_l = \frac{N}{C \cdot N_l},
+    \label{eq:classweight}
+\end{equation}
+dengan $N$ total sampel pelatihan, $C = 9$ jumlah kelas, dan $N_l$ jumlah sampel kelas ke-$l$. Bobot ini dipakai sebagai parameter bobot kelas pada CatBoost untuk mengompensasi kelas minoritas.
+
 % =====================================================================
-\section{Pipeline Ekspor Model ONNX}
+\section{Lingkungan Komputasi: Pelatihan di Cloud via RunPod}
+\label{sec:runpod}
 % =====================================================================
 
-Setelah model terbaik diidentifikasi, dilakukan ekspor ke format ONNX untuk mempersiapkan \textit{deployment} di aplikasi Android. Gambar~\ref{fig:onnx-pipeline} mengilustrasikan alur ekspor ini.
+\subsection{Justifikasi Cloud Compute}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.85\textwidth]{onnx_pipeline.png}
-    \caption{Alur Ekspor dan Validasi Model ONNX}
-    \label{fig:onnx-pipeline}
-\end{figure}
+Ekstraksi \textit{embedding} dari empat \textit{encoder} citra besar dan empat \textit{encoder} teks besar pada 61.773 sampel membutuhkan komputasi GPU yang berkapasitas. Sebagai contoh, \textit{forward pass} EVA-02 \textit{Large} pada masukan 448x448 piksel memerlukan memori GPU yang melampaui 12 GB pada \textit{batch size} efektif. Eksekusi pada perangkat lokal kelas \textit{laptop} tidak memungkinkan, sehingga seluruh pelatihan dilakukan pada layanan komputasi awan RunPod yang menyediakan akses langsung ke GPU NVIDIA modern.
 
-% Catatan: render diagram D8 dari Docs/diagrams/d8_onnx_export.mmd ke images/diagrams/onnx_pipeline.png
+\subsection{Konfigurasi Pod RunPod}
 
-\subsection{Proses Ekspor}
+Konfigurasi \textit{pod} yang digunakan dirangkum pada Tabel~\ref{tab:runpod}. Pemilihan RTX 4090 didasarkan pada kombinasi VRAM 24 GB yang memadai untuk batch ekstraksi \textit{embedding} dan biaya per jam yang ekonomis dibanding kelas A100.
 
-Ekspor dilakukan melalui skrip \texttt{export\_onnx.py} dengan langkah-langkah berikut:
+\begin{table}[htbp]
+\centering
+\caption{Konfigurasi \textit{pod} RunPod untuk pelatihan dan ekstraksi \textit{embedding}.}
+\label{tab:runpod}
+\begin{tabular}{p{4.5cm} p{8cm}}
+\toprule
+\textbf{Komponen} & \textbf{Spesifikasi} \\
+\midrule
+GPU & NVIDIA GeForce RTX 4090 (24 GB VRAM) \\
+CPU & vCPU 8 \textit{core} (AMD EPYC) \\
+RAM & 32 GB \\
+\textit{Container image} & \texttt{runpod/pytorch:2.1.0-py3.10-cuda12.1.1} \\
+Penyimpanan & 50 GB \textit{persistent volume} \\
+Mode jaringan & SSH \textit{public key authentication} \\
+Port \textit{exposed} & 22 (SSH), 8888 (Jupyter) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Workflow Pelatihan dan Manajemen Lingkungan}
+
+Akses ke \textit{pod} dilakukan melalui kunci publik SSH yang didaftarkan pada akun RunPod. \textit{Workflow} pelatihan mencakup sinkronisasi dataset dengan \texttt{rsync}, pemasangan dependensi (\texttt{torch}, \texttt{transformers}, \texttt{timm}, \texttt{catboost}, \texttt{onnxruntime-gpu}), eksekusi notebook melalui \textit{SSH tunnel} ke Jupyter Lab, penyimpanan \textit{artifact} pada \textit{persistent volume}, dan pengunduhan hasil ke mesin lokal. Lingkungan direproduksi dari berkas konfigurasi dengan versi dependensi presisi, dan \textit{forward pass} \textit{encoder} memakai presisi campuran FP16 dengan ukuran \textit{batch} yang disesuaikan per \textit{encoder} (misalnya 32 untuk DINOv3 pada 224x224 dan 8 untuk EVA-02 pada 448x448). Konteks visual alur kerja ini sudah disajikan pada Gambar~\ref{fig:kerangka-pelatihan-setup}, sedangkan rincian langkah SSH serta praktik manajemen lingkungan secara penuh disajikan pada Lampiran~\ref{app:runpod-workflow}.
+
+% =====================================================================
+\section{Pemrosesan, Ekstraksi \textit{Embedding}, dan Fusi Dini}
+\label{sec:preprocessing}
+% =====================================================================
+
+Tahap pemrosesan data multimodal, ekstraksi \textit{embedding}, dan fusi dini menyiapkan masukan tunggal berdimensi 2048 untuk \textit{classifier head} CatBoost. Pada sisi citra, setiap gambar dibaca dan diorientasikan ulang sesuai EXIF, kemudian di-\textit{resize} dengan \textit{square padding} ke 224x224 (atau 448x448 untuk EVA-02) mengikuti \textit{AutoImageProcessor} bawaan DINOv3, lalu dinormalisasi per kanal dengan rerata serta simpangan baku ImageNet sesuai Persamaan~\ref{eq:norm}. Augmentasi tidak diterapkan karena \textit{encoder} dibekukan. Pada sisi teks, narasi dipangkas spasinya dan dideduplikasi (penghapusan teks identik pada tahap pembersihan dataset), dipotong ke 256 token (mencakup sebagian besar laporan tanpa pemotongan), diberi prefiks instruksi untuk varian mE5-Instruct, ditokenisasi dengan tokenizer bawaan tiap \textit{encoder}, lalu \textit{embedding} keluarannya dinormalisasi L2.
+
+Ekstraksi \textit{embedding} dilakukan dengan empat kandidat \textit{encoder} citra (DINOv2-L, DINOv3-ViT-L, Hiera-L, EVA-02-L) dan empat kandidat \textit{encoder} teks (mE5-Large-Instruct, BGE-M3, IndoBERT-Large-p2, Cendol-mT5-Large), seluruhnya menghasilkan vektor berdimensi 1024. Inferensi dilakukan secara \textit{batch} dengan presisi campuran FP16 dan hasilnya disimpan pada \textit{cache} terkompresi sehingga eksperimen ablasi pasangan \textit{encoder} dapat dilakukan tanpa menjalankan ulang \textit{encoder}.
+
+Skema fusi yang digunakan adalah konkatenasi langsung dua vektor \textit{embedding} yang sudah dinormalisasi L2 per modalitas, mengikuti pendekatan \citet{hanifPenugasanOtomatis2024}, menghasilkan vektor fusi berdimensi 2048 yang menjadi masukan tunggal CatBoost. Reduksi dimensi (PCA) tidak diterapkan karena CatBoost berbasis pohon \textit{oblivious} mampu menangani fitur padat berdimensi tinggi serta untuk menghindari hilangnya informasi diskriminatif. Rincian lengkap berupa urutan langkah pemrosesan, tabel kandidat \textit{encoder}, formula normalisasi L2, dan persamaan vektor fusi disajikan pada Lampiran~\ref{app:preprocessing-embedding}.
+
+% =====================================================================
+\section{Algoritma Klasifikasi: CatBoost dengan PGS}
+\label{sec:catboost}
+% =====================================================================
+
+\subsection{Justifikasi Pemilihan CatBoost sebagai \textit{Classifier Head}}
+\label{sec:justifikasi-catboost}
+
+Pemilihan CatBoost sebagai \textit{classifier head} pada \textit{pipeline} fusi awal penelitian ini didasarkan pada delapan properti yang selaras dengan kebutuhan teknis dan operasional sistem, yaitu: (1) \textit{ordered boosting} \citep{prokhorenkovaCatBoost2018} yang memitigasi \textit{target leakage} sehingga generalisasi pada dataset berukuran sedang (61.773 sampel) lebih stabil; (2) pohon simetris (\textit{oblivious trees}) yang membuat inferensi cepat dan ramah \textit{cache} CPU pada server FastAPI; (3) ketahanan empiris pada masukan tabular berdimensi tinggi seperti vektor fusi 2048 dimensi hasil konkatenasi \textit{embedding} DINOv3 dan \textit{multilingual-E5}; (4) kalibrasi probabilitas melalui Posterior Gaussian Sampling \citep{ustimenkoCatBoostUncertainty2023} yang sekaligus memberikan ukuran ketidakpastian untuk antarmuka pengguna; (5) pelatihan deterministik dengan \textit{random seed} eksplisit sehingga ablasi dapat direproduksi dan diaudit; (6) jalur ekspor resmi ke ONNX dengan paritas numerik tinggi terhadap implementasi \textit{native}, selaras dengan \textit{deployment} server FastAPI; (7) beban komputasi pelatihan yang ringan (satu \textit{classifier head} selesai dalam hitungan menit), sehingga enam belas kombinasi ablasi dapat dijalankan dalam satu sesi karena kedua \textit{encoder} dibekukan; dan (8) penanganan fitur kategoris \textit{native} via \textit{ordered target statistics} untuk perluasan masa depan, misalnya menambahkan fitur lokasi atau waktu pelaporan tanpa mengganti algoritma. Penelitian ini menggunakan CatBoost sebagai satu-satunya algoritma klasifikasi; eksplorasi konfigurasi (CatBoost dengan dan tanpa PGS) didokumentasikan pada Bagian~\ref{sec:eksperimen}.
+
+\subsection{Hyperparameter}
+
+Hyperparameter CatBoost yang dipakai dirangkum pada Tabel~\ref{tab:catboost-hp}.
+
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameter CatBoost.}
+\label{tab:catboost-hp}
+\begin{tabular}{p{5.0cm} p{7.0cm}}
+\toprule
+\textbf{Parameter} & \textbf{Nilai} \\
+\midrule
+Jumlah iterasi & 1500 \\
+Kedalaman pohon & 6 \\
+\textit{Learning rate} & 0,05 \\
+Fungsi tujuan & \textit{MultiClass logloss} \\
+Regularisasi L2 daun & 3,0 \\
+Bobot kelas & sesuai Persamaan~\ref{eq:classweight} \\
+\textit{Posterior sampling} & Aktif \\
+\textit{Early stopping rounds} & 50 (pada validasi) \\
+\textit{Task type} & CPU (atau GPU bila tersedia) \\
+\textit{Random seed} & 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{\textit{Posterior Gaussian Sampling} (PGS)}
+
+PGS adalah teknik kuantifikasi ketidakpastian pada \textit{gradient boosting} yang diperkenalkan oleh \citet{ustimenkoCatBoostUncertainty2023}. Saat pelatihan dengan opsi \textit{posterior sampling} aktif, CatBoost membangun \textit{virtual ensembles} yang dapat dipanggil saat inferensi dengan jumlah anggota ensembel virtual sebanyak 30. Setiap anggota menghasilkan distribusi probabilitas \textit{softmax} per kelas. Probabilitas akhir adalah rerata posterior:
+
+\begin{equation}
+    \bar{p}_k = \frac{1}{M} \sum_{m=1}^{M} p_k^{(m)},
+    \label{eq:pgs-mean}
+\end{equation}
+dengan $M = 30$ anggota ensembel dan $p_k^{(m)}$ probabilitas kelas $k$ dari anggota ensembel ke-$m$.
+
+Ketidakpastian \textit{epistemic} diestimasi dengan \textit{mutual information} antara prediksi dan parameter model, sebagaimana selisih \textit{entropy of mean} dan \textit{mean of entropy}:
+
+\begin{equation}
+    \mathcal{U}_{\text{epistemic}} = H(\bar{\mathbf{p}}) - \frac{1}{M} \sum_{m=1}^{M} H(\mathbf{p}^{(m)}),
+    \label{eq:pgs-mi}
+\end{equation}
+dengan $H(\mathbf{p}) = -\sum_k p_k \log p_k$ adalah entropi Shannon. Nilai $\mathcal{U}_{\text{epistemic}}$ yang tinggi menandakan model tidak yakin terhadap prediksi karena ketidakpastian parameter, sehingga laporan dengan nilai tinggi dapat dirutekan ke tinjauan manual.
+
+\subsection{Pelatihan dengan Validation Set dan Early Stopping}
+
+Pelatihan dilakukan pada partisi \textit{train} (43.241 sampel) dengan validasi pada partisi \textit{validation} (9.266 sampel). Mekanisme \textit{early stopping} dengan ambang 50 iterasi memerintahkan pelatihan berhenti apabila \textit{macro F1-score} pada set validasi tidak meningkat selama 50 iterasi berturut-turut, sehingga risiko \textit{overfitting} tertekan dan jumlah pohon optimal ditemukan secara otomatis.
+
+\subsection{Pemilihan Model Terbaik}
+
+Model terbaik dipilih berdasarkan \textit{macro F1-score} pada partisi validasi. \textit{Checkpoint} terbaik disimpan dalam format \textit{native} CatBoost dan kemudian diekspor ke ONNX untuk \textit{deployment}.
+
+% =====================================================================
+\section{Eksperimen Komparatif (Ablasi)}
+\label{sec:eksperimen}
+% =====================================================================
+
+Bagian ini mendokumentasikan rancangan eksperimen komparatif yang dijalankan untuk memilih kombinasi \textit{encoder} terbaik dan untuk mengevaluasi kontribusi PGS pada algoritma CatBoost.
+
+\subsection{Ablasi Matriks Multimodal}
+
+Penelitian ini menjalankan eksperimen matriks penuh, yaitu seluruh pasangan kombinasi antara empat \textit{encoder} citra (DINOv2-L, DINOv3-ViT-L, Hiera-L, EVA-02-L) dan empat \textit{encoder} teks (mE5-Large-Instruct, BGE-M3, IndoBERT-Large-p2, Cendol-mT5-Large), sehingga total 16 kombinasi. Setiap kombinasi dilatih dengan konfigurasi CatBoost yang identik. Tujuan ablasi matriks ini adalah memetakan kontribusi setiap \textit{encoder} terhadap akurasi akhir, sekaligus memilih pasangan terbaik untuk \textit{deployment}.
+
+\subsection{Ablasi PGS On/Off}
+
+Pengaruh \textit{Posterior Gaussian Sampling} dievaluasi dengan menjalankan setiap kombinasi pada matriks ablasi dengan dua varian, yaitu CatBoost \textit{baseline} tanpa PGS dan CatBoost dengan PGS aktif beserta 30 anggota ensembel virtual saat inferensi. Untuk setiap pasangan dicatat \textit{accuracy}, \textit{macro F1-score}, selisih relatif ($\Delta$F1, $\Delta$Acc), dan rerata \textit{epistemic uncertainty}. Tujuan ablasi ini adalah memverifikasi bahwa PGS memberikan peningkatan yang konsisten lintas kombinasi \textit{encoder}, di samping memberikan keluaran ketidakpastian yang dapat diaudit.
+
+\subsection{Tabel Rancangan Eksperimen}
+
+Matriks eksperimen lengkap dirangkum pada Tabel~\ref{tab:matrix-eksperimen}. Setiap baris mewakili satu kombinasi (\textit{encoder} citra, \textit{encoder} teks) yang dievaluasi dua kali (\textit{baseline} dan PGS).
+
+\begin{table}[htbp]
+\centering
+\caption{Matriks rancangan eksperimen ablasi (4 \textit{encoder} citra \(\times\) 4 \textit{encoder} teks \(\times\) 2 varian \textit{head}).}
+\label{tab:matrix-eksperimen}
+\small
+\begin{tabular}{c p{3.2cm} p{4.0cm} p{3.2cm}}
+\toprule
+\textbf{ID} & \textbf{Encoder Citra} & \textbf{Encoder Teks} & \textbf{Head} \\
+\midrule
+E01 & DINOv2-L & mE5-Large-Instruct & CatBoost / CatBoost+PGS \\
+E02 & DINOv3-ViT-L & mE5-Large-Instruct & CatBoost / CatBoost+PGS \\
+E03 & Hiera-L & mE5-Large-Instruct & CatBoost / CatBoost+PGS \\
+E04 & EVA-02-L & mE5-Large-Instruct & CatBoost / CatBoost+PGS \\
+E05 & DINOv2-L & BGE-M3 & CatBoost / CatBoost+PGS \\
+E06 & DINOv3-ViT-L & BGE-M3 & CatBoost / CatBoost+PGS \\
+E07 & Hiera-L & BGE-M3 & CatBoost / CatBoost+PGS \\
+E08 & EVA-02-L & BGE-M3 & CatBoost / CatBoost+PGS \\
+E09 & DINOv2-L & IndoBERT-Large-p2 & CatBoost / CatBoost+PGS \\
+E10 & DINOv3-ViT-L & IndoBERT-Large-p2 & CatBoost / CatBoost+PGS \\
+E11 & Hiera-L & IndoBERT-Large-p2 & CatBoost / CatBoost+PGS \\
+E12 & EVA-02-L & IndoBERT-Large-p2 & CatBoost / CatBoost+PGS \\
+E13 & DINOv2-L & Cendol-mT5-Large & CatBoost / CatBoost+PGS \\
+E14 & DINOv3-ViT-L & Cendol-mT5-Large & CatBoost / CatBoost+PGS \\
+E15 & Hiera-L & Cendol-mT5-Large & CatBoost / CatBoost+PGS \\
+E16 & EVA-02-L & Cendol-mT5-Large & CatBoost / CatBoost+PGS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{Metrik Evaluasi}
+\label{sec:metrics-method}
+% =====================================================================
+
+Metrik utama dan pendukung yang dipakai untuk mengevaluasi setiap eksperimen sudah didefinisikan secara teoretis pada Bagian~\ref{sec:metrics}. Pada metodologi ini metrik yang dilaporkan untuk setiap eksperimen adalah:
 
 \begin{enumerate}
-    \item \textbf{Pemuatan \textit{Checkpoint}}: \textit{Checkpoint} model PyTorch (\texttt{best\_model.pt}) dimuat ke dalam kelas \texttt{RoadIssueClassifier}, yang mengenkapsulasi model, spesifikasi arsitektur, nama kelas, dan konfigurasi normalisasi data.
-
-    \item \textbf{Ekspor ONNX}: Fungsi \texttt{torch.onnx.export} digunakan dengan konfigurasi:
-    \begin{itemize}
-        \item \textit{Opset} versi 17 (untuk kompatibilitas dengan \textit{ONNX Runtime} versi terkini)
-        \item \texttt{do\_constant\_folding = True}: mengeliminasi subgraf konstan pada \textit{compile time}
-        \item Nama input: \texttt{input}; nama output: \texttt{logits}
-        \item \textit{Dynamic batch axis}: memungkinkan inferensi dengan ukuran \textit{batch} yang bervariasi
-    \end{itemize}
-
-    \item \textbf{Validasi Model ONNX}: Model ONNX yang dihasilkan divalidasi menggunakan \texttt{onnx.checker.check\_model} untuk memastikan konsistensi grafik operator.
-
-    \item \textbf{Ekspor Metadata}: File \texttt{.metadata.json} ditulis bersamaan dengan file ONNX, berisi:
-    \begin{itemize}
-        \item Kunci dan nama model
-        \item Nama kelas keluaran (\texttt{class\_names})
-        \item Ukuran input (\texttt{input\_size}), \textit{mean} dan \textit{std} normalisasi
-        \item Pemetaan dari label dataset mentah ke kategori semantik aplikasi (\texttt{raw\_label\_to\_app\_category})
-    \end{itemize}
-
-    \item \textbf{Validasi Paritas Numerik}: Jika gambar sampel tersedia, logit dari model PyTorch dan model ONNX dibandingkan. Perbedaan absolut maksimum (\textit{max abs diff}) dihitung dan dicatat dalam laporan JSON. Nilai ambang yang dapat diterima adalah di bawah $10^{-5}$, yang memastikan bahwa prediksi kelas teratas (\textit{top-1}) antara kedua model selalu identik.
+    \item \textbf{Macro F1-score}, sebagaimana Persamaan~\ref{eq:macrof1}, sebagai metrik utama pemilihan model.
+    \item \textbf{Akurasi} dan \textbf{Balanced Accuracy} sebagai indikator umum.
+    \item \textbf{Per-Class F1, Precision, Recall} untuk setiap dari sembilan kategori, agar bias terhadap kelas mayoritas teridentifikasi.
+    \item \textbf{Confusion Matrix} berukuran $9 \times 9$, divisualisasikan sebagai \textit{heatmap}.
+    \item \textbf{Macro ROC-AUC} dengan skema \textit{one-vs-rest}.
+    \item \textbf{Analisis ketidakpastian}: distribusi $\mathcal{U}_{\text{epistemic}}$ pada partisi uji, dan korelasi antara nilai ketidakpastian dengan kesalahan prediksi.
 \end{enumerate}
 
-\subsection{Integrasi Aset ke Flutter}
+Keseluruhan alur inferensi yang menghasilkan metrik-metrik di atas, mulai dari citra dan teks hingga prediksi sembilan instansi, \textit{confidence}, dan routing instansi terdekat, ditunjukkan pada Gambar~\ref{fig:flow-inferensi}. \textit{Confusion matrix} aktual berukuran $9 \times 9$ pada konfigurasi terbaik disajikan pada Bab~\ref{ch:hasil}.
 
-File \texttt{mambaout\_tiny.onnx} dan \texttt{mambaout\_tiny.metadata.json} yang dihasilkan dikemas ke dalam direktori aset aplikasi Flutter di \texttt{assets/models/}. Pada saat \textit{build} aplikasi, Flutter akan menyertakan file-file ini ke dalam paket APK Android, memungkinkan \textit{ONNX Runtime} membaca model langsung dari aset tanpa memerlukan akses internet atau unduhan tambahan.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.98\textwidth, height=0.55\textheight, keepaspectratio]{bab_3/flow_inferensi.png}
+    \caption{Alur inferensi multimodal server-side dari citra dan teks ke prediksi 9 instansi, confidence, dan routing instansi terdekat berdasarkan koordinat.}
+    \label{fig:flow-inferensi}
+\end{figure}
 
 % =====================================================================
-\section{Arsitektur Sistem Aplikasi Android}
+\section{Pipeline Ekspor ONNX}
+\label{sec:onnx-method}
 % =====================================================================
 
-\subsection{Gambaran Umum Sistem (Diagram Konteks C4)}
+\textit{Pipeline} ekspor menghasilkan tiga \textit{artifact} ONNX terpisah yang dimuat oleh server FastAPI saat \textit{startup}.
 
-Gambar~\ref{fig:c4-context} mengilustrasikan konteks sistem pada level tertinggi, menunjukkan aktor dan sistem eksternal yang berinteraksi dengan aplikasi.
+\subsection{Ekspor Encoder Citra}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.80\textwidth]{c4_context.png}
-    \caption{Diagram Konteks C4 --- Smart City Reporter App}
-    \label{fig:c4-context}
-\end{figure}
+\textit{Encoder} citra terbaik diekspor melalui kombinasi \texttt{torch.jit.trace} dan \texttt{torch.onnx.export} dengan \textit{opset} versi 17. Penggunaan \texttt{torch.jit.trace} diperlukan karena beberapa varian \textit{encoder}, khususnya DINOv3, belum sepenuhnya didukung oleh \textit{exporter} otomatis. Berkas hasil disimpan beserta konfigurasi pra-proses (\textit{mean}, \textit{std}, ukuran masukan) dalam berkas pendamping \textit{JSON}.
 
-% Catatan: render diagram D2 dari Docs/diagrams/d2_c4_context.mmd ke images/diagrams/c4_context.png
+\subsection{Ekspor Encoder Teks}
 
-Sistem memiliki satu aktor utama---\textbf{Masyarakat} sebagai pelapor---yang berinteraksi dengan aplikasi melalui antarmuka pengguna. Aplikasi mengakses dua layanan eksternal perangkat: \textbf{GPS/Location API} untuk memperoleh koordinat geografis lokasi kejadian, dan \textbf{Kamera/Galeri} untuk mengambil foto bukti masalah. Tidak ada interaksi dengan server eksternal dalam alur utama, menjadikan sistem sepenuhnya \textit{offline-capable} untuk fungsi pelaporan dan klasifikasi.
+\textit{Encoder} teks terbaik diekspor menggunakan utilitas ekspor ONNX yang menangani modul \textit{attention mask} dan SDPA secara benar. Bobot model yang melampaui ukuran maksimum berkas tunggal ONNX disimpan sebagai bobot eksternal. Tokenizer dikemas sebagai \textit{artifact} pendamping pada direktori yang sama dengan model.
 
-\subsection{Arsitektur Internal (Diagram Kontainer C4)}
+\subsection{Ekspor CatBoost}
 
-Gambar~\ref{fig:c4-container} merinci komponen-komponen utama di dalam aplikasi beserta hubungannya.
+Wight CatBoost diekspor menggunakan metode \textit{native} \texttt{model.save\_model("classifier.onnx", format="onnx")} yang menulis \textit{operator domain} \texttt{ai.catboost}. Inferensi pada saat produksi dijalankan dengan \texttt{Execution Provider} CPU karena \textit{operator} CatBoost belum memiliki kernel CUDA pada \textit{ONNX Runtime}.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{c4_container.png}
-    \caption{Diagram Kontainer C4 --- Komponen Internal Aplikasi}
-    \label{fig:c4-container}
-\end{figure}
+\subsection{Prosedur Validasi Paritas Numerik}
 
-% Catatan: render diagram D3 dari Docs/diagrams/d3_c4_container.mmd ke images/diagrams/c4_container.png
-
-Arsitektur internal aplikasi terdiri dari delapan komponen utama:
+Validasi paritas numerik dirancang untuk memastikan bahwa model ONNX hasil ekspor menghasilkan keluaran yang konsisten dengan model PyTorch sumber. Prosedurnya adalah sebagai berikut.
 
 \begin{enumerate}
-    \item \textbf{Flutter UI Layer}: Lapisan antarmuka pengguna yang dibangun sepenuhnya dalam Dart menggunakan \textit{framework} Flutter. Terdiri dari layar-layar dalam modul fitur (\texttt{features/}).
-
-    \item \textbf{Riverpod State Layer}: Lapisan manajemen \textit{state} yang menjembatani antara UI dan \textit{service layer}. Setiap \textit{provider} merepresentasikan satu unit \textit{state} atau \textit{service} yang dapat diobservasi oleh widget.
-
-    \item \textbf{On-Device AI Service} (\texttt{on\_device\_ai\_classification\_service.dart}): \textit{Bridge} antara Flutter (Dart) dan \textit{ONNX Runtime} (Android). Memuat model ONNX dari aset, melakukan pra-pemrosesan gambar (resize, crop, normalisasi), menjalankan sesi inferensi, dan menerjemahkan \textit{logit} keluaran menjadi objek \texttt{AiPrediction}.
-
-    \item \textbf{Classification Routing Engine} (\texttt{classification\_routing.dart}): Modul yang memetakan hasil klasifikasi AI ke panduan perutean instansi. Beroperasi secara murni \textit{in-memory} tanpa akses jaringan.
-
-    \item \textbf{Local Database Service} (\texttt{local\_database\_service.dart}): Lapisan akses SQLite melalui sqflite. Mengelola tabel \texttt{users}, \texttt{reports}, dan \texttt{report\_history}.
-
-    \item \textbf{Local File Storage Service} (\texttt{local\_file\_storage\_service.dart}): Mengelola penyimpanan file gambar laporan dan foto profil di direktori sistem Android.
-
-    \item \textbf{Location Service} (\texttt{location\_service.dart}): Mengakses GPS perangkat untuk memperoleh koordinat geografis lokasi laporan.
-
-    \item \textbf{ONNX Model Asset}: File \texttt{mambaout\_tiny.onnx} dan \texttt{mambaout\_tiny.metadata.json} yang dikemas dalam APK.
+    \item Pilih satu \textit{batch} sampel dari partisi uji sebagai masukan referensi.
+    \item Jalankan model PyTorch sumber pada \textit{batch} tersebut dan simpan vektor keluaran sebagai \textit{baseline}.
+    \item Jalankan model ONNX pada \textit{batch} yang sama melalui \textit{ONNX Runtime} dengan \textit{Execution Provider} yang sesuai.
+    \item Hitung selisih absolut maksimum (\textit{max abs diff}) per komponen vektor keluaran antara kedua model.
+    \item Tetapkan ambang batas $10^{-5}$ sebagai kriteria lulus, yang memastikan prediksi top-1 identik antara kedua jalur.
+    \item Catat hasil paritas untuk setiap komponen, yaitu \textit{encoder} citra, \textit{encoder} teks, dan algoritma CatBoost.
 \end{enumerate}
 
-\subsection{Alur Klasifikasi AI (Diagram Sekuens UML)}
+Laporan numerik hasil validasi paritas akan disajikan pada Bab Hasil dan Pembahasan.
 
-Gambar~\ref{fig:sequence-ai} mengilustrasikan alur terinci dari proses klasifikasi AI, mulai dari pengguna mengambil foto hingga laporan tersimpan.
+% =====================================================================
+\section{Perancangan Sistem Server (FastAPI)}
+\label{sec:server-design}
+% =====================================================================
+
+\subsection{Arsitektur Server}
+
+Server inferensi membungkus tiga sesi \textit{ONNX Runtime} (\textit{encoder} citra, \textit{encoder} teks, algoritma CatBoost) yang dimuat sekali pada saat \textit{startup}, kemudian menyediakan metode prediksi yang menjalankan \textit{pipeline} fusi awal pada masukan gabungan citra dan teks. Aplikasi Android SmartCityApps berperan sebagai \textit{client} untuk mengirimkan laporan, foto, serta koordinat latitude dan longitude. Proses inferensi model dilakukan pada sisi server melalui backend FastAPI, bukan pada perangkat Android. Diagram komponen server ditunjukkan pada Gambar~\ref{fig:server-arch}.
+
+Model yang digunakan dapat disimpan sebagai artefak pada server atau pada \textit{model registry} seperti HuggingFace. Namun, HuggingFace pada rancangan ini diperlakukan sebagai penyimpanan atau registri artefak model, bukan sebagai layanan yang menjalankan inferensi. Dengan pemisahan ini, pembaruan model dapat dilakukan pada sisi server tanpa mewajibkan pengguna memperbarui aplikasi Android.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{sequence_ai.png}
-    \caption{Diagram Sekuens --- Alur Klasifikasi AI dan Penyimpanan Laporan}
-    \label{fig:sequence-ai}
+    \includegraphics[width=0.99\textwidth, height=0.55\textheight, keepaspectratio]{bab_3/deployment_server_side_inference.png}
+    \caption{Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side, HuggingFace sebagai model registry/storage, dan Supabase.}
+    \label{fig:server-arch}
 \end{figure}
 
-% Catatan: render diagram D6 dari Docs/diagrams/d6_sequence_ai.mmd ke images/diagrams/sequence_ai.png
+\subsection{Endpoint \texttt{/health} dan \texttt{/predict}}
 
-Alur proses klasifikasi berlangsung sebagai berikut:
+Server menyediakan dua \textit{endpoint} utama, yaitu \texttt{/health} (GET) sebagai \textit{health check} ringan dan \texttt{/predict} (POST \textit{multipart}) sebagai \textit{endpoint} klasifikasi. Endpoint \texttt{/predict} menerima foto laporan, teks laporan, latitude, dan longitude. Spesifikasi \textit{endpoint} dirangkum pada Tabel~\ref{tab:endpoints}.
 
-\begin{enumerate}
-    \item Pengguna mengambil foto melalui kamera atau memilih gambar dari galeri pada \texttt{CreateReportScreen}.
-    \item \texttt{CreateReportScreen} memanggil metode \texttt{classify(imagePath)} pada \texttt{OnDeviceAIService}.
-    \item \texttt{OnDeviceAIService} melakukan pra-pemrosesan gambar: resize ke ukuran input model, normalisasi piksel, dan konversi ke tensor.
-    \item Tensor input dikirim ke \textit{ONNX Runtime} yang mengeksekusi inferensi pada model \texttt{mambaout\_tiny.onnx}.
-    \item \textit{ONNX Runtime} mengembalikan \textit{logit} untuk ketujuh kelas.
-    \item \texttt{OnDeviceAIService} menerapkan fungsi \textit{softmax}, mengidentifikasi prediksi teratas, dan membungkus hasil dalam objek \texttt{AiPrediction}.
-    \item Pengguna dialihkan ke \texttt{AiResultReviewScreen} yang menampilkan hasil klasifikasi beserta tingkat kepercayaan dan visual \textit{top predictions}.
-    \item Secara paralel, \texttt{ClassificationRoutingGuidance} dibangun dari \texttt{AiPrediction}, menghasilkan daftar rekomendasi instansi dan kluster operasional.
-    \item Pengguna dapat mengonfirmasi atau mengoreksi kategori secara manual.
-    \item Setelah konfirmasi, laporan disimpan ke SQLite melalui \texttt{LocalDatabaseService}.
-\end{enumerate}
+\begin{table}[htbp]
+\centering
+\caption{Spesifikasi \textit{endpoint} server FastAPI.}
+\label{tab:endpoints}
+\begin{tabular}{p{1.7cm} p{2.0cm} p{4cm} p{4.7cm}}
+\toprule
+\textbf{Path} & \textbf{Method} & \textbf{Masukan} & \textbf{Keluaran} \\
+\midrule
+\texttt{/health} & GET & (tidak ada) & JSON \texttt{\{status, encoders, gpu\}} \\
+\texttt{/predict} & POST & \textit{multipart}: \texttt{image} (file), \texttt{laporan} (string), \texttt{latitude}, \texttt{longitude} & JSON \texttt{PredictResponse} berisi prediksi, confidence, probabilitas per kelas, dan assignment instansi terdekat \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Model Domain (Diagram Kelas UML)}
+\subsection{Skema Request dan Response}
 
-Gambar~\ref{fig:class-diagram} mengilustrasikan struktur kelas domain utama dalam aplikasi.
+Skema respons \texttt{PredictResponse} dideklarasikan sebagai kelas Pydantic dengan medan: \texttt{predicted\_dinas} (string), \texttt{predicted\_dinas\_id} (int), \texttt{confidence} (float), \texttt{all\_probabilities} (peta instansi ke skor probabilitas), \texttt{model\_name}, \texttt{model\_version}, \texttt{confidence\_threshold}, \texttt{review\_required}, dan \texttt{assignment}. Medan \texttt{assignment} memuat \texttt{agency\_id}, \texttt{agency\_name}, \texttt{agency\_category}, \texttt{distance\_meters}, dan \texttt{routing\_method}. Validasi otomatis dijamin oleh FastAPI sehingga klien Flutter dapat mengandalkan struktur respons.
+
+\subsection{Output Inferensi dan Confidence Level}
+
+Output proses inferensi terdiri atas kelas prediksi, nilai \textit{confidence}, dan skor probabilitas untuk setiap dari sembilan instansi target. Kelas prediksi menunjukkan instansi yang paling mungkin bertanggung jawab terhadap laporan, sedangkan \textit{confidence} menunjukkan tingkat keyakinan model terhadap kelas tersebut. Nilai ini dihitung dari probabilitas kelas tertinggi pada keluaran model multiclass.
+
+Nilai \textit{confidence} digunakan sebagai indikator pendukung pengambilan keputusan. Apabila nilai \textit{confidence} berada di atas ambang yang ditentukan, laporan dapat diarahkan otomatis ke instansi terdekat yang relevan dengan kelas prediksi. Apabila \textit{confidence} berada di bawah ambang, laporan tetap disimpan bersama skor probabilitasnya, tetapi ditandai untuk validasi manual oleh petugas agar risiko kesalahan klasifikasi tidak disembunyikan.
+
+\subsection{Dockerization}
+
+Server dikemas dalam kontainer Docker yang mengikuti pola \textit{multi-stage build}. \textit{Base image} berbasis CUDA 12.1 dengan \textit{cuDNN}, lapisan instalasi Python 3.11 dan dependensi inferensi (\texttt{onnxruntime-gpu}, \texttt{fastapi}, \texttt{uvicorn}, \texttt{python-multipart}), serta lapisan penyalinan kode dan \textit{artifact} ONNX. \textit{Entrypoint} menjalankan \texttt{uvicorn} pada \textit{host} \texttt{0.0.0.0} \textit{port} 8000 dengan satu \textit{worker}. Berkas Docker Compose mendefinisikan layanan \textit{server} dengan reservasi GPU dan \textit{volume read-only} untuk \textit{artifact} model.
+
+% =====================================================================
+\section{Perancangan Skema Basis Data (Supabase)}
+\label{sec:db-schema}
+% =====================================================================
+
+Basis data \textit{cloud} aplikasi diimplementasikan pada Supabase yang berbasis PostgreSQL. Skema basis data dirancang untuk menyimpan profil pengguna (\texttt{profiles}), laporan warga (\texttt{reports}), riwayat perubahan status laporan (\texttt{report\_history}), metadata prediksi multiclass, hasil penugasan instansi terdekat, dan bukti penyelesaian laporan. Skema ER lengkap ditunjukkan pada Gambar~\ref{fig:db-schema}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{class_diagram.png}
-    \caption{Diagram Kelas --- Domain Model Aplikasi}
+    \includegraphics[width=0.95\textwidth]{bab_3/erd_report_prediction_assignment.png}
+    \caption{Skema basis data Supabase untuk laporan, prediksi, penugasan instansi, dan bukti penyelesaian.}
+    \label{fig:db-schema}
+\end{figure}
+
+\subsection{Ringkasan Tabel dan Kontrol Akses}
+
+Skema basis data terdiri atas tiga tabel inti dan tiga \textit{enum} pendukung. Tabel \texttt{profiles} terhubung satu-ke-satu dengan \texttt{auth.users} milik Supabase Auth dan menyimpan nama, kontak, peran (\texttt{user\_role}), serta instansi penugasan operator. Tabel \texttt{reports} adalah tabel utama yang menampung laporan warga lengkap dengan keluaran model (\texttt{ai\_prediction}, \texttt{ai\_confidence}, \texttt{ai\_probabilities} dalam format \texttt{jsonb}, dan metadata model), hasil routing instansi terdekat (\texttt{assigned\_*}), koordinat lintang dan bujur, status siklus hidup (\texttt{report\_status}), serta bukti penyelesaian. Tabel \texttt{report\_history} mencatat setiap perubahan status sebagai jejak audit yang ditulis hanya melalui \textit{trigger} basis data. Kebijakan \textit{Row Level Security} (RLS) memastikan pelapor hanya melihat laporan miliknya, petugas hanya mengakses kategori sesuai \texttt{assigned\_agency}, dan administrator memiliki akses lintas instansi. Rincian kolom seluruh tabel, daftar lengkap nilai \textit{enum}, serta kebijakan RLS disajikan pada Lampiran~\ref{app:db-schema-detail}.
+
+\subsection{Bukti Penyelesaian Laporan}
+
+Pada tahap penyelesaian laporan, petugas diwajibkan mengunggah foto bukti penyelesaian ketika status laporan diubah menjadi \textit{resolved}/selesai. Foto bukti ini menunjukkan bahwa permasalahan telah ditangani di lapangan. Selain foto, petugas dapat menambahkan catatan penyelesaian yang disimpan pada kolom \texttt{resolution\_note}.
+
+Validasi bukti penyelesaian diterapkan pada alur status. Transisi dari \textit{in\_progress} ke \textit{resolved} tidak dijalankan apabila \texttt{resolution\_evidence\_photo\_url} belum tersedia. Metadata \texttt{resolved\_by} dan \texttt{resolved\_at} juga disimpan agar proses penyelesaian dapat diaudit.
+
+% =====================================================================
+\section{Perancangan Sistem Aplikasi Mobile (Flutter)}
+\label{sec:flutter-design}
+% =====================================================================
+
+Aplikasi Flutter dikembangkan dengan arsitektur berbasis fitur (\textit{feature-based architecture}). Dokumentasi rancangan sistem disusun mengikuti notasi UML standar yang diuraikan pada Bagian~\ref{sec:uml}.
+
+\subsection{Use Case Diagram}
+
+Diagram \textit{use case} memetakan interaksi antara aktor utama (Warga Pelapor dan Petugas Instansi) dengan fungsionalitas SmartCityApps, backend FastAPI, dan Supabase. Diagram \textit{use case} ditunjukkan pada Gambar~\ref{fig:usecase-flutter}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth, height=0.88\textheight, keepaspectratio]{bab_3/brian_usecase.png}
+    \caption{\textit{Use case diagram} SmartCityApps dengan prediksi server-side, confidence level, routing instansi terdekat, dan bukti penyelesaian.}
+    \label{fig:usecase-flutter}
+\end{figure}
+
+\subsection{Use Case Description}
+
+Setiap \textit{use case} utama dirangkum pada Tabel~\ref{tab:uc-ringkas}. Deskripsi lengkap setiap \textit{use case} (alur utama, alur alternatif, pra-kondisi, dan pasca-kondisi) disajikan pada Lampiran~\ref{app:usecase-detail}.
+
+\begin{table}[htbp]
+\centering
+\caption{Ringkasan \textit{use case} utama SmartCityApps.}
+\label{tab:uc-ringkas}
+\begin{tabular}{p{4.0cm} p{2.8cm} p{5.2cm}}
+\toprule
+\textbf{Use Case} & \textbf{Aktor} & \textbf{Deskripsi Singkat} \\
+\midrule
+Mendaftar/Masuk Akun & Warga Pelapor & Registrasi atau login untuk mengakses fitur pelaporan. \\
+Mengambil Foto Laporan & Warga Pelapor & Ambil foto kamera atau galeri sebagai bukti visual. \\
+Menulis Narasi Laporan & Warga Pelapor & Tulis narasi Bahasa Indonesia pelengkap foto. \\
+Mengirim Laporan & Warga Pelapor, Server & Kirim foto, narasi, dan koordinat ke FastAPI untuk klasifikasi. \\
+Meninjau Hasil AI & Warga Pelapor & Lihat instansi prediksi, confidence, dan instansi terdekat. \\
+Mengoreksi Kategori & Warga Pelapor & Ganti instansi prediksi secara manual bila keliru. \\
+Menyimpan Laporan & Warga Pelapor & Simpan laporan dan hasil klasifikasi ke Supabase. \\
+Melihat Riwayat/Peta & Warga Pelapor & Lihat daftar dan lokasi laporan tersimpan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Activity Diagram}
+
+\textit{Activity diagram} memvisualisasikan alur aktivitas pada skenario utama pelaporan oleh Warga Pelapor, mulai dari pengambilan foto, inferensi server-side, penyimpanan ke Supabase, sampai kewajiban bukti foto ketika petugas menandai laporan selesai. Gambar~\ref{fig:activity-buat-laporan} menunjukkan alur lengkap tersebut, termasuk percabangan koreksi instansi secara manual pada layar tinjauan AI.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth, height=0.88\textheight, keepaspectratio]{bab_3/activity_report_lifecycle.png}
+    \caption{\textit{Activity diagram} siklus laporan SmartCityApps dari pelaporan, inferensi server-side, routing instansi terdekat, sampai bukti penyelesaian.}
+    \label{fig:activity-buat-laporan}
+\end{figure}
+
+\subsection{Class Diagram}
+
+\textit{Class diagram} memetakan kelas-kelas domain utama beserta atribut dan relasinya. Diagram ditunjukkan pada Gambar~\ref{fig:class-diagram}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/class_diagram_flutter.png}
+    \caption{\textit{Class diagram} lapisan service dan repositori aplikasi Flutter.}
     \label{fig:class-diagram}
 \end{figure}
 
-% Catatan: render diagram D7 dari Docs/diagrams/d7_class.mmd ke images/diagrams/class_diagram.png
+\subsection{Sequence Diagram}
 
-Kelas-kelas domain utama adalah:
-
-\begin{itemize}
-    \item \textbf{\texttt{Report}}: Entitas utama yang merepresentasikan satu laporan. Atribut: \texttt{id}, \texttt{userId}, \texttt{category} (IssueCategory), \texttt{description}, \texttt{latitude}, \texttt{longitude}, \texttt{imagePath}, \texttt{createdAt}, \texttt{status}.
-
-    \item \textbf{\texttt{User}}: Entitas pengguna untuk autentikasi lokal. Atribut: \texttt{id}, \texttt{name}, \texttt{email}, \texttt{passwordHash}, \texttt{profileImagePath}.
-
-    \item \textbf{\texttt{AiPrediction}}: Hasil inferensi model ONNX. Atribut: \texttt{category} (IssueCategory), \texttt{confidence} (double 0--1), \texttt{rawPayload} (Map berisi label mentah dan top predictions).
-
-    \item \textbf{\texttt{IssueCategory}}: Enum yang merepresentasikan lima kategori semantik aplikasi: \texttt{garbage}, \texttt{vandalism}, \texttt{pothole}, \texttt{accident}, \texttt{fallenTree}. Label dataset mentah (7 kelas) dipetakan ke enum ini oleh metadata model.
-
-    \item \textbf{\texttt{ClassificationRoutingGuidance}}: Hasil mesin perutean. Atribut: \texttt{cluster} (RoutingCluster), \texttt{operationalLabel}, \texttt{summary}, \texttt{routingReason}, \texttt{agencies} (List\textless AgencyRecommendation\textgreater), \texttt{reviewNote}.
-
-    \item \textbf{\texttt{AgencyRecommendation}}: Rekomendasi instansi individual. Atribut: \texttt{name}, \texttt{role}, \texttt{priorityLabel}.
-\end{itemize}
-
-\subsection{Kasus Penggunaan (Diagram \textit{Use Case} UML)}
-
-Gambar~\ref{fig:usecase} merangkum seluruh fungsionalitas sistem yang dapat diakses oleh pengguna.
+\textit{Sequence diagram} pada Gambar~\ref{fig:sequence-diagram} menggambarkan urutan pesan antar komponen pada alur klasifikasi \textit{end-to-end}, mulai dari layar buat laporan, backend FastAPI, routing instansi terdekat, penyimpanan Supabase, hingga unggah bukti penyelesaian oleh petugas.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.80\textwidth]{usecase.png}
-    \caption{Diagram \textit{Use Case} --- Fungsionalitas Aplikasi}
-    \label{fig:usecase}
+    \includegraphics[width=0.92\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/sequence_report_submission.png}
+    \caption{\textit{Sequence diagram} pengiriman laporan, inferensi server-side, penyimpanan assignment, dan bukti penyelesaian.}
+    \label{fig:sequence-diagram}
 \end{figure}
 
-% Catatan: render diagram D5 dari Docs/diagrams/d5_usecase.mmd ke images/diagrams/usecase.png
+\subsection{Modul dan Layanan Flutter}
 
-Kasus penggunaan utama yang tersedia bagi \textbf{Masyarakat} adalah:
+Struktur modul aplikasi Flutter dirangkum pada Tabel~\ref{tab:flutter-modules}.
 
-\begin{enumerate}
-    \item \textbf{Registrasi dan Login}: Autentikasi berbasis penyimpanan lokal (tanpa server).
-    \item \textbf{Buat Laporan Baru}: Mengambil foto, mengisi deskripsi opsional, mengaktifkan klasifikasi AI.
-    \item \textbf{Tinjau Hasil Klasifikasi AI}: Melihat kategori prediksi, \textit{confidence}, dan koreksi jika diperlukan.
-    \item \textbf{Lihat Rekomendasi Instansi}: Melihat instansi yang direkomendasikan beserta alasan perutean.
-    \item \textbf{Simpan Laporan}: Menyimpan laporan dengan data foto, GPS, kategori, dan metadata ke SQLite.
-    \item \textbf{Lihat Riwayat Laporan}: Menelusuri laporan-laporan yang telah dibuat sebelumnya.
-    \item \textbf{Kelola Profil}: Memperbarui informasi profil pengguna.
-\end{enumerate}
+\begin{table}[htbp]
+\centering
+\caption{Modul dan layanan utama aplikasi Flutter.}
+\label{tab:flutter-modules}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Modul} & \textbf{Deskripsi} \\
+\midrule
+Modul Otentikasi & Pendaftaran, masuk, dan persistensi sesi lokal. \\
+Modul Splash & Layar \textit{splash} dan inisialisasi awal aplikasi. \\
+Modul Onboarding & Panduan singkat untuk pengguna baru. \\
+Modul Dashboard & Ringkasan laporan dan navigasi utama. \\
+Modul Reports & Buat laporan, tinjauan AI, riwayat, peta, perutean instansi terdekat, dan bukti penyelesaian. \\
+Modul Profile & Pengelolaan profil pengguna. \\
+Modul Settings & Konfigurasi aplikasi. \\
+Layanan Klasifikasi Awan & Klien HTTP \textit{multipart} yang berkomunikasi dengan server FastAPI. \\
+Layanan Lokasi & Akuisisi koordinat GPS dan \textit{reverse geocoding}. \\
+Layanan Media & Pemilih kamera dan galeri foto. \\
+Layanan Repositori Laporan & Operasi CRUD pada tabel \texttt{reports} dan \texttt{report\_history} Supabase, termasuk penyimpanan prediksi, assignment, bukti penyelesaian, dan \textit{stream} realtime per peran pengguna. \\
+Layanan Otentikasi Supabase & Pendaftaran, masuk, keluar, dan pembaruan profil pengguna dengan tiga peran. \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % =====================================================================
 \section{Mekanisme Perutean Instansi}
+\label{sec:routing}
 % =====================================================================
 
-Modul \texttt{classification\_routing.dart} mengimplementasikan mekanisme perutean berbasis aturan (\textit{rule-based routing}) yang memetakan hasil klasifikasi AI ke rekomendasi instansi pemerintah daerah. Mekanisme ini beroperasi dalam dua tahap:
+\subsection{Keluaran Model Tetap Sembilan Instansi}
 
-\textbf{Tahap 1 --- Normalisasi Label}: Label mentah (\textit{raw label}) dari model ONNX disesuaikan dengan kasus-kasus khusus yang memerlukan penanganan berbeda dari pemetaan kategori standar. Misalnya, label \texttt{Accident Issues} secara eksplisit diarahkan ke kluster keselamatan lalu lintas dengan layanan darurat sebagai prioritas utama, terlepas dari kategori IssueCategory yang dipetakan secara otomatis.
+Model klasifikasi tidak menghasilkan empat kluster operasional. Keluaran model tetap berupa prediksi multiclass pada sembilan instansi target, yaitu satu \texttt{predicted\_dinas}, nilai \textit{confidence}, dan skor probabilitas untuk seluruh kelas. Istilah kluster operasional pada rancangan awal hanya berfungsi sebagai panduan tampilan atau pengelompokan naratif, bukan sebagai label model dan bukan sebagai hasil akhir routing pada arsitektur Phase 2.
 
-\textbf{Tahap 2 --- Pemetaan ke Kluster}: Setiap laporan diarahkan ke salah satu dari \textbf{empat kluster operasional}, sebagaimana disajikan pada Tabel~\ref{tab:routing-cluster}.
+Dengan demikian, alur yang dipakai pada implementasi adalah: notebook melatih dan mengevaluasi model 9 kelas, artefak terbaik diekspor ke ONNX, backend FastAPI memuat artefak tersebut, lalu SmartCityApps menerima hasil prediksi dari server. Aplikasi Android tidak menjalankan model secara lokal.
 
-\begin{table}[htbp]
-    \centering
-    \caption{Kluster Operasional Perutean Instansi}
-    \label{tab:routing-cluster}
-    \begin{tabular}{p{4cm}p{4cm}p{5cm}}
-        \toprule
-        \textbf{Kluster} & \textbf{Label Operasional} & \textbf{Instansi Utama} \\
-        \midrule
-        \textit{Cleanliness \& Public Order} &
-        Kebersihan \& Ketertiban Lingkungan &
-        Dinas Lingkungan Hidup (utama) + Satpol PP (pendukung) \\[0.5em]
+\subsection{Routing Instansi Terdekat Berbasis Lokasi}
 
-        \textit{Road Infrastructure} &
-        Jalan \& Prasarana Umum &
-        Dinas Bina Marga / PUPR (utama) + Dishub (pendukung) \\[0.5em]
+Setelah backend memperoleh \texttt{predicted\_dinas}, sistem menentukan instansi tujuan berdasarkan dua masukan: kelas prediksi dan koordinat laporan. Koordinat latitude dan longitude laporan dibandingkan dengan daftar instansi aktif yang memiliki kategori sesuai. Instansi dengan jarak terdekat dipilih sebagai tujuan laporan.
 
-        \textit{Traffic Safety} &
-        Keselamatan Lalu Lintas \& Respons Darurat &
-        PSC 119 + Kepolisian 110 (darurat) + Dishub (pendukung) \\[0.5em]
+Perhitungan jarak menggunakan formula Haversine karena koordinat berada pada permukaan bumi. Untuk dua titik koordinat \((lat_1, lon_1)\) dan \((lat_2, lon_2)\), jarak permukaan bumi dihitung dengan pendekatan:
 
-        \textit{Trees \& Emergency} &
-        Pohon Tumbang \& Respons Cepat &
-        BPBD (utama) + Dinas Pertamanan (pendukung) \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+\begin{equation}
+    d = 2R \cdot \arctan2(\sqrt{a}, \sqrt{1-a}),
+\end{equation}
 
-Untuk prediksi dengan label \texttt{Mixed Issues} (yang tidak dikecualikan dari model dalam \textit{deployment} aktual), sistem menggunakan prediksi kelas tertinggi kedua (\textit{secondary top prediction}) sebagai dasar perutean, disertai catatan peninjauan manual (\textit{review note}) kepada pengguna.
+dengan \(R\) adalah jari-jari bumi dan \(a\) dihitung dari selisih lintang serta bujur. Hasil routing yang dikembalikan backend meliputi \texttt{agency\_id}, \texttt{agency\_name}, \texttt{agency\_category}, \texttt{distance\_meters}, dan \texttt{routing\_method}.
 
-Seluruh logika perutean bersifat deterministik dan beroperasi sepenuhnya \textit{in-memory} tanpa akses jaringan, memastikan rekomendasi tersedia secara instan bahkan dalam kondisi tanpa koneksi internet.
+\subsection{Kasus Confidence Rendah dan Fallback}
+
+Apabila nilai \textit{confidence} berada di bawah ambang yang dikonfigurasi, laporan tetap dapat disimpan bersama seluruh skor probabilitasnya, tetapi ditandai sebagai membutuhkan validasi manual. Apabila tidak ditemukan instansi aktif yang cocok dengan kelas prediksi, backend menggunakan fallback ke unit tinjauan manual agar permintaan tidak gagal secara diam-diam.
 
 % =====================================================================
-\section{Struktur Modul Aplikasi Flutter}
+\section{Perancangan Layar Aplikasi}
+\label{sec:layar}
 % =====================================================================
 
-Aplikasi Flutter menggunakan arsitektur berbasis fitur (\textit{feature-based architecture}) di bawah direktori \texttt{lib/}. Setiap fitur mengenkapsulasi layar, \textit{provider} Riverpod, dan model yang relevan. Tabel~\ref{tab:flutter-features} merangkum modul fitur utama.
+Bagian ini menjelaskan secara ringkas fungsi utama, alur interaksi pengguna, dan keterkaitan tiap layar dengan kebutuhan sistem yang dijabarkan pada Bagian~\ref{sec:kebutuhan}. Mockup tampilan antarmuka untuk seluruh layar disajikan terpusat pada Lampiran~\ref{app:ui-mockup} agar pemaparan metode tetap padat dan rancangan visual dapat ditinjau secara berdampingan.
 
-\begin{table}[htbp]
-    \centering
-    \caption{Modul Fitur Aplikasi Flutter}
-    \label{tab:flutter-features}
-    \begin{tabular}{ll}
-        \toprule
-        \textbf{Modul Fitur} & \textbf{Fungsi Utama} \\
-        \midrule
-        \texttt{auth}        & Registrasi, login, dan manajemen sesi lokal \\
-        \texttt{splash}      & Layar pembuka dan inisialisasi aplikasi \\
-        \texttt{onboarding}  & Panduan pengguna baru \\
-        \texttt{dashboard}   & Ringkasan laporan dan navigasi utama \\
-        \texttt{reports}     & Pembuatan laporan, klasifikasi AI, dan riwayat \\
-        \texttt{profile}     & Manajemen profil pengguna \\
-        \texttt{settings}    & Pengaturan aplikasi \\
-        \texttt{testing}     & Pengujian inferensi model ONNX secara mandiri \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+\subsection{Layar Splash dan Onboarding}
 
-Modul \texttt{reports} merupakan fitur inti yang mengintegrasikan seluruh komponen utama sistem: kamera, GPS, inferensi ONNX, perutean instansi, dan penyimpanan data lokal. Alur kerja dalam modul ini terdiri dari tiga layar berurutan: \texttt{CreateReportScreen} $\rightarrow$ \texttt{AiResultReviewScreen} $\rightarrow$ konfirmasi dan penyimpanan.
+Layar \textit{splash} menampilkan logo aplikasi dan indikator pemuatan saat sumber daya awal (sesi otentikasi Supabase, konfigurasi GoRouter, dan registrasi \textit{provider} Riverpod) dimuat. Setelah pemuatan selesai, pengguna baru diarahkan ke alur \textit{onboarding} tiga halaman yang menjelaskan tiga proposisi nilai aplikasi, yaitu pelaporan multimodal, perutean otomatis, dan transparansi status laporan. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Buat Laporan}
+
+Layar buat laporan adalah titik masuk utama Warga Pelapor. Layar ini menyediakan tombol ambil foto, \textit{preview} foto, medan teks narasi multibaris, indikator status GPS, dan tombol klasifikasi yang aktif ketika gambar, deskripsi, latitude, dan longitude tersedia. Data tersebut dikirim ke backend FastAPI; SmartCityApps tidak menjalankan model secara lokal. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Tinjauan Hasil AI}
+
+Layar tinjauan AI menampilkan instansi prediksi teratas, peringkat tiga prediksi teratas, \textit{bar confidence} per kelas, serta instansi tujuan terdekat yang dikembalikan backend. Pengguna dapat mengoreksi kategori secara manual sebelum laporan disimpan. Layar ini menjadi titik intervensi kunci antara model AI dan keputusan manusia, sehingga sinyal ketidakpastian ditonjolkan. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Rekomendasi Instansi}
+
+Layar rekomendasi instansi menampilkan hasil routing dari backend berupa nama instansi tujuan, kategori instansi, dan estimasi jarak dari koordinat laporan. Informasi ini berasal dari prediksi 9 instansi dan koordinat latitude-longitude, bukan dari agregasi ke kluster baru. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Riwayat Laporan}
+
+Layar riwayat menampilkan daftar laporan milik pengguna dalam bentuk kartu yang memuat \textit{thumbnail} foto, kategori instansi, tanggal pengiriman, dan status terkini. Pengguna dapat memilih satu kartu untuk melihat detail lengkap, melacak audit pada tabel \texttt{report\_history}, dan menerima pembaruan secara \textit{realtime} melalui Supabase \textit{Realtime}. Pada peran petugas, layar detail juga menyediakan aksi perubahan status; status selesai hanya dapat dikirim setelah foto bukti penyelesaian diunggah. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Peta Laporan}
+
+Layar peta menampilkan pin lokasi seluruh laporan pengguna pada peta interaktif. Setiap pin dapat diketuk untuk memunculkan \textit{popup info} ringkas berisi kategori, status, dan tanggal. Filter kategori memungkinkan pengguna menyaring tampilan berdasarkan sembilan instansi target. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+\subsection{Layar Profil dan Pengaturan}
+
+Layar profil menampilkan informasi akun pengguna (foto, nama, surel, dan peran) yang diambil dari tabel \texttt{profiles} di Supabase. Pengaturan yang tersedia meliputi pengelolaan sesi, preferensi bahasa, dan opsi keluar yang membersihkan sesi Supabase dan \textit{state} Riverpod. Tampilan layar dapat dilihat pada Lampiran~\ref{app:ui-mockup}.
+
+% =====================================================================
+\section{Skenario Pengujian dan Metrik Evaluasi}
+\label{sec:skenario-pengujian}
+% =====================================================================
+
+Bagian ini merangkum skenario pengujian yang dijalankan untuk memvalidasi pipeline klasifikasi multimodal beserta metrik evaluasi yang dipakai untuk mengukur kinerja sistem.
+
+\subsection{Pembagian Data}
+
+Dataset Jakarta CRM dipartisi secara stratifikasi berdasarkan label kategori, dengan proporsi 70 persen \textit{train}, 15 persen validasi, dan 15 persen uji. Partisi akhir berisi 43.241 sampel pelatihan, 9.266 sampel validasi, dan 9.266 sampel uji. Ketidakseimbangan kelas dikompensasi melalui pembobotan kelas (\textit{class weights}) pada Persamaan~\ref{eq:classweight}, bukan melalui \textit{resampling}. Pembagian disimpan pada berkas \texttt{train.csv}, \texttt{val.csv}, dan \texttt{test.csv} pada folder \texttt{artifacts/splits/} agar setiap eksperimen dapat menggunakan partisi yang identik.
+
+\subsection{Metrik Evaluasi}
+
+Metrik evaluasi yang dilaporkan terdiri atas dua kelompok, yaitu metrik utama dan metrik pendukung.
+
+\textbf{Metrik utama:} \textit{macro F1 score} dipilih sebagai metrik utama karena memberikan bobot yang sama pada setiap kelas, sesuai untuk dataset dengan ketidakseimbangan kelas yang tidak ekstrem namun tetap signifikan. \textit{Balanced accuracy} dilaporkan sebagai metrik pendamping yang juga memberikan bobot yang sama pada setiap kelas. \textit{Confusion matrix} digunakan untuk menampilkan distribusi prediksi benar dan salah pada setiap pasangan kelas.
+
+\textbf{Metrik pendukung:} \textit{precision} dan \textit{recall} per kelas dilaporkan untuk mengidentifikasi kelas mana yang mengalami kesulitan tertentu. Untuk konfigurasi yang menggunakan PGS, \textit{mean uncertainty} dihitung sebagai indikator kualitas kalibrasi probabilitas. Latensi inferensi end-to-end pada server FastAPI dihitung sebagai jumlah dari latensi pra-proses, latensi \textit{image encoder}, latensi \textit{text encoder}, latensi \textit{classifier head}, dan latensi pasca-proses.
+
+\subsection{Skenario Ablasi}
+
+Ablasi yang dilaporkan pada Bab~\ref{ch:hasil} terdiri atas tiga skenario, yaitu (a) ablasi modalitas dengan tiga konfigurasi (citra saja, teks saja, dan fusi awal), (b) ablasi kalibrasi dengan dua konfigurasi (CatBoost tanpa PGS dan CatBoost dengan PGS), serta (c) ablasi pasangan \textit{encoder} dengan enam belas kombinasi pada matrix grid lengkap (kombinasi empat \textit{image encoder}, termasuk DINOv3 \textit{large}, dengan empat \textit{text encoder}). Hasil setiap skenario disajikan dengan metrik utama dan metrik pendukung yang sama.
+
+\subsection{Validasi Paritas ONNX}
+
+Setelah pelatihan selesai, model \textit{native} CatBoost diekspor ke format ONNX. Validasi paritas dilakukan dengan menjalankan kedua model pada batch sampel uji yang sama, lalu menghitung selisih probabilitas absolut maksimum ($|\Delta p|_{\max}$) di seluruh komponen vektor keluaran. Kriteria yang dipakai adalah $|\Delta p|_{\max} < 10^{-5}$ pada sampel set uji, yang memastikan prediksi top-1 identik antara jalur PyTorch dan jalur ONNX.
+
+\subsection{Pengujian Aplikasi Flutter}
+
+Aplikasi Flutter diuji secara end-to-end pada perangkat Android fisik dengan tiga skenario, yaitu (a) alur pelaporan oleh Warga Pelapor mulai dari pengambilan foto, penulisan narasi, klasifikasi AI, tinjauan, hingga penyimpanan ke Supabase, (b) alur verifikasi oleh Operator Instansi pada antrean laporan yang sudah dikategorisasi, dan (c) alur moderasi lintas instansi oleh Moderator. Setiap skenario dievaluasi dari sisi waktu respons, konsumsi data jaringan, dan ketepatan klasifikasi yang ditampilkan pada layar tinjauan AI.
+
+\subsection{Catatan tentang Pemilihan Algoritma}
+
+Penelitian ini memilih CatBoost sebagai satu-satunya algoritma \textit{classifier head} pada seluruh skenario eksperimen, dengan justifikasi teknis dan operasional yang telah dipaparkan pada Bagian~\ref{sec:justifikasi-catboost}. Tidak ada perbandingan dengan algoritma klasifikasi lain pada Bab~\ref{ch:hasil}; ablasi yang dilaporkan adalah ablasi modalitas, ablasi kalibrasi, dan ablasi pasangan \textit{encoder}.
+
+\bigskip
+
+Bab ini telah memaparkan metodologi penelitian secara terstruktur, mulai dari kerangka berpikir, analisis kebutuhan dengan tiga peran pengguna, akuisisi dan persiapan dataset Jakarta CRM melalui \textit{web scraping}, lingkungan komputasi RunPod yang diakses melalui SSH, pra-proses citra dan teks, ekstraksi \textit{embedding} dari empat \textit{encoder} citra dan empat \textit{encoder} teks, fusi awal berbasis konkatenasi, justifikasi pemilihan CatBoost sebagai \textit{classifier head} dan kalibrasinya dengan PGS, rancangan eksperimen ablasi, metrik evaluasi, ekspor ONNX, perancangan server FastAPI dan Docker untuk inferensi server-side, perancangan aplikasi Flutter SmartCityApps beserta UML lengkap (\textit{use case}, \textit{activity}, \textit{class}, dan \textit{sequence diagram}), mekanisme perutean instansi terdekat berdasarkan latitude-longitude, bukti penyelesaian laporan, rancangan layar, hingga skenario pengujian dan metrik evaluasi yang akan dipakai pada Bab~\ref{ch:hasil}. Bab Hasil dan Pembahasan berikutnya akan melaporkan capaian metrik kuantitatif, analisis kesalahan, dan validasi end-to-end pada aplikasi.

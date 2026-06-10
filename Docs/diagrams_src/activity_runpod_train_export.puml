@@ -1,0 +1,71 @@
+@startuml activity_runpod_train_export
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 12
+skinparam ArrowColor #5D6D7E
+skinparam ArrowThickness 1.1
+skinparam roundCorner 14
+skinparam ActivityMargin 14
+skinparam activity {
+    BackgroundColor #EAF2F8
+    BorderColor #2E4053
+    BorderThickness 1.1
+    DiamondBackgroundColor #F4F6F7
+    DiamondBorderColor #2E4053
+    DiamondFontColor #1B2631
+    StartColor #1E8449
+    EndColor #7B241C
+    BarColor #2E4053
+    FontColor #1B2631
+}
+skinparam swimlane {
+    BorderColor #2E4053
+    TitleFontStyle bold
+    TitleFontColor #1B2631
+}
+
+|Pod RunPod (GPU)|
+start
+:Mulai dari cache embedding
+(hasil fase persiapan);
+
+partition "Pelatihan classifier head (per pasangan encoder)" {
+    repeat
+        :Pilih pasangan (image encoder, text encoder);
+        :Muat embedding dari cache;
+        :Konkatenasi → vektor 2048-d;
+        :Latih CatBoost (logloss)
+dengan hyperparameter terpilih;
+        :Latih CatBoost+PGS
+(virtual ensemble 30 anggota);
+        :Evaluasi pada set validasi
+(macro F1, balanced accuracy);
+        :Simpan checkpoint .cbm dan log;
+    repeat while (16 pasangan tercakup?) is (belum)
+    -> selesai;
+}
+
+:Pilih pasangan terbaik
+(DINOv3 large + mE5 large);
+:Latih ulang pada train + validation
+untuk model final;
+:Evaluasi pada set uji
+(9.266 sampel, 9 instansi target);
+
+partition "Ekspor ONNX" {
+    :Ekspor image encoder ke ONNX;
+    :Ekspor text encoder ke ONNX;
+    :Ekspor classifier head ke ONNX;
+    :Validasi paritas numerik
+(|Δp| maks < 1e-5);
+}
+
+|Mesin Lokal Peneliti|
+:Unduh artefak ONNX dan checkpoint
+via rsync;
+:Commit ke repository penelitian;
+stop
+
+@enduml

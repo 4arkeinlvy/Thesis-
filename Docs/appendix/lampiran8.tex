@@ -1,0 +1,159 @@
+% =====================================================================
+% LAMPIRAN H: DESKRIPSI USE CASE SMARTCITYAPPS
+% =====================================================================
+\chapter{Deskripsi \textit{Use Case} SmartCityApps}
+\label{app:usecase-detail}
+
+Lampiran ini memuat \textit{use case description} lengkap untuk setiap \textit{use case} utama SmartCityApps. Ringkasan keterkaitannya dengan kebutuhan sistem disajikan pada Bab~\ref{ch:metode}; rincian alur utama, alur alternatif, pra-kondisi, dan pasca-kondisi setiap \textit{use case} dipaparkan pada tabel-tabel berikut.
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mendaftar atau Masuk Akun.}
+\label{tab:uc-auth}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mendaftar atau Masuk Akun \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mendaftar akun baru atau masuk ke akun yang sudah ada untuk mengakses fitur pelaporan. \\
+Pra-kondisi & Aplikasi terinstal pada perangkat Android. \\
+Alur Utama & 1. Pelapor membuka aplikasi. 2. Pelapor memilih opsi daftar atau masuk. 3. Pelapor memasukkan kredensial. 4. Sistem memvalidasi dan menyimpan sesi lokal. \\
+Alur Alternatif & Bila kredensial salah, sistem menampilkan pesan kesalahan. \\
+Pasca-kondisi & Pelapor masuk dan menuju layar utama. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengambil Foto Laporan.}
+\label{tab:uc-foto}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengambil Foto Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mengambil foto kejadian dengan kamera atau memilih dari galeri sebagai bukti visual laporan. \\
+Pra-kondisi & Pelapor sudah masuk dan berada di layar buat laporan. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Ambil Foto}. 2. Sistem meminta izin kamera/galeri. 3. Pelapor mengambil atau memilih foto. 4. Sistem menyimpan referensi foto pada \textit{state} laporan. \\
+Alur Alternatif & Pelapor membatalkan pengambilan foto. \\
+Pasca-kondisi & Foto tampil pada \textit{preview} dan siap dikirim. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Menulis Narasi Laporan.}
+\label{tab:uc-narasi}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Menulis Narasi Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor menulis narasi laporan dalam Bahasa Indonesia untuk melengkapi foto. \\
+Pra-kondisi & Pelapor berada di layar buat laporan. \\
+Alur Utama & 1. Pelapor mengetuk medan teks \textit{Narasi Laporan}. 2. Pelapor menulis deskripsi singkat. 3. Sistem menyimpan teks pada \textit{state} laporan. \\
+Alur Alternatif & Pelapor mengosongkan medan teks; sistem menampilkan peringatan. \\
+Pasca-kondisi & Narasi siap dikirim bersama foto. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengirim Laporan untuk Klasifikasi.}
+\label{tab:uc-kirim}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengirim Laporan untuk Klasifikasi \\
+Aktor & Warga Pelapor, Server FastAPI \\
+Deskripsi & Aplikasi mengirim foto, narasi, latitude, dan longitude ke server FastAPI untuk diklasifikasikan ke salah satu dari sembilan instansi. \\
+Pra-kondisi & Foto dan narasi sudah lengkap, koneksi jaringan tersedia. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Klasifikasi}. 2. Aplikasi membentuk permintaan \textit{multipart} berisi foto, narasi, latitude, dan longitude. 3. Permintaan dikirim ke \textit{endpoint} klasifikasi pada server. 4. Server menjalankan fusi awal dan algoritma CatBoost+PGS. 5. Server menghitung confidence dan instansi terdekat. 6. Server mengirim respons JSON ke aplikasi. \\
+Alur Alternatif & Bila server tidak tersedia, sistem menampilkan pesan kesalahan dan menawarkan menyimpan laporan sebagai \textit{draft}. \\
+Pasca-kondisi & Pelapor diarahkan ke layar tinjauan AI. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Meninjau Hasil Klasifikasi AI.}
+\label{tab:uc-tinjau}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Meninjau Hasil Klasifikasi AI \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor melihat instansi yang diprediksi beserta tingkat keyakinan dan rekomendasi instansi. \\
+Pra-kondisi & Respons klasifikasi sudah diterima. \\
+Alur Utama & 1. Sistem menampilkan instansi prediksi, \textit{confidence}, dan tiga prediksi teratas. 2. Sistem menampilkan instansi tujuan terdekat beserta estimasi jarak. 3. Pelapor membaca informasi. \\
+Alur Alternatif & Bila \textit{confidence} di bawah ambang, sistem menyarankan tinjauan manual. \\
+Pasca-kondisi & Pelapor dapat menerima atau mengoreksi hasil. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengoreksi Kategori Manual.}
+\label{tab:uc-koreksi}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengoreksi Kategori Manual \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mengganti instansi yang diprediksi AI bila menurutnya salah. \\
+Pra-kondisi & Pelapor berada di layar tinjauan AI. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Edit Kategori}. 2. Sistem menampilkan daftar sembilan kategori. 3. Pelapor memilih kategori baru. 4. Sistem memperbarui \textit{state} laporan. \\
+Alur Alternatif & Pelapor membatalkan koreksi. \\
+Pasca-kondisi & Kategori laporan diperbarui sesuai pilihan pelapor. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Menyimpan Laporan ke Riwayat.}
+\label{tab:uc-simpan}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Menyimpan Laporan ke Riwayat \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor menyimpan laporan beserta hasil klasifikasi ke basis data Supabase. \\
+Pra-kondisi & Hasil klasifikasi (otomatis atau hasil koreksi) tersedia dan pelapor terotentikasi. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Simpan}. 2. Aplikasi mengunggah berkas gambar ke Supabase Storage. 3. Aplikasi menulis baris baru ke tabel \texttt{reports} pada basis data Supabase. 4. Aplikasi menyisipkan baris audit ke tabel \texttt{report\_history}. 5. Sistem menampilkan konfirmasi. \\
+Alur Alternatif & Bila penyimpanan gagal, sistem menampilkan pesan kesalahan. \\
+Pasca-kondisi & Laporan tersimpan dan terlihat pada layar Riwayat. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Melihat Riwayat dan Peta Laporan.}
+\label{tab:uc-riwayat}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Melihat Riwayat dan Peta Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor melihat daftar laporan yang sudah disimpan, beserta lokasi pada peta. \\
+Pra-kondisi & Sudah ada minimal satu laporan tersimpan. \\
+Alur Utama & 1. Pelapor membuka \textit{tab} Riwayat atau Peta. 2. Sistem membaca tabel laporan dari basis data. 3. Sistem menampilkan daftar laporan atau \textit{pin} lokasi pada peta. \\
+Alur Alternatif & Bila tidak ada laporan, sistem menampilkan pesan \textit{empty state}. \\
+Pasca-kondisi & Pelapor dapat memilih laporan untuk melihat rincian. \\
+\bottomrule
+\end{tabular}
+\end{table}

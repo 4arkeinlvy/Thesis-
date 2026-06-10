@@ -1,0 +1,101 @@
+% =====================================================================
+% LAMPIRAN G: LANDASAN TEORI PELENGKAP
+% =====================================================================
+\chapter{Landasan Teori Pelengkap}
+\label{app:teori-pelengkap}
+
+Lampiran ini menampung uraian teoretis yang sebelumnya berada di Bab~\ref{ch:tinjauan} namun bersifat latar umum dan tidak menjadi keputusan metodologi langsung pada Bab~\ref{ch:metode}. Pemindahan dilakukan agar Bab~\ref{ch:tinjauan} tetap padat dan terfokus pada teori yang dipakai pada \textit{pipeline} akhir, yaitu \textit{encoder} DINOv3, \textit{multilingual-E5}, fusi awal, dan \textit{classifier head} CatBoost.
+
+% =====================================================================
+\section*{G.1 \textit{Web Scraping}: Klasifikasi Halaman, Alur, dan Pustaka}
+\label{app:webscraping-detail}
+
+Halaman web yang menjadi target \textit{scraping} dibedakan menjadi dua kelompok berdasarkan cara konten dirender. \textbf{Halaman statis} adalah halaman yang seluruh kontennya sudah terbentuk pada respons HTML server, sehingga cukup memerlukan pengunduh HTTP dan pengurai HTML. \textbf{Halaman dinamis} adalah halaman yang kontennya dirender oleh JavaScript pada peramban (\textit{client-side rendering}), sehingga memerlukan eksekusi JavaScript melalui peramban tanpa kepala (\textit{headless browser}) atau pemanggilan API XHR yang ditemukan melalui inspeksi jaringan.
+
+Alur umum \textit{web scraping} terdiri atas lima tahap, yaitu (1) identifikasi sumber (halaman daftar, halaman rincian, dan pola URL), (2) pengunduhan melalui permintaan HTTP GET dengan memperhatikan \textit{user-agent}, \textit{cookie}, dan pembatasan kecepatan, (3) penguraian (\textit{parsing}) elemen HTML yang relevan, (4) pembersihan dan normalisasi karakter, tanggal, serta pemetaan label bebas ke kategori standar, dan (5) penyimpanan data terstruktur (CSV, JSONL, Parquet) atau basis data relasional.
+
+Beberapa pustaka populer pada ekosistem Python untuk \textit{web scraping} antara lain \texttt{requests} (pustaka HTTP sederhana untuk halaman statis), \texttt{BeautifulSoup} (pengurai HTML yang fleksibel), \texttt{lxml} (pengurai cepat berbasis libxml2 dengan dukungan XPath), \texttt{Scrapy} (\textit{framework} berbasis \textit{spider} dan \textit{pipeline} untuk \textit{scraping} berskala besar), \texttt{Selenium} dan \texttt{Playwright} (otomatisasi peramban yang dapat mengeksekusi JavaScript pada halaman dinamis), serta \texttt{httpx} (alternatif modern \texttt{requests} dengan dukungan asinkron).
+
+% =====================================================================
+\section*{G.2 \textit{Multi-Head Attention}: Formulasi Lengkap}
+\label{app:mha-detail}
+
+\textit{Multi-head attention} adalah perluasan \textit{single-head attention} yang menjalankan beberapa proyeksi linear paralel dari \textit{query}, \textit{key}, dan \textit{value}, kemudian menggabungkan keluarannya. Motivasi desain ini adalah bahwa satu \textit{head} terbatas pada satu pola hubungan antar token, sementara teks dan citra alami memuat banyak pola hubungan secara simultan.
+
+Misalkan dimensi \textit{embedding} model adalah $d_{\text{model}}$ dan jumlah \textit{head} adalah $h$. Setiap \textit{head} bekerja pada subruang berdimensi $d_k = d_{\text{model}} / h$. Untuk setiap \textit{head} $i \in \{1, \dots, h\}$ didefinisikan tiga matriks proyeksi yang dapat dilatih:
+
+\begin{equation}
+    \mathbf{Q}_i = \mathbf{Q} \mathbf{W}_i^Q, \quad
+    \mathbf{K}_i = \mathbf{K} \mathbf{W}_i^K, \quad
+    \mathbf{V}_i = \mathbf{V} \mathbf{W}_i^V,
+    \label{eq:mha_proj}
+\end{equation}
+dengan $\mathbf{W}_i^Q, \mathbf{W}_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$ dan $\mathbf{W}_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$. Setiap \textit{head} menjalankan \textit{scaled dot-product attention} secara independen:
+
+\begin{equation}
+    \text{head}_i = \text{softmax}\!\left( \frac{\mathbf{Q}_i \mathbf{K}_i^\top}{\sqrt{d_k}} \right) \mathbf{V}_i.
+    \label{eq:mha_head}
+\end{equation}
+
+Keluaran $h$ \textit{head} dikonkatenasi sepanjang dimensi terakhir, kemudian diproyeksikan kembali ke ruang berdimensi $d_{\text{model}}$ melalui matriks proyeksi keluaran $\mathbf{W}^O \in \mathbb{R}^{h d_v \times d_{\text{model}}}$:
+
+\begin{equation}
+    \text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{Concat}(\text{head}_1, \dots, \text{head}_h) \, \mathbf{W}^O.
+    \label{eq:multihead}
+\end{equation}
+
+Dimensi $d_k$ pada setiap \textit{head} biasanya jauh lebih kecil daripada $d_{\text{model}}$, contohnya $d_{\text{model}} = 768$ dengan $h = 12$ menghasilkan $d_k = 64$, sehingga total komputasi tetap sebanding dengan \textit{single-head attention} berdimensi $d_{\text{model}}$. Pada model bahasa modern jumlah \textit{head} umumnya berkisar antara 8 dan 32, dan penambahan \textit{head} melampaui jumlah optimal sering kali tidak meningkatkan performa serta membuat sebagian \textit{head} menjadi redundan.
+
+% =====================================================================
+\section*{G.3 \textit{Backbone} Visual Pembanding: EVA-02 dan Hiera}
+\label{app:backbone-detail}
+
+\subsection*{G.3.1 EVA-02}
+
+EVA-02 \citep{fangEVA022023} adalah \textit{vision foundation model} generasi kedua dari seri EVA yang menggabungkan \textit{Masked Image Modeling} (MIM) dan penyelarasan dengan representasi CLIP. Inovasi utamanya adalah penggunaan fitur CLIP terlatih sebagai target sinyal supervisi dalam proses MIM, alih-alih piksel. Pada sisi arsitektur, EVA-02 memperbaiki ViT melalui Sub-LN (penambahan \textit{layer normalization} di dalam blok \textit{attention} dan FFN), SwiGLU FFN (varian \textit{gated} pengganti FFN GELU), dan 2D RoPE (\textit{rotary position embedding} dua dimensi). EVA-02 dilatih pada dataset Merged-2B dengan target fitur dari EVA-CLIP, dan menempati posisi kompetitif terhadap \textit{state-of-the-art} pada \textit{benchmark} ImageNet, COCO, dan ADE20K.
+
+\subsection*{G.3.2 Hiera}
+
+Hiera (\textit{Hierarchical Vision Transformer without the Bells and Whistles}) \citep{ryaliHiera2023} menyederhanakan ViT dengan menghapus komponen yang dianggap tidak diperlukan, berlandaskan hipotesis bahwa banyak komponen pada \textit{hierarchical Transformer} sebelumnya (Swin, MViT) menjadi tidak perlu apabila pelatihan dilakukan dengan paradigma MAE. Inovasi utamanya adalah penghapusan \textit{positional embedding} eksplisit dan penggunaan \textit{pooling attention} hierarkis yang terinspirasi MAE \citep{heMAE2022}, sehingga menghasilkan representasi hierarkis menyerupai piramida fitur CNN namun tetap dalam kerangka \textit{Transformer} murni. \textit{Masked Autoencoder} (MAE) sendiri menutup sekitar 75\% \textit{patch} citra dan meminta model merekonstruksi piksel pada \textit{patch} yang ditutup; asimetri antara \textit{encoder} (melihat \textit{patch} terlihat) dan \textit{decoder} (merekonstruksi semua \textit{patch}) memberikan efisiensi komputasi yang signifikan.
+
+% =====================================================================
+\section*{G.4 \textit{Encoder} Teks Pembanding}
+\label{app:textencoder-detail}
+
+\subsection*{G.4.1 BERT dan mBERT}
+
+BERT \citep{devlinBERT2019} adalah \textit{Transformer encoder} dua arah yang dilatih dengan \textit{Masked Language Modeling} (MLM) dan \textit{Next Sentence Prediction} (NSP), menggunakan tokenizer WordPiece dengan kosakata sekitar 30 ribu pada varian Inggris. \textit{Multilingual BERT} (mBERT) adalah varian yang dilatih pada Wikipedia 104 bahasa secara serentak dengan kosakata WordPiece bersama berukuran sekitar 110 ribu, sehingga memperoleh kemampuan transfer lintas bahasa \textit{zero-shot}.
+
+\subsection*{G.4.2 IndoBERT}
+
+IndoBERT \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga \textit{Transformer encoder} yang dilatih khusus pada korpus Bahasa Indonesia melalui dua jalur publikasi, yaitu IndoLEM/IndoBERT \citep{kotoIndoLEM2020} dan IndoNLU/IndoBERT \citep{wilieIndoNLU2020}. Arsitekturnya identik dengan BERT, namun dengan tokenizer dan korpus pra-latih spesifik Bahasa Indonesia, sehingga menghasilkan representasi yang lebih kaya pada idiom, ejaan, dan istilah lokal dibanding mBERT.
+
+\subsection*{G.4.3 Cendol-mT5}
+
+Cendol \citep{cahyawijayaCendol2024} adalah keluarga model bahasa berbasis instruksi yang dirilis oleh IndoNLP untuk Bahasa Indonesia dan bahasa daerah Nusantara. Sub-keluarga Cendol-mT5 dibangun di atas arsitektur mT5 (\textit{encoder-decoder}); pada penggunaan sebagai \textit{encoder} kalimat, hanya bagian \textit{encoder} mT5 yang dimanfaatkan dengan \textit{mean pooling} yang dinormalisasi. mT5 \citep{xueMT52021} adalah varian multibahasa T5 yang dilatih pada korpus mC4 mencakup 101 bahasa dengan tujuan \textit{span corruption}.
+
+\subsection*{G.4.4 BGE-M3}
+
+BGE-M3 \citep{chenBGEM32024} adalah \textit{embedding model} multibahasa dari BAAI yang mendukung multibahasa (100+ bahasa), multifungsi (\textit{dense}, \textit{sparse}, dan \textit{multi-vector retrieval}), serta multigranularitas (hingga 8.192 token). Arsitekturnya didasarkan pada XLM-RoBERTa \textit{large} (sekitar 560 juta parameter) dengan strategi \textit{self-knowledge distillation}. \textit{Embedding} yang dihasilkan berdimensi 1024 dari token CLS dengan normalisasi L2.
+
+% =====================================================================
+\section*{G.5 \textit{Unified Modeling Language} (UML): Jenis Diagram dan C4 Model}
+\label{app:uml-detail}
+
+UML \citep{boochUML2005} adalah bahasa permodelan visual standar yang dibakukan oleh \textit{Object Management Group} (OMG). Versi UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur dan diagram perilaku.
+
+\textbf{Diagram struktur} memodelkan elemen sistem yang relatif statis. Tiga jenis yang paling sering dipakai adalah Diagram Kelas (\textit{class diagram}: kelas, atribut, metode, dan relasi), Diagram Komponen (\textit{component diagram}: komponen yang dapat di-\textit{deploy} beserta antarmukanya), dan Diagram Deployment (\textit{deployment diagram}: pemetaan komponen ke simpul perangkat keras).
+
+\textbf{Diagram perilaku} memodelkan dinamika sistem. Empat jenis yang relevan adalah Diagram \textit{Use Case} (interaksi aktor dengan fungsionalitas), Diagram \textit{Sequence} (urutan pesan antar objek pada sumbu waktu), Diagram Aktivitas (\textit{activity diagram}: alur kerja dengan simpul keputusan dan paralel), dan Diagram \textit{State Machine} (keadaan objek dan transisinya).
+
+Sebagai pelengkap, \citet{brownC42018} memperkenalkan \textit{C4 Model} yang menyederhanakan dokumentasi arsitektur menjadi empat tingkat abstraksi, yaitu \textit{Context}, \textit{Container}, \textit{Component}, dan \textit{Code}. C4 sering dipadukan dengan UML dan lebih mudah dibaca oleh pemangku kepentingan non-teknis.
+
+% =====================================================================
+\section*{G.6 Docker dan Kontainerisasi: Konsep Rinci}
+\label{app:docker-detail}
+
+Docker \citep{merkelDocker2014} adalah \textit{platform} kontainerisasi yang mengemas aplikasi beserta dependensinya ke dalam satu unit yang konsisten di berbagai lingkungan. Berbeda dari mesin virtual, kontainer berbagi \textit{kernel} sistem operasi induk dan mengisolasi proses melalui \textit{Linux namespaces} dan \textit{cgroups}, sehingga ringan dan cepat dijalankan.
+
+Lima konsep inti Docker adalah \textbf{Image} (\textit{template} \textit{read-only} berisi sistem berkas aplikasi), \textbf{Container} (instansi \textit{image} yang berjalan), \textbf{Dockerfile} (skrip deklaratif langkah \textit{build}), \textbf{Volume} (penyimpanan persisten), dan \textbf{Registry} (gudang \textit{image} terpusat seperti Docker Hub). Sebuah \texttt{Dockerfile} umumnya memuat instruksi \texttt{FROM}, \texttt{WORKDIR}, \texttt{COPY}/\texttt{ADD}, \texttt{RUN}, \texttt{EXPOSE}, \texttt{ENV}, \texttt{HEALTHCHECK}, serta \texttt{CMD}/\texttt{ENTRYPOINT}.
+
+Strategi \textit{multi-stage build} memisahkan tahap \textit{build} (yang membutuhkan kompilator) dari tahap \textit{runtime} (yang hanya membutuhkan binari hasil), sehingga \textit{image} akhir lebih ramping. Docker Compose mendefinisikan aplikasi multi-kontainer melalui berkas YAML, sehingga lingkungan (server inferensi, basis data, \textit{reverse proxy}) dapat dijalankan dengan satu perintah \texttt{docker compose up}. Pada \textit{pipeline machine learning}, Docker memberikan keuntungan berupa \textit{reproducibility}, isolasi dependensi (PyTorch, ONNX Runtime, CUDA), \textit{portability}, dan akselerasi GPU melalui \texttt{nvidia-container-toolkit}.

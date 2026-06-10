@@ -1,0 +1,180 @@
+@startuml class_diagram_flutter
+!include _thesis_style.puml
+
+left to right direction
+
+
+package "core.services" {
+    abstract class AiClassificationService {
+        +classify(imageFile: XFile, description: String) : Future<AiPrediction>
+    }
+
+    class CloudAiClassificationService {
+        -client: CloudClassificationService
+        +classify(imageFile, description) : Future<AiPrediction>
+    }
+
+    class DemoAiClassificationService {
+        +classify(imageFile, description) : Future<AiPrediction>
+    }
+
+    class CloudClassificationService {
+        -baseUrl: String
+        -timeout: Duration
+        +classify(imageFile: File, laporan: String) : Future<CloudPrediction>
+        +healthCheck() : Future<bool>
+    }
+
+    class LocationService {
+        +getCoordinates() : Future<{lat, lng}>
+        +reverseGeocode(lat, lng) : Future<String>
+    }
+
+    class MediaService {
+        +pickFromCamera() : Future<XFile?>
+        +pickFromGallery() : Future<XFile?>
+    }
+}
+
+package "features.reports" {
+    class CreateReportController {
+        -aiService: AiClassificationService
+        -reportsRepo: ReportsRepository
+        -mediaService: MediaService
+        -locationService: LocationService
+        -state: CreateReportState
+        +pickFromCamera()
+        +pickFromGallery()
+        +setDescription(text: String)
+        +useCurrentLocation()
+        +classifyImage()
+        +submit() : Future<String>
+    }
+
+    class ReportsRepository {
+        -client: SupabaseClient
+        +submitReport(profile, imageFile, category,\nprediction, description, location) : Future<CityReport>
+        +watchByUser(userId) : Stream<List<CityReport>>
+        +watchByCategory(category) : Stream<List<CityReport>>
+        +verify(reportId, note) : Future<CityReport>
+        +reject(reportId, reason) : Future<CityReport>
+        +markResolved(reportId, note) : Future<CityReport>
+        +reassign(reportId, newAgency, note) : Future<CityReport>
+    }
+
+    class CityReport {
+        +id: String
+        +userId: String
+        +category: IssueCategory
+        +aiPrediction: String
+        +aiConfidence: double
+        +imageUrl: String
+        +description: String
+        +latitude: double
+        +longitude: double
+        +address: String
+        +status: ReportStatus
+    }
+
+    class AiPrediction {
+        +category: IssueCategory
+        +confidence: double
+        +rawPayload: Map<String,dynamic>
+    }
+
+    enum IssueCategory <<9 instansi target>> {
+        dinasBinaMarga (id=0)
+        satpolPP (id=1)
+        dinasPerhubungan (id=2)
+        kelurahan (id=3)
+        dinasPertamananHutan (id=4)
+        dinasSumberDayaAir (id=5)
+        dinasCiptaKaryaTataRuang (id=6)
+        badanPembinaanBUMD (id=7)
+        instansiLain (id=8)
+    }
+
+    enum ReportStatus {
+        submitted
+        verified
+        inProgress
+        resolved
+        rejected
+    }
+}
+
+package "features.auth (3 peran pengguna)" {
+    class AuthRepository {
+        -client: SupabaseClient
+        +signUp(fullName, email, phone, password, photo)
+        +signIn(email, password)
+        +signOut()
+        +sendPasswordReset(email)
+        +fetchCurrentUserProfile() : Future<UserProfile?>
+        +authStateChanges() : Stream<LocalAuthSession?>
+    }
+
+    class UserProfile {
+        +id: String
+        +fullName: String
+        +email: String
+        +role: UserRole
+        +assignedAgency: IssueCategory?
+    }
+
+    abstract class UserRole <<sealed>> {
+        marker abstrak\nuntuk tiga peran
+    }
+    class Citizen <<role>> {
+        Warga Pelapor\n(tidak menambah field)
+    }
+    class AgencyAdmin <<role>> {
+        +agency: IssueCategory
+        Operator instansi tertentu
+    }
+    class SuperAdmin <<role>> {
+        Moderator lintas instansi\n(tidak menambah field)
+    }
+
+    UserRole <|-- Citizen
+    UserRole <|-- AgencyAdmin
+    UserRole <|-- SuperAdmin
+}
+
+AiClassificationService <|.. CloudAiClassificationService
+AiClassificationService <|.. DemoAiClassificationService
+CloudAiClassificationService o-- CloudClassificationService : delegates to >
+
+CreateReportController --> AiClassificationService : uses >
+CreateReportController --> ReportsRepository : uses >
+CreateReportController --> MediaService : uses >
+CreateReportController --> LocationService : uses >
+
+ReportsRepository --> CityReport : produces >
+CityReport --> IssueCategory : has >
+CityReport --> ReportStatus : has >
+CreateReportController ..> AiPrediction : holds >
+
+AuthRepository --> UserProfile : produces >
+UserProfile --> UserRole : has >
+UserProfile --> IssueCategory : assignedAgency >
+
+note right of UserRole
+  Tiga peran pengguna aplikasi:
+  Citizen (Warga Pelapor),
+  AgencyAdmin (Operator Instansi),
+  SuperAdmin (Moderator).
+  Berbeda dari IssueCategory
+  yang memiliki 9 nilai
+  (kategori instansi prediksi).
+end note
+
+note bottom of IssueCategory
+  IssueCategory = sembilan instansi
+  target klasifikasi multimodal.
+  Setiap nilai memiliki id integer
+  yang dipakai pada respons
+  cloud_id dari /predict.
+end note
+
+@enduml

@@ -1,0 +1,17 @@
+enelitian ini akan mengeksplorasi penggunaan model IndoBERT
+dalam mengklasifikasikan skripsi berbahasa Indonesia di Universitas XYZ
+berdasarkan judul dan abstraknya. Penelitian ini mencoba mengisi gap dengan
+memperkenalkan penggunaan IndoBERT untuk classification task ini, yang
+sebelumnya belum pernah dilakukan. Selain itu, penelitian ini juga akan
+menggunakan dataset dari Universitas XYZ. Dalam konteks ini, penulis
+berencana melakukan penelitian untuk dapat meningkatkan efisiensi dan
+akurasi dalam mengklasifikasikan topik skripsi mahasiswa Universitas XYZ
+berdasarkan judul dan abstrak. Dengan menerapkan IndoBERT, model ini
+memiliki potensi besar untuk membantu dalam memahami dan
+mengelompokkan berbagai topik skripsi ke dalam kategori yang tepat. Oleh
+karena itu, tujuan penelitian ini adalah untuk mengeksplorasi kemampuan
+model IndoBERT dalam mengklasifikasikan topik skripsi mahasiswa
+Universitas XYZ berdasarkan judul dan abstrak skripsi. Dengan demikian,
+penelitian ini diharapkan dapat memberikan solusi yang lebih efektif dan
+efisien dalam mengklasifikasikan skripsi, serta memberikan wawasan baru
+dalam penggunaan model AI, khususnya IndoBERT, dalam bidang akademik.

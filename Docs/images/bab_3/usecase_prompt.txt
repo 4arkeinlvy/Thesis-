@@ -1,0 +1,156 @@
+USE CASE DIAGRAM PROMPT
+========================
+Aplikasi: Sistem Pelaporan Masalah Lingkungan Multimodal Berbasis AI (Smart City Reporter)
+Bahasa: Indonesia
+Notasi: UML 2.x Use Case Diagram
+Output yang diharapkan: PNG / SVG diagram dengan bingkai sistem (system boundary), aktor di luar bingkai, oval use case di dalam bingkai, dan relasi <<include>> serta <<extend>> bila diperlukan.
+
+==============================
+AKTOR (di luar system boundary)
+==============================
+
+Aktor Utama (Primary Actors):
+1. Warga Pelapor
+   - Pengguna umum yang melaporkan masalah lingkungan perkotaan.
+   - Mengoperasikan aplikasi mobile Flutter pada perangkat Android.
+
+2. Operator Instansi
+   - Petugas dinas pemerintah daerah yang menerima dan memverifikasi laporan.
+   - Mengoperasikan dasbor admin pada aplikasi yang sama dengan peran berbeda.
+
+3. Moderator
+   - Pengguna dengan hak akses penuh untuk meninjau seluruh laporan.
+
+Aktor Sekunder (Secondary / System Actors):
+4. Server FastAPI (Sistem Inferensi AI)
+   - Layanan eksternal yang menjalankan klasifikasi multimodal (DINOv3 + mE5 + CatBoost+PGS).
+
+5. Supabase (Backend Basis Data Cloud)
+   - Sistem eksternal yang menyediakan otentikasi, penyimpanan basis data PostgreSQL, dan penyimpanan berkas (Storage).
+
+6. Layanan GPS (perangkat)
+   - Sistem perangkat yang menyediakan koordinat lokasi.
+
+7. Kamera dan Galeri (perangkat)
+   - Sistem perangkat yang menyediakan akuisisi foto.
+
+==============================
+SYSTEM BOUNDARY: Aplikasi Smart City Reporter
+==============================
+
+USE CASE UNTUK WARGA PELAPOR
+============================
+
+UC-01  Mendaftar Akun
+       <<include>> UC-02 Memvalidasi Kredensial via Supabase Auth
+
+UC-03  Masuk ke Akun
+       <<include>> UC-02 Memvalidasi Kredensial via Supabase Auth
+
+UC-04  Keluar dari Akun
+
+UC-05  Mengambil Foto Laporan
+       <<include>> UC-06 Mengakses Kamera atau Galeri (Sekunder: Kamera dan Galeri)
+
+UC-07  Menulis Narasi Laporan dalam Bahasa Indonesia
+
+UC-08  Mendapatkan Lokasi GPS Otomatis
+       <<include>> UC-09 Membaca Koordinat dari Layanan GPS (Sekunder: Layanan GPS)
+       <<extend>>  UC-10 Memilih Lokasi Manual di Peta
+
+UC-11  Mengirim Laporan untuk Klasifikasi
+       <<include>> UC-12 Memanggil Endpoint /predict pada Server FastAPI (Sekunder: Server FastAPI)
+       <<extend>>  UC-13 Menyimpan sebagai Draft saat Offline
+
+UC-14  Meninjau Hasil Klasifikasi AI
+       <<extend>>  UC-15 Mengoreksi Kategori Manual
+
+UC-16  Melihat Rekomendasi Instansi (Routing Cluster)
+
+UC-17  Menyimpan Laporan ke Riwayat
+       <<include>> UC-18 Mengunggah Foto ke Supabase Storage (Sekunder: Supabase)
+       <<include>> UC-19 Menyisipkan Baris ke Tabel reports (Sekunder: Supabase)
+
+UC-20  Melihat Daftar Riwayat Laporan
+       <<include>> UC-21 Membaca Tabel reports dari Supabase (Sekunder: Supabase)
+
+UC-22  Melihat Peta Laporan
+       <<include>> UC-21 Membaca Tabel reports dari Supabase
+
+UC-23  Melihat Detail Laporan
+
+UC-24  Mengelola Profil Pengguna
+       <<include>> UC-25 Memperbarui Tabel profiles (Sekunder: Supabase)
+
+UC-26  Mengubah Pengaturan Aplikasi (bahasa, izin lokasi otomatis, tema)
+
+
+USE CASE UNTUK OPERATOR INSTANSI
+=================================
+
+UC-30  Masuk sebagai Operator
+       <<include>> UC-02 Memvalidasi Kredensial via Supabase Auth
+
+UC-31  Melihat Antrean Laporan untuk Instansi yang Ditugaskan
+       <<include>> UC-32 Memfilter Laporan berdasarkan assigned_agency (Sekunder: Supabase)
+
+UC-33  Memverifikasi Laporan
+       <<include>> UC-34 Memperbarui status Laporan ke 'verified'
+       <<include>> UC-35 Mencatat Riwayat Perubahan Status (Sekunder: Supabase)
+
+UC-36  Menolak Laporan
+       <<include>> UC-37 Mengisi rejection_reason
+       <<include>> UC-35 Mencatat Riwayat Perubahan Status
+
+UC-38  Menandai Laporan Selesai (resolved)
+       <<include>> UC-35 Mencatat Riwayat Perubahan Status
+
+
+USE CASE UNTUK MODERATOR
+========================
+
+UC-40  Melihat Seluruh Laporan Lintas Instansi
+UC-41  Mengubah Penugasan Operator pada Laporan
+UC-42  Meninjau Statistik dan Audit Trail
+       <<include>> UC-43 Membaca Tabel report_history (Sekunder: Supabase)
+
+
+==============================
+RELASI ANTAR USE CASE
+==============================
+
+Generalisasi Aktor:
+- Operator Instansi --|> Warga Pelapor (operator juga dapat membuat laporan pribadi).
+- Moderator --|> Operator Instansi (moderator memiliki seluruh kemampuan operator dan lebih).
+
+Relasi <<include>> kunci:
+- UC-11 Mengirim Laporan --include--> UC-12 Memanggil Endpoint /predict
+- UC-17 Menyimpan Laporan --include--> UC-18 Mengunggah Foto + UC-19 Insert Tabel reports
+- UC-33 Memverifikasi --include--> UC-34 Update status + UC-35 Catat Riwayat
+
+Relasi <<extend>> kunci:
+- UC-15 Mengoreksi Kategori extend UC-14 Meninjau Hasil
+- UC-13 Simpan sebagai Draft extend UC-11 Mengirim Laporan (saat offline)
+- UC-10 Pilih Lokasi Manual extend UC-08 Lokasi Otomatis (saat GPS gagal)
+
+
+==============================
+INSTRUKSI UNTUK GENERATOR (GPT, PlantUML, Lucidchart, dll.)
+==============================
+
+1. Letakkan System Boundary "Aplikasi Smart City Reporter" sebagai kotak besar.
+2. Tempatkan aktor Warga Pelapor di sisi KIRI.
+3. Tempatkan aktor Operator Instansi dan Moderator di sisi KIRI BAWAH.
+4. Tempatkan aktor sistem (Server FastAPI, Supabase, Layanan GPS, Kamera/Galeri) di sisi KANAN.
+5. Tarik garis solid dari aktor ke use case yang relevan (asosiasi).
+6. Gambar relasi <<include>> dengan panah putus-putus berlabel <<include>> dari use case sumber ke use case target.
+7. Gambar relasi <<extend>> dengan panah putus-putus berlabel <<extend>> dari use case opsional ke use case basis.
+8. Kelompokkan use case berdasarkan tema (Otentikasi, Pelaporan, Tinjauan AI, Riwayat, Operator, Moderator) dengan whitespace antar kelompok agar mudah dibaca.
+9. Gunakan bahasa Indonesia pada label use case dan aktor.
+10. Output dalam format PNG resolusi tinggi atau SVG vektor agar dapat dimasukkan ke dokumen LaTeX.
+
+==============================
+RINGKASAN AKHIR YANG DIINGINKAN
+==============================
+
+Diagram tunggal yang menampilkan tiga aktor utama (Warga Pelapor, Operator Instansi, Moderator) dengan generalisasi yang benar, empat aktor sistem (Server FastAPI, Supabase, GPS, Kamera/Galeri), dan sekitar 30 use case yang dikelompokkan dalam satu system boundary, dengan relasi <<include>> dan <<extend>> yang jelas. Diagram harus dapat dibaca dalam format A4 portrait.

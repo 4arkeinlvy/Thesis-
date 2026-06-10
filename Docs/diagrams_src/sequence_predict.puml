@@ -1,0 +1,58 @@
+@startuml sequence_predict
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+skinparam sequence {
+    ParticipantBackgroundColor #ecf0f1
+    ParticipantBorderColor #2c3e50
+    ParticipantFontColor #2c3e50
+    LifeLineBackgroundColor #ffffff
+    LifeLineBorderColor #95a5a6
+    ArrowColor #34495e
+    ActorBackgroundColor #ecf0f1
+    ActorBorderColor #2c3e50
+}
+skinparam shadowing false
+skinparam roundCorner 8
+
+title Sequence Diagram Pengiriman Laporan dan Inferensi Server-Side
+
+actor "Warga Pelapor" as User
+participant "SmartCityApps\n(Android Client)" as App
+participant "Ngrok Tunnel" as Ngrok
+participant "FastAPI Backend\n/predict" as Backend
+participant "Inference Module\nDINOv3 + mE5 + CatBoost+PGS" as Inference
+participant "Nearest Agency\nRouting Service" as Routing
+database "Supabase\nDB + Storage" as Supabase
+participant "Petugas Instansi" as Officer
+
+User -> App : Isi deskripsi,\nambil foto,\nizinkan lokasi
+App -> App : Capture latitude + longitude
+App -> Ngrok : POST /predict\nimage + laporan + lat/lon
+Ngrok -> Backend : Forward HTTPS request
+
+Backend -> Backend : Validate request
+Backend -> Inference : Preprocess image + text\nrun multiclass inference
+Inference --> Backend : predicted class,\nconfidence,\nall probabilities
+Backend -> Routing : predicted class + lat/lon
+Routing --> Backend : nearest agency,\ndistance meters
+Backend --> App : JSON prediction,\nconfidence, assignment
+
+App -> User : Tampilkan hasil AI,\nconfidence, instansi terdekat
+User -> App : Konfirmasi atau koreksi kategori
+App -> Supabase : Upload report image
+App -> Supabase : Insert reports row:\nprediction + assignment + status
+Supabase --> App : Saved report id
+
+Officer -> App : Ubah status ke resolved/selesai
+App -> Supabase : Upload resolution evidence photo
+App -> Supabase : RPC update_report_status\nphoto_url + note
+Supabase --> App : Resolved report + audit trail
+
+note over App,Backend
+SmartCityApps acts as client only.
+The ML model is not executed on Android.
+end note
+
+@enduml

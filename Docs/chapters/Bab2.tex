@@ -1,187 +1,651 @@
 \chapter{TINJAUAN PUSTAKA}
 \label{ch:tinjauan}
 
-\section{Landasan Teori}
+Bab ini memaparkan landasan teoretis yang menjadi pijakan rancangan sistem klasifikasi multimodal pada penelitian ini. Pemaparan disusun dari konsep yang paling umum, yaitu \textit{smart city} dan partisipasi publik, menuju konsep yang lebih spesifik, yaitu akuisisi data melalui \textit{web scraping}, kerangka kecerdasan buatan, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi, mekanisme \textit{attention}, arsitektur \textit{Transformer}, keluarga \textit{backbone} visual dan \textit{encoder} teks modern, fusi multimodal, ekosistem inferensi ONNX, permodelan UML, kontainerisasi Docker, hingga \textit{stack} aplikasi mobile dan \textit{web framework}. Setiap bagian berusaha menjelaskan tidak hanya definisi, melainkan juga motivasi, sejarah singkat, dan formulasi matematis bila diperlukan, sebagai dasar bagi keputusan metodologis yang dijelaskan pada Bab Metode Penelitian.
 
 % =====================================================================
-\subsection{\textit{Smart City} dan \textit{Smart Environment}}
+\section{\textit{Smart City} dan \textit{Smart Environment}}
+\label{sec:smartcity}
 % =====================================================================
 
-\textit{Smart City} secara umum didefinisikan sebagai kerangka kerja perkotaan yang memanfaatkan teknologi informasi dan komunikasi untuk meningkatkan kualitas hidup warga, mengefisiensikan operasional kota, serta memastikan keberlanjutan ekonomi dan lingkungan. Esensi dari \textit{smart city} terletak pada integrasi enam pilar utama, di mana \textit{Smart Governance} dan \textit{Smart Environment} menjadi fondasi penting untuk menciptakan interaksi yang harmonis antara pemerintah dan masyarakat melalui sistem layanan publik yang responsif \citep{siretPublicComplainingBlessing2022}.
+\textit{Smart City} secara umum didefinisikan sebagai kerangka kerja perkotaan yang memanfaatkan teknologi informasi dan komunikasi untuk meningkatkan kualitas hidup warga, mengefisiensikan operasional kota, serta memastikan keberlanjutan ekonomi dan lingkungan. Esensi dari \textit{smart city} terletak pada integrasi enam pilar utama, yaitu \textit{smart governance}, \textit{smart mobility}, \textit{smart environment}, \textit{smart economy}, \textit{smart people}, dan \textit{smart living}. Di antara enam pilar tersebut, \textit{smart governance} dan \textit{smart environment} menjadi fondasi penting untuk menciptakan interaksi yang harmonis antara pemerintah dan masyarakat melalui sistem layanan publik yang responsif \citep{siretPublicComplainingBlessing2022}.
 
-Salah satu tantangan terbesar dalam mewujudkan \textit{Smart Environment} adalah pengelolaan laporan masalah lingkungan perkotaan yang datang dari berbagai sumber secara bersamaan. Menurut \citet{sadiqSensingSmartCities2025}, kota-kota pintar bergantung pada infrastruktur penginderaan yang beragam---mulai dari perangkat IoT, kamera pengawas, hingga \textit{smartphone} warga---yang menghasilkan data dalam jumlah masif. Kemampuan untuk memproses dan menginterpretasi data visual dari lingkungan perkotaan secara otomatis merupakan komponen kritis dalam membangun sistem tata kelola kota yang adaptif. Penelitian \citet{shenSmartCityGovernance2025} secara khusus mendemonstrasikan bahwa integrasi model pengenalan citra berbasis kecerdasan buatan ke dalam sistem tata kelola kota mampu meningkatkan akurasi identifikasi kejadian secara signifikan dan mengurangi beban kerja manual petugas dalam proses kategorisasi laporan masuk.
+Salah satu tantangan terbesar dalam mewujudkan \textit{smart environment} adalah pengelolaan laporan masalah lingkungan perkotaan yang datang dari berbagai sumber secara bersamaan. Menurut \citet{sadiqSensingSmartCities2025}, kota pintar bergantung pada infrastruktur penginderaan yang beragam, mulai dari perangkat \textit{Internet of Things} (IoT), kamera pengawas, hingga \textit{smartphone} warga yang menghasilkan data dalam jumlah masif. Kemampuan untuk memproses dan menafsirkan data tersebut secara otomatis, baik citra maupun narasi tekstual, merupakan komponen kritis dalam membangun sistem tata kelola kota yang adaptif. Penelitian \citet{shenSmartCityGovernance2025} secara khusus mendemonstrasikan bahwa integrasi model multimodal berskala besar yang menggabungkan citra dan teks ke dalam sistem tata kelola kota mampu meningkatkan akurasi identifikasi kejadian secara signifikan dan mereduksi beban kerja manual petugas dalam proses kategorisasi laporan masyarakat.
 
-% =====================================================================
-\subsection{Sistem Pelaporan dan Partisipasi Publik}
-% =====================================================================
-
-Masalah lingkungan perkotaan yang kompleks---seperti penumpukan sampah, kerusakan fasilitas umum, dan infrastruktur yang buruk---sering kali tidak tertangani dengan cepat akibat keterbatasan metode pemantauan konvensional yang bersifat reaktif dan bergantung pada laporan manual. Akibatnya, dibutuhkan sistem pelaporan masyarakat berbasis teknologi yang memungkinkan warga berpartisipasi aktif dalam penyebaran informasi secara \textit{real-time}.
-
-Hasil penelitian \citet{firgiaImplementasiSistemInformasi2022} menunjukkan bahwa digitalisasi sistem pengaduan melalui platform \textit{mobile} dan web dapat mempercepat pengiriman data dari masyarakat ke pemerintah sekaligus mengurangi kesalahan data yang disebabkan oleh proses manual. Partisipasi publik merupakan komponen esensial dalam pembangunan berkelanjutan; sistem pelaporan yang dirancang dengan baik harus mampu mendorong keterlibatan warga untuk meningkatkan respons pemerintah terhadap ancaman lingkungan. Integrasi kecerdasan buatan ke dalam sistem pelaporan---khususnya melalui klasifikasi citra otomatis---membawa dimensi baru yang memungkinkan laporan diproses, dikategorikan, dan didistribusikan ke instansi yang tepat tanpa intervensi manual dari operator.
+Konsep \textit{smart environment} pada kota berkembang menghadapi kompleksitas khusus, antara lain heterogenitas warga pelapor (literasi digital, perangkat, dan akses jaringan), keragaman karakter masalah lingkungan, serta struktur instansi pemerintah daerah yang berbeda-beda di setiap wilayah. Hal ini membuat sistem pelaporan tidak dapat sekadar mengadopsi solusi generik dari literatur, melainkan harus dirancang dengan kepekaan terhadap konteks lokal.
 
 % =====================================================================
-\section{Arsitektur \textit{Transformer} dan \textit{Vision Transformer}}
+\section{Sistem Pelaporan dan Partisipasi Publik}
+\label{sec:pelaporan}
 % =====================================================================
 
-Arsitektur \textit{Transformer}, yang pertama kali diperkenalkan oleh \citet{vaswaniAttentionAllYou2023}, merevolusi cara pemrosesan data sekuensial dengan menggunakan mekanisme \textit{self-attention}. Berbeda dari arsitektur \textit{Convolutional Neural Networks} (CNN) yang terbatas pada pemrosesan fitur lokal dalam jendela reseptif statis, maupun \textit{Recurrent Neural Networks} (RNN) yang menghadapi kendala dalam memodelkan ketergantungan jarak jauh (\textit{long-range dependencies}), \textit{Transformer} mampu menangkap konteks global secara paralel di seluruh elemen input.
+Sistem pelaporan publik adalah saluran formal yang memungkinkan warga menyampaikan keluhan, saran, atau temuan terkait fasilitas dan layanan kota kepada pemerintah daerah. Pada era pra-digital, kanal pelaporan bertumpu pada surat resmi, kotak saran, atau telepon \textit{call center}, dengan keterlambatan respons yang diukur dalam hitungan hari. Era web membuka kanal formulir daring yang memangkas waktu pengiriman, namun tetap memerlukan operator manusia untuk menafsirkan dan memilah laporan ke instansi yang tepat. Era \textit{mobile} memperkenalkan aplikasi berbasis ponsel yang memuat formulir pelaporan dengan dukungan unggah foto dan koordinat GPS. Walau demikian, sebagian besar tahap kategorisasi laporan dilakukan oleh petugas \textit{back office}.
 
-\textit{Vision Transformer} (ViT) \citep{dosovitskiyImageWorth16x162021} mengadaptasi paradigma ini ke domain \textit{computer vision} dengan mendekomposisi gambar input menjadi sekumpulan potongan kecil (\textit{patches}) berukuran tetap yang bersifat \textit{non-overlapping}. Setiap \textit{patch} diproyeksikan secara linear menjadi \textit{vector embedding} satu dimensi, berfungsi sebagai urutan token yang analog dengan representasi kata dalam pemrosesan bahasa alami. Mekanisme \textit{self-attention} global kemudian memungkinkan model menangkap hubungan spasial di seluruh bagian gambar secara simultan. ViT menjadi fondasi penting bagi berbagai arsitektur modern yang dikembangkan sesudahnya, termasuk beberapa model yang digunakan dalam penelitian ini.
+Hasil penelitian \citet{firgiaImplementasiSistemInformasi2022} menunjukkan bahwa digitalisasi sistem pengaduan melalui platform \textit{mobile} dan web mempercepat pengiriman data dari masyarakat ke pemerintah, sekaligus mengurangi kesalahan data yang disebabkan oleh proses manual. Partisipasi publik merupakan komponen esensial dalam pembangunan berkelanjutan; sistem pelaporan yang dirancang dengan baik harus mampu mendorong keterlibatan warga untuk meningkatkan respons pemerintah terhadap ancaman lingkungan. Integrasi kecerdasan buatan ke dalam sistem pelaporan, khususnya melalui klasifikasi citra dan teks, membawa dimensi baru yang memungkinkan laporan diproses, dikategorikan, dan didistribusikan ke instansi yang tepat sehingga mengurangi intervensi manual. Hal tersebut tidak hanya mempercepat waktu respons, tetapi juga mengurangi \textit{human error} pada tahap kategorisasi.
+
+% =====================================================================
+\section{\textit{Web Scraping} dan Akuisisi Data}
+\label{sec:webscraping}
+% =====================================================================
+
+\subsection{Definisi dan Latar Belakang}
+
+\textit{Web scraping} adalah teknik otomatis untuk mengekstraksi data terstruktur dari halaman web yang awalnya dirancang untuk konsumsi manusia \citep{mitchellWebScraping2018}. Pada masa ketika antarmuka pemrograman aplikasi (\textit{Application Programming Interface}, API) yang resmi belum tersedia atau terbatas, \textit{web scraping} menjadi cara utama bagi peneliti, analis, dan pengembang untuk membangun korpus data dari kanal publik. Pada konteks penelitian sosial dan tata kelola kota, \textit{web scraping} sering digunakan untuk mengumpulkan data dari portal aduan, media sosial, situs berita, dan situs pemerintah, terutama saat data tersebut tidak tersedia dalam bentuk \textit{dataset} unduhan.
+
+Halaman target \textit{scraping} dibedakan menjadi halaman statis (konten sudah ada pada respons HTML server) dan halaman dinamis (konten dirender JavaScript di peramban). Alur umum \textit{web scraping} mengikuti lima tahap, yaitu identifikasi sumber, pengunduhan HTTP, penguraian (\textit{parsing}) HTML, pembersihan dan normalisasi, serta penyimpanan ke berkas terstruktur. Pada penelitian ini akuisisi data CRM Jakarta memakai \texttt{requests} untuk pengunduhan, \texttt{BeautifulSoup} dan \texttt{lxml} untuk penguraian, serta \texttt{Selenium} untuk halaman dinamis. Uraian rinci klasifikasi halaman, alur lima tahap, dan perbandingan pustaka \textit{scraping} disajikan pada Lampiran~\ref{app:webscraping-detail}.
+
+% =====================================================================
+\section{Kecerdasan Buatan (\textit{Artificial Intelligence})}
+\label{sec:ai}
+% =====================================================================
+
+Kecerdasan buatan (\textit{Artificial Intelligence}, AI) adalah bidang ilmu komputer yang membangun sistem yang dapat melakukan tugas yang biasanya membutuhkan kecerdasan manusia, seperti memahami bahasa, mengenali objek, dan belajar dari pengalaman \citep{russellArtificialIntelligence2021}. Sejak kebangkitannya pada 2012 yang dipicu ketersediaan data berskala besar (contohnya ImageNet \citep{russakovskyImageNet2015}), komputasi GPU, dan terobosan \textit{deep learning} seperti AlexNet \citep{krizhevskyImageNet2012}, AI bergeser dari rekayasa aturan manual ke pendekatan berbasis data. Hubungan AI, \textit{machine learning} (ML), dan \textit{deep learning} (DL) bersifat konsentris: ML adalah sub-bidang AI yang belajar pola dari data tanpa aturan eksplisit, dan DL adalah kelas ML berbasis jaringan saraf banyak lapis yang mempelajari representasi hierarkis dari data mentah \citep{lecunDeepLearning2015,goodfellowDeepLearning2016}.
+
+% =====================================================================
+\section{\textit{Machine Learning}}
+\label{sec:ml}
+% =====================================================================
+
+\subsection{Definisi Formal}
+
+\citet{mitchellMachineLearning1997} memberikan definisi klasik yang masih relevan, yaitu sebuah program komputer dikatakan belajar dari pengalaman $E$ terhadap kelas tugas $T$ dengan ukuran kinerja $P$ jika kinerjanya pada tugas-tugas di $T$, sebagaimana diukur oleh $P$, meningkat seiring dengan pengalaman $E$.
+
+\subsection{Klasifikasi Multi-kelas}
+
+Klasifikasi multi-kelas adalah varian \textit{supervised learning} dengan ruang label yang berdimensi $K > 2$ kelas yang saling eksklusif. Model menghasilkan vektor probabilitas $\mathbf{p} \in \mathbb{R}^K$ dengan $\sum_k p_k = 1$ melalui fungsi \textit{softmax}:
+
+\begin{equation}
+    p_k = \frac{\exp(z_k)}{\sum_{j=1}^{K} \exp(z_j)},
+    \label{eq:softmax}
+\end{equation}
+dengan $z_k$ adalah \textit{logit} pada kelas ke-$k$. Pelatihan biasanya meminimalkan \textit{categorical cross-entropy}:
+
+\begin{equation}
+    \mathcal{L}_{\text{CE}} = - \sum_{k=1}^{K} y_k \log p_k,
+    \label{eq:crossentropy}
+\end{equation}
+dengan $y_k$ adalah label \textit{one-hot}.
+
+\subsection{\textit{Bias-Variance Trade-off} dan Regularisasi}
+
+Setiap model belajar pada keseimbangan antara \textit{bias}, yaitu kesalahan akibat asumsi yang terlalu kaku, dan \textit{variance}, yaitu kesalahan akibat sensitivitas berlebih terhadap data pelatihan. Model dengan kapasitas terlalu rendah cenderung \textit{underfit}, sementara model dengan kapasitas terlalu tinggi cenderung \textit{overfit}. Beberapa teknik regularisasi yang umum digunakan meliputi regularisasi L1 dan L2 pada bobot model, \textit{dropout}, \textit{weight decay}, dan augmentasi data.
+
+\subsection{\textit{Gradient Boosting} dan CatBoost}
+
+\textit{Gradient boosting} adalah metode \textit{ensemble} yang membangun prediksi sebagai jumlah dari banyak \textit{weak learner}, biasanya pohon keputusan, dengan setiap pohon dilatih untuk memperkecil residu fungsi tujuan dari iterasi sebelumnya. Bentuk umum prediksi pada iterasi ke-$M$ adalah:
+
+\begin{equation}
+    F_M(\mathbf{x}) = F_0(\mathbf{x}) + \sum_{m=1}^{M} \eta \, h_m(\mathbf{x}),
+    \label{eq:gbm}
+\end{equation}
+dengan $\eta$ adalah \textit{learning rate} dan $h_m$ adalah pohon ke-$m$ yang dilatih untuk meminimalkan turunan negatif fungsi tujuan terhadap $F_{m-1}$.
+
+CatBoost adalah varian \textit{gradient boosting} yang dikembangkan oleh Yandex \citep{prokhorenkovaCatBoost2018}. Tiga inovasi utama CatBoost adalah:
+
+\begin{enumerate}
+    \item \textit{Ordered boosting}, yaitu strategi yang menghindari \textit{prediction shift} dengan membangun perkiraan residu pada setiap titik data hanya dari sub-himpunan pelatihan yang tidak menyertakan titik tersebut.
+    \item Pohon yang berbentuk \textit{oblivious} (\textit{symmetric trees}), yaitu pohon di mana setiap level menggunakan kondisi pemisahan yang sama. Pohon \textit{oblivious} cepat dieksekusi pada inferensi karena dapat dihitung sebagai indeks bit-level, dan menyediakan regularisasi struktural alami.
+    \item Penanganan fitur kategorikal native melalui \textit{target statistics} yang aman terhadap \textit{leakage}.
+\end{enumerate}
+
+% =====================================================================
+\section{\textit{Deep Learning}}
+\label{sec:dl}
+% =====================================================================
+
+\subsection{Perceptron, Multilayer Perceptron, dan Backpropagation}
+
+Unit komputasi dasar pada jaringan saraf adalah \textit{perceptron}, yang menghitung jumlah berbobot dari masukan ditambah bias dan melewatkannya melalui fungsi aktivasi:
+
+\begin{equation}
+    y = \sigma(\mathbf{w}^\top \mathbf{x} + b).
+    \label{eq:perceptron}
+\end{equation}
+
+\textit{Multilayer Perceptron} (MLP) menumpuk banyak lapisan \textit{perceptron} dengan fungsi aktivasi non-linear (ReLU, GELU, SiLU) sehingga model dapat mempelajari fungsi kompleks; pelatihan dilakukan dengan \textit{backpropagation} melalui aturan rantai.
+
+\textit{Convolutional Neural Networks} (CNN) memanfaatkan operasi konvolusi untuk menangkap pola lokal pada citra, dengan tumpukan konvolusi-aktivasi-\textit{pooling} yang membangun \textit{receptive field} hierarkis. Arsitektur penting dalam sejarahnya meliputi AlexNet \citep{krizhevskyImageNet2012} dan ResNet \citep{heResNet2016} dengan koneksi residual. Sampai 2020 CNN mendominasi tugas visi, hingga \citet{dosovitskiyImageWorth16x162021} menunjukkan bahwa \textit{Vision Transformer} (ViT) berbasis \textit{self-attention} dapat mengunggulinya bila dilatih pada data berskala sangat besar.
+
+\textit{Foundation models} adalah model berskala besar yang dilatih pada data sangat banyak lalu dipakai ulang pada banyak tugas hilir, umumnya melalui \textit{self-supervised learning}. Dua paradigma utamanya pada visi adalah pembelajaran kontras (\textit{contrastive learning}: SimCLR, MoCo, DINO) dan \textit{Masked Image Modeling} (MIM: MAE \citep{heMAE2022}, BEiT, EVA \citep{fangEVA022023}). Paradigma inilah yang melahirkan \textit{encoder} DINOv3 yang dipakai pada penelitian ini.
+
+% =====================================================================
+\section{Pemrosesan Data Multimodal: Ringkasan}
+\label{sec:imgproc}
+% =====================================================================
+
+Pra-proses data multimodal pada penelitian ini terdiri atas dua jalur. Jalur citra didelegasikan ke \textit{AutoImageProcessor} HuggingFace (kelas \textit{DINOv3ViTImageProcessorFast}) yang melakukan \textit{resize} ke $224 \times 224$, \textit{square padding} untuk mempertahankan seluruh konten, normalisasi per kanal dengan rerata dan simpangan baku ImageNet (Persamaan~\ref{eq:norm}), serta konversi tensor ke format NCHW. Augmentasi data tidak diterapkan karena \textit{encoder} dibekukan dan hanya dipakai pada modus inferensi. Jalur teks meliputi normalisasi unicode NFC, pembersihan karakter kontrol, dan tokenisasi dengan \textit{SentencePiece} pada \textit{encoder} multilingual-E5 atau \textit{WordPiece} pada \textit{encoder} berbasis BERT. Empat algoritma subword utama yang berkaitan dengan studi ini (BPE, WordPiece, SentencePiece, Unigram LM) diringkas pada Tabel~\ref{tab:tokenizer}. Latar teoretis lengkap, mencakup formula normalisasi piksel, pertimbangan aspek rasio, kompresi JPEG, EXIF, serta perbandingan rinci algoritma tokenizer, disajikan pada Lampiran~\ref{app:teori-multimodal} bagian F.1 dan F.2.
+
+\section{Ekstraksi Fitur (\textit{Feature Extraction})}
+\label{sec:featureextract}
+% =====================================================================
+
+\subsection{Definisi}
+
+Ekstraksi fitur adalah transformasi data masukan mentah menjadi representasi yang lebih ringkas dan diskriminatif untuk tugas hilir. Tujuannya adalah menyederhanakan permukaan keputusan model klasifikasi tanpa kehilangan informasi yang relevan. Pada visi tradisional, ekstraksi fitur dilakukan dengan algoritma berbasis aturan; pada \textit{deep learning} modern, ekstraksi fitur menjadi bagian dari jaringan yang dilatih secara \textit{end-to-end}.
+
+\subsection{Fitur \textit{Hand-Crafted}}
+
+Sebelum era \textit{deep learning}, ekstraksi fitur citra mengandalkan algoritma berbasis aturan yang dirancang oleh ahli, antara lain:
+
+\begin{itemize}
+    \item \textbf{SIFT} (\textit{Scale-Invariant Feature Transform}) \citep{lowesift2004}: mendeteksi titik kunci pada skala-ruang dan mendeskripsikan tetangga lokalnya menggunakan histogram orientasi gradien yang invariant terhadap skala dan rotasi.
+    \item \textbf{HOG} (\textit{Histogram of Oriented Gradients}) \citep{dalalHOG2005}: membagi citra ke dalam \textit{cell} kecil dan menghitung histogram orientasi gradien per \textit{cell}.
+    \item \textbf{SURF} dan \textbf{ORB}: alternatif yang lebih cepat dari SIFT untuk aplikasi \textit{real-time}.
+\end{itemize}
+
+Pada teks, fitur klasik meliputi \textit{Bag-of-Words} (BoW) dan \textit{Term Frequency-Inverse Document Frequency} (TF-IDF), yang merepresentasikan teks sebagai vektor frekuensi kata yang dibobot terhadap distribusi kata di seluruh korpus.
+
+\subsection{Fitur Hasil Pelatihan dan \textit{Transfer Learning}}
+
+Pada \textit{deep learning}, fitur dipelajari secara otomatis dari data, sehingga representasi internal jaringan dapat berfungsi sebagai \textit{embedding} yang diskriminatif. Salah satu keuntungan praktis dari pendekatan ini adalah \textit{transfer learning}, yaitu menggunakan jaringan yang sudah dilatih pada tugas dengan banyak data untuk tugas baru dengan data terbatas. Pada konfigurasi \textit{linear probing}, hanya algoritma klasifikasi yang dilatih sementara \textit{backbone} dibekukan; pada konfigurasi \textit{fine-tuning} penuh, seluruh bobot dilatih ulang dengan \textit{learning rate} yang kecil.
+
+\subsection{Ruang \textit{Embedding} dan Sifat Geometrisnya}
+
+\textit{Embedding} hasil \textit{encoder} berada dalam ruang vektor berdimensi tinggi. Beberapa ukuran kemiripan yang berguna pada ruang ini meliputi kemiripan kosinus:
+
+\begin{equation}
+    \text{cos\_sim}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u}^\top \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|},
+    \label{eq:cosine}
+\end{equation}
+yang umum dipakai pada model \textit{contrastive} seperti CLIP dan E5. Ruang ini dapat divisualisasikan dengan teknik reduksi dimensi seperti t-SNE atau UMAP untuk inspeksi kualitatif.
+% =====================================================================
+\section{Reduksi Dimensi: Ringkasan}
+\label{sec:pca}
+% =====================================================================
+
+Vektor representasi yang dihasilkan oleh \textit{encoder} citra dan teks pada penelitian ini berdimensi 1024, sehingga vektor fusi awal berdimensi 2048. Reduksi dimensi seperti \textit{Principal Component Analysis} (PCA) merupakan teknik klasik untuk mereduksi dimensi linear dengan menjaga varians maksimum, namun pada penelitian ini PCA \textbf{tidak diterapkan} karena dua alasan. Pertama, \textit{classifier head} CatBoost berbasis pohon keputusan \textit{oblivious} yang melakukan pemilihan dimensi secara implisit melalui \textit{split} sehingga tidak terpengaruh \textit{curse of dimensionality} secara signifikan. Kedua, reduksi linear berpotensi menghilangkan informasi diskriminatif yang dibutuhkan untuk membedakan kelas dinas yang dekat secara semantik. Pembahasan rinci mengenai formulasi PCA, prosedur \textit{Singular Value Decomposition}, kriteria \textit{explained variance ratio}, serta alternatif non-linear seperti \textit{Kernel PCA}, \textit{Autoencoder}, t-SNE, UMAP, dan LDA disajikan pada Lampiran~\ref{app:teori-multimodal} bagian F.3.
+
+% =====================================================================
+\section{Mekanisme \textit{Attention}}
+\label{sec:attention}
+% =====================================================================
+
+\subsection{Motivasi: Keterbatasan RNN pada Konteks Panjang}
+
+Pada arsitektur sekuensial seperti \textit{Recurrent Neural Networks} (RNN) dan \textit{Long Short-Term Memory} (LSTM), informasi diteruskan tahap demi tahap melalui \textit{hidden state}. Pada konteks yang panjang, sinyal informasi awal cenderung menghilang (\textit{vanishing gradient}) atau meledak (\textit{exploding gradient}), sehingga kapasitas mengingat ketergantungan jarak jauh terbatas. Mekanisme \textit{attention} pertama kali diperkenalkan oleh \citet{bahdanauAttention2015} untuk \textit{neural machine translation}, sebagai cara membiarkan \textit{decoder} mengambil informasi langsung dari setiap posisi \textit{encoder} berdasarkan relevansi.
+
+\subsection{\textit{Scaled Dot-Product Attention}}
+
+Mekanisme \textit{attention} modern, sebagaimana dirumuskan oleh \citet{vaswaniAttentionAllYou2023}, adalah \textit{scaled dot-product attention} dengan tiga peran vektor: \textit{query} ($\mathbf{Q}$), \textit{key} ($\mathbf{K}$), dan \textit{value} ($\mathbf{V}$). Skor relevansi antara setiap \textit{query} dengan setiap \textit{key} dihitung sebagai \textit{dot product}, kemudian diskalakan dengan akar dimensi untuk menjaga stabilitas numerik:
+
+\begin{equation}
+    \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\left( \frac{\mathbf{Q} \mathbf{K}^\top}{\sqrt{d_k}} \right) \mathbf{V}.
+    \label{eq:attention}
+\end{equation}
+
+Hasil \textit{softmax} adalah matriks berbobot yang menjumlahkan \textit{value} secara berbobot. Penskalaan dengan $\sqrt{d_k}$ mencegah skor yang terlalu besar pada dimensi tinggi, yang akan membuat \textit{softmax} saturasi.
+
+\subsection{\textit{Multi-Head Attention}}
+
+\textit{Multi-head attention} adalah perluasan \textit{single-head attention} yang menjalankan beberapa proyeksi linear paralel dari \textit{query}, \textit{key}, dan \textit{value}, kemudian mengkonkatenasi keluaran setiap \textit{head} dan memproyeksikannya kembali ke dimensi $d_{\text{model}}$. Motivasinya adalah bahwa satu \textit{head} terbatas pada satu pola hubungan antar token, sementara teks dan citra memuat banyak pola hubungan secara simultan. Setiap \textit{head} bekerja pada subruang berdimensi $d_k = d_{\text{model}}/h$ sehingga total komputasi tetap sebanding dengan \textit{single-head attention}. Formulasi matematis lengkap \textit{multi-head attention} beserta matriks proyeksi per \textit{head} disajikan pada Lampiran~\ref{app:mha-detail}.
+
+\subsection{\textit{Self-Attention} versus \textit{Cross-Attention}}
+
+\textit{Self-attention} adalah varian di mana $\mathbf{Q}$, $\mathbf{K}$, dan $\mathbf{V}$ berasal dari sumber barisan yang sama, sehingga model belajar hubungan antar elemen di dalam barisan. Pada \textit{cross-attention}, $\mathbf{Q}$ berasal dari satu barisan (contohnya \textit{decoder}) dan $\mathbf{K}, \mathbf{V}$ berasal dari barisan lain (contohnya \textit{encoder}). \textit{Cross-attention} merupakan pondasi banyak \textit{Transformer} multimodal yang menyatukan token visual dan tekstual.
+
+\subsection{Kompleksitas dan Implikasi Skalabilitas}
+
+Kompleksitas waktu \textit{self-attention} adalah $O(n^2 d)$ dengan $n$ panjang barisan dan $d$ dimensi \textit{embedding}. Kuadratisme pada $n$ ini menjadi hambatan utama untuk konteks yang sangat panjang dan memicu munculnya berbagai varian seperti \textit{Linformer}, \textit{Performer}, \textit{Longformer}, dan \textit{Flash Attention} yang mengoptimalkan memori dan komputasi.
+
+% =====================================================================
+\section{Arsitektur \textit{Transformer}}
+\label{sec:transformer}
+% =====================================================================
+
+\subsection{\textit{Encoder-Decoder}}
+
+Arsitektur \textit{Transformer} yang asli \citep{vaswaniAttentionAllYou2023} terdiri dari tumpukan \textit{encoder} dan \textit{decoder}. Setiap blok \textit{encoder} memuat \textit{multi-head self-attention} diikuti \textit{feed-forward network} (FFN), masing-masing dilengkapi sambungan residual dan \textit{layer normalization}. Setiap blok \textit{decoder} memuat \textit{masked self-attention} (untuk menjaga sifat autoregresif), \textit{cross-attention} ke keluaran \textit{encoder}, dan FFN. Pada tugas klasifikasi, hanya bagian \textit{encoder} yang biasanya digunakan.
+
+\subsection{\textit{Positional Encoding}, Normalisasi, dan \textit{Feed-Forward}}
+
+Karena \textit{self-attention} bersifat permutasi-invariant, posisi token disuntikkan secara eksplisit melalui skema \textit{positional encoding}, baik sinusoidal, \textit{learned}, maupun \textit{Rotary Position Embedding} (RoPE) \citep{suRoFormer2024} yang memutar vektor \textit{query} dan \textit{key} sesuai posisi. Setiap blok \textit{Transformer} juga memuat \textit{layer normalization} (LN), sambungan residual yang memudahkan aliran gradien, dan \textit{feed-forward network} (FFN) berupa dua proyeksi linear dengan aktivasi GELU. Pada \textit{Transformer} modern, LN umumnya diterapkan dalam skema \textit{pre-norm} (sebelum submodul) karena lebih stabil pada model dalam yang sangat besar.
+
+\subsection{\textit{Vision Transformer} (ViT)}
+
+\textit{Vision Transformer} \citep{dosovitskiyImageWorth16x162021} mengadaptasi \textit{Transformer} ke domain visi dengan empat langkah utama, yaitu (1) \textit{patchify} citra menjadi potongan tetap (contohnya 16x16), (2) proyeksi linear setiap \textit{patch} menjadi vektor \textit{embedding}, (3) penambahan token kelas (\texttt{[CLS]}) dan \textit{positional embedding}, dan (4) penumpukan blok \textit{Transformer encoder}. Token CLS pada lapisan terakhir digunakan sebagai representasi citra.
 
 % =====================================================================
 \section{Arsitektur \textit{Backbone} Visual Modern}
+\label{sec:backbone}
 % =====================================================================
 
-Penelitian ini melakukan studi komparatif terhadap lima arsitektur \textit{backbone} visual modern yang dipilih untuk merepresentasikan berbagai paradigma desain jaringan saraf yang sedang berkembang. Semua model diakses melalui \textit{library} \texttt{timm} (\textit{PyTorch Image Models}) dengan bobot pra-latih (\textit{pre-trained weights}) dari ImageNet.
+Bagian ini memaparkan tiga keluarga \textit{backbone} visual modern yang menjadi rujukan utama dalam literatur klasifikasi citra, yaitu DINOv3, EVA-02, dan Hiera. Pemahaman terhadap ketiganya memberi konteks tentang lanskap \textit{vision foundation model} kontemporer.
 
-% -----------------------------------------------------------------
-\subsection{ConvNeXt V2}
-% -----------------------------------------------------------------
+\subsection{DINOv3}
+\label{sec:dinov3}
 
-ConvNeXt V2 \citep{liuConvNeXtV22023} merupakan generasi kedua dari keluarga arsitektur ConvNeXt yang memodernisasi jaringan konvolusi murni (\textit{pure ConvNet}) dengan mengadopsi prinsip desain dari arsitektur \textit{Transformer}. Berbeda dari pendahulunya ConvNeXt V1 yang menggunakan \textit{supervised pre-training}, ConvNeXt V2 dilatih menggunakan kerangka \textit{Fully Convolutional Masked Autoencoder} (FCMAE)---sebuah pendekatan \textit{self-supervised pre-training} yang menggabungkan \textit{masked image modeling} dengan \textit{feature response normalization} baru yang disebut \textit{Global Response Normalization} (GRN).
+\subsubsection{Garis Keturunan: DINO, DINOv2, DINOv3}
 
-GRN berperan sebagai mekanisme yang meningkatkan kompetisi antar-fitur dan mengurangi redundansi representasi dalam setiap lapisan, yang merupakan permasalahan yang sering muncul ketika \textit{masked autoencoder} diterapkan pada arsitektur konvolusi. Arsitektur ini tetap sepenuhnya konvolusional tanpa menggunakan mekanisme \textit{attention}, sehingga unggul dari segi efisiensi komputasi. Pada skala \textit{tiny}, ConvNeXt V2 Tiny menunjukkan akurasi yang kompetitif terhadap model berbasis \textit{Transformer} sekelasnya dengan \textit{throughput} yang lebih tinggi.
+DINO (\textit{self-DIstillation with NO labels}) diperkenalkan oleh \citet{caronDINO2021} sebagai metode \textit{self-supervised learning} pada ViT. Kontribusi utamanya adalah skema \textit{self-distillation} antara \textit{student} dan \textit{teacher} yang berbagi arsitektur, di mana \textit{teacher} adalah rerata bergerak eksponensial (\textit{Exponential Moving Average}, EMA) dari \textit{student}. Tujuan pelatihan adalah membuat distribusi keluaran \textit{student} pada augmentasi suatu citra cocok dengan distribusi keluaran \textit{teacher} pada augmentasi lain dari citra yang sama.
 
-% -----------------------------------------------------------------
-\subsection{EfficientViT}
-% -----------------------------------------------------------------
+DINOv2 \citep{oquabDINOv22024} memperluas DINO dalam beberapa dimensi penting, yaitu (1) skala dataset yang jauh lebih besar (LVD-142M, sekitar 142 juta citra), (2) resep pelatihan yang lebih stabil dengan teknik regularisasi tambahan, (3) varian model dari ViT-S, B, L, sampai g, dan (4) peluncuran sebagai \textit{foundation model} terbuka. DINOv2 menjadi salah satu \textit{encoder} citra paling banyak digunakan untuk tugas hilir tanpa \textit{fine-tuning}.
 
-EfficientViT \citep{liuEfficientViT2023} adalah arsitektur \textit{Vision Transformer} yang dirancang dengan tujuan utama efisiensi memori dan kecepatan inferensi pada perangkat keras. Inovasi kunci dari EfficientViT terletak pada modul \textit{Efficient Multi-Scale Attention} (EMA) yang menggantikan mekanisme \textit{self-attention} standar dengan pendekatan \textit{linear attention} berbasis \textit{cascaded group attention}.
+DINOv3 \citep{simeoniDINOv32025} adalah generasi berikutnya yang menyempurnakan DINOv2 dengan beberapa peningkatan, yaitu peningkatan skala data dan model, perbaikan kualitas \textit{patch} \textit{embedding} untuk \textit{dense prediction}, peningkatan \textit{robustness} terhadap pergeseran distribusi (\textit{distribution shift}), serta efisiensi inferensi yang lebih baik. DINOv3 dikenalkan sebagai \textit{vision foundation model} yang siap pakai pada berbagai tugas, termasuk klasifikasi, segmentasi semantik, dan korespondensi padat.
 
-\textit{Linear attention} memungkinkan kompleksitas komputasi yang tumbuh secara linear terhadap panjang sekuens (berbeda dengan \textit{softmax attention} standar yang tumbuh secara kuadratik), sehingga signifikan mengurangi konsumsi memori pada resolusi gambar tinggi. Modul \textit{multi-scale} memungkinkan model untuk secara bersamaan memproses fitur dari berbagai skala spasial, meningkatkan kemampuan representasi fitur hierarkis tanpa biaya komputasi yang besar. Karakteristik ini membuat EfficientViT sangat relevan untuk skenario \textit{deployment} pada perangkat dengan sumber daya terbatas.
+\subsubsection{Mekanisme \textit{Self-Distillation Tanpa Label}}
 
-% -----------------------------------------------------------------
-\subsection{MambaOut}
-% -----------------------------------------------------------------
+Pada DINO dan turunannya, dua jaringan yang sama secara arsitektural dilatih bersamaan, yaitu jaringan \textit{student} $g_{\theta_s}$ dan jaringan \textit{teacher} $g_{\theta_t}$. Untuk setiap citra masukan $x$, dua himpunan augmentasi diturunkan, yaitu \textit{global crops} (besar, biasanya dua) dan \textit{local crops} (kecil, biasanya delapan). Strategi multi-\textit{crop} ini berperan ganda, yaitu memberi banyak pasang positif dan mendorong \textit{student} untuk merekonstruksi konteks dari potongan kecil.
 
-MambaOut \citep{yuMambaOut2024} adalah arsitektur yang lahir dari eksplorasi teoritis tentang peran \textit{State Space Models} (SSM) dalam pengenalan citra. Arsitektur ini dikembangkan dengan mempertanyakan apakah komponen SSM (pemindaian sekuensial / \textit{sequential scan}) benar-benar diperlukan untuk tugas \textit{image classification}---berbeda dari tugas pemodelan bahasa atau video di mana urutan sekuensial lebih relevan.
+Setiap jaringan menghasilkan distribusi probabilitas pada $K$ \textit{prototype} keluaran melalui \textit{head} proyeksi yang ditambahkan di atas \textit{backbone}:
 
-MambaOut membuktikan bahwa dengan \textit{menghilangkan} komponen SSM dari blok Mamba dan hanya mempertahankan \textit{gated spatial mixing} serta \textit{channel mixing}, model justru mencapai akurasi yang lebih tinggi pada \textit{benchmark} klasifikasi gambar standar. Hasilnya adalah arsitektur yang secara struktural menyerupai \textit{ConvNet} modern dengan \textit{gated convolution}, namun berakar dari kerangka \textit{State Space}. MambaOut Tiny---varian yang digunakan dalam penelitian ini---tersedia stabil di \textit{library} \texttt{timm} dan merupakan model dengan performa terbaik dalam eksperimen \textit{benchmark} yang dilakukan, mencapai \textit{test macro F1-score} sebesar \textbf{0,9917}.
+\begin{equation}
+    P_s(x) = \text{softmax}\!\left( \frac{g_{\theta_s}(x)}{\tau_s} \right), \quad
+    P_t(x) = \text{softmax}\!\left( \frac{g_{\theta_t}(x) - c}{\tau_t} \right),
+    \label{eq:dino}
+\end{equation}
+dengan $\tau_s$ dan $\tau_t$ adalah suhu \textit{softmax} pada \textit{student} dan \textit{teacher}, dan $c$ adalah \textit{centering} \textit{teacher} yang dihitung sebagai rerata bergerak dari keluaran \textit{teacher} pada \textit{batch}. \textit{Centering} mencegah keruntuhan ke distribusi seragam, sementara \textit{sharpening} (yaitu $\tau_t < \tau_s$) mencegah keruntuhan ke distribusi terlalu tajam.
 
-% -----------------------------------------------------------------
-\subsection{Hiera}
-% -----------------------------------------------------------------
+\textit{Loss} yang diminimalkan adalah \textit{cross-entropy} antara distribusi \textit{teacher} dan \textit{student} pada seluruh pasangan augmentasi:
 
-Hiera (\textit{Hierarchical Vision Transformer}) \citep{ryaliHiera2023} memperkenalkan pendekatan yang berlawanan dengan tren umum yang terus menambahkan kompleksitas ke arsitektur \textit{Vision Transformer}: Hiera justru menyederhanakan ViT dengan \textit{menghilangkan} komponen-komponen yang tidak diperlukan.
+\begin{equation}
+    \mathcal{L}_{\text{DINO}} = \sum_{x \in V} \sum_{x' \in V', x' \neq x} - P_t(x)^\top \log P_s(x'),
+    \label{eq:dino_loss}
+\end{equation}
+dengan $V$ adalah himpunan \textit{global crops} dan $V'$ adalah himpunan seluruh \textit{crops}. Parameter \textit{teacher} diperbarui secara EMA dari \textit{student}:
 
-Inovasi utama Hiera adalah penghapusan \textit{positional embedding} eksplisit dan penggunaan \textit{pooling attention} hierarkis yang terinspirasi dari \textit{Masked Autoencoders} (MAE). Pooling yang berjalan secara progresif di seluruh lapisan menghasilkan representasi hierarkis seperti pyramid fitur pada CNN, namun tetap dalam kerangka \textit{Transformer} yang murni. Hasilnya adalah model yang lebih sederhana, lebih cepat pada waktu pelatihan dan inferensi, serta lebih mudah disesuaikan untuk berbagai skala tanpa kehilangan akurasi yang signifikan.
+\begin{equation}
+    \theta_t \leftarrow \lambda \theta_t + (1-\lambda) \theta_s.
+    \label{eq:dino_ema}
+\end{equation}
 
-% -----------------------------------------------------------------
-\subsection{EVA-02}
-% -----------------------------------------------------------------
+Tidak ada label dataset yang diperlukan, sehingga DINO dapat dilatih pada citra yang sangat banyak dan tidak terkurasi.
 
-EVA-02 \citep{fangEVA022023} adalah \textit{vision foundation model} generasi kedua dari seri EVA yang menggabungkan dua paradigma pra-latihan yang kuat: \textit{Masked Image Modeling} (MIM) dan penyelarasan dengan representasi CLIP (\textit{Contrastive Language-Image Pre-training}). Inovasi utama EVA-02 terletak pada penggunaan fitur CLIP yang telah dilatih dari data multimodal sebagai target sinyal supervisory dalam proses MIM, menggantikan piksel atau representasi statistik gambar yang biasa digunakan.
+\subsubsection{Token CLS dan Token Patch}
 
-Pendekatan ini memaksa model untuk mempelajari representasi semantik yang lebih kaya dan lebih \textit{transferable} dibandingkan model yang dilatih dengan MIM standar. Bahkan pada varian \textit{Tiny} dengan jumlah parameter yang sangat terbatas, EVA-02 mampu menghasilkan fitur visual dengan kualitas yang mendekati \textit{foundation model} berukuran jauh lebih besar, berkat kekayaan pengetahuan semantik yang ditransfer dari sumber CLIP multimodal.
+Setelah pelatihan, ViT menyediakan dua jenis representasi yang berguna, yaitu (1) token CLS yang berfungsi sebagai \textit{embedding} global citra, dan (2) token \textit{patch} yang berfungsi sebagai \textit{embedding} lokal pada masing-masing \textit{patch}. DINO terkenal karena token CLS-nya menghasilkan klaster semantik yang baik tanpa pelabelan, sementara token \textit{patch}-nya bahkan dapat digunakan untuk segmentasi tanpa supervisi melalui pemetaan kemiripan kosinus.
+
+\subsubsection{Sifat \textit{Emergent} pada Skala Besar}
+
+Pada skala model dan data yang besar, DINO dan turunannya menunjukkan beberapa sifat \textit{emergent}, yaitu:
+
+\begin{itemize}
+    \item \textbf{Robustness}: representasi yang konsisten pada distribusi yang bergeser, contohnya kondisi pencahayaan rendah, foto buram, perspektif tidak biasa.
+    \item \textbf{\textit{Dense correspondence}}: kemampuan menemukan padanan piksel yang konsisten antar dua citra dari objek yang sama.
+    \item \textbf{Segmentasi tanpa supervisi}: pengelompokan piksel berdasarkan kemiripan token \textit{patch}, tanpa pelabelan piksel.
+    \item \textbf{Transfer ke domain baru}: performa yang kuat ketika digunakan sebagai \textit{frozen encoder} pada domain hilir, termasuk medis, satelit, dan urban.
+\end{itemize}
+
+Selain DINOv3, penelitian ini juga mengevaluasi dua \textit{backbone} visual modern sebagai pembanding pada eksperimen ablasi. \textbf{EVA-02} \citep{fangEVA022023} menggabungkan \textit{Masked Image Modeling} (MIM) dengan penyelarasan fitur CLIP sebagai target supervisi, serta memperbaiki ViT melalui Sub-LN, SwiGLU FFN, dan 2D RoPE. \textbf{Hiera} \citep{ryaliHiera2023} menyederhanakan ViT dengan menghapus \textit{positional embedding} eksplisit dan memakai \textit{pooling attention} hierarkis yang dilatih dengan resep MAE \citep{heMAE2022}, sehingga lebih ringan dan cepat. Uraian rinci kedua arsitektur ini, termasuk inovasi dan paradigma pra-latih MAE, disajikan pada Lampiran~\ref{app:backbone-detail}. Hasil eksperimen (Bab~\ref{ch:hasil}) menunjukkan DINOv3 dan EVA-02 unggul, sementara Hiera konsisten paling lemah pada domain laporan publik.
 
 % =====================================================================
-\section{ONNX dan Inferensi \textit{On-Device}}
+\section{Model \textit{Encoder} Teks}
+\label{sec:textencoder}
 % =====================================================================
 
-\subsection{\textit{Open Neural Network Exchange} (ONNX)}
+Bagian ini memaparkan model \textit{encoder} teks yang relevan dengan klasifikasi dokumen Bahasa Indonesia, yaitu BERT, mBERT, IndoBERT, Cendol-mT5, BGE-M3, dan keluarga E5 multibahasa.
 
-\textit{Open Neural Network Exchange} (ONNX) adalah standar format terbuka yang dirancang sebagai jembatan interoperabilitas antar-\textit{framework} \textit{machine learning} \citep{onnxruntime2024}. ONNX mendefinisikan sebuah grafik komputasi (\textit{computation graph}) yang bersifat \textit{framework-agnostic}, memungkinkan model yang dikembangkan dalam PyTorch, TensorFlow, atau \textit{framework} lainnya untuk diekspor ke representasi tunggal yang dapat dieksekusi oleh berbagai \textit{runtime} di berbagai platform.
+Sebagai pembanding pada eksperimen ablasi, penelitian ini juga mengevaluasi empat \textit{encoder} teks lain. \textbf{BERT} \citep{devlinBERT2019} dan varian multibahasanya \textbf{mBERT} (104 bahasa) menjadi tonggak \textit{Transformer encoder} dua arah berbasis MLM. \textbf{IndoBERT} \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga BERT yang dilatih khusus pada korpus Bahasa Indonesia sehingga lebih kaya pada idiom dan istilah lokal. \textbf{Cendol-mT5} \citep{cahyawijayaCendol2024} memanfaatkan \textit{encoder} mT5 \citep{xueMT52021} yang dilanjutkan pra-latih dan \textit{instruction tuning} pada Bahasa Indonesia dan bahasa daerah. \textbf{BGE-M3} \citep{chenBGEM32024} adalah \textit{embedding model} multibahasa multifungsi (\textit{dense}, \textit{sparse}, \textit{multi-vector}) berbasis XLM-RoBERTa \textit{large} dengan \textit{embedding} 1024-d. Uraian rinci keempat \textit{encoder} pembanding ini disajikan pada Lampiran~\ref{app:textencoder-detail}; bagian berikut memfokuskan pembahasan pada keluarga E5 yang menjadi \textit{encoder} teks terpilih pada \textit{pipeline} akhir.
 
-Representasi ONNX terdiri dari serangkaian \textit{operator} standar yang didefinisikan dalam spesifikasi \textit{opset} bernomor. \textit{Opset} versi 17---yang digunakan dalam penelitian ini---mendukung set operator yang komprehensif dan stabil, termasuk semua operator yang diperlukan oleh arsitektur MambaOut Tiny. Saat ekspor, PyTorch melakukan \textit{tracing} grafik komputasi model dan menerjemahkannya ke operator ONNX yang setara, dengan opsi optimasi seperti \textit{constant folding} yang mengeliminasi subgraf konstan untuk mengurangi ukuran model dan latensi inferensi.
+\subsection{Keluarga E5 dan \textit{multilingual-E5}}
 
-\subsection{\textit{ONNX Runtime for Android}}
+E5 (\textit{EmbEddings from bidirEctional Encoder rEpresentations}) adalah keluarga \textit{text encoder} yang dilatih khusus untuk menghasilkan \textit{embedding} kalimat yang baik melalui pelatihan kontras dua tahap pada pasangan teks yang relevan secara semantik. Tahap pertama adalah \textit{contrastive pre-training} pada miliaran pasangan teks lemah dari sumber publik (judul-deskripsi, pertanyaan-jawaban di forum, dan sebagainya), dan tahap kedua adalah \textit{fine-tuning} pada dataset \textit{retrieval} berkualitas tinggi dengan kontras berbobot.
 
-\textit{ONNX Runtime} adalah \textit{inference engine} lintas platform yang dioptimalkan untuk mengeksekusi model ONNX secara efisien \citep{onnxruntime2024}. Untuk platform Android, \textit{ONNX Runtime} tersedia sebagai paket AAR (\textit{Android Archive}) yang dapat diintegrasikan langsung ke dalam proyek Android melalui \textit{dependency manager} Gradle. \textit{Runtime} ini mendukung akselerasi perangkat keras melalui berbagai \textit{execution provider}---termasuk NNAPI (\textit{Android Neural Networks API}) untuk akselerasi \textit{on-chip}---yang memungkinkan model berukuran kecil berjalan dengan latensi yang dapat diterima bahkan pada perangkat kelas menengah.
+\textit{multilingual-E5} \citep{wangE5Multilingual2024} memperluas E5 ke skenario multibahasa dengan basis arsitektur XLM-RoBERTa. Tiga varian dirilis, yaitu \texttt{multilingual-e5-small}, \texttt{multilingual-e5-base}, dan \texttt{multilingual-e5-large}. Varian \texttt{large} memiliki sekitar 560 juta parameter dan menghasilkan \textit{embedding} berdimensi 1024. Salah satu konvensi penting pada E5 adalah penggunaan prefiks pada teks masukan, yaitu \texttt{query: }$\langle$kueri$\rangle$ untuk teks pendek seperti pertanyaan, dan \texttt{passage: }$\langle$dokumen$\rangle$ untuk teks panjang seperti dokumen. Prefiks ini bukan sekadar \textit{cosmetic}, melainkan dipakai pula saat pelatihan untuk membedakan peran teks dalam pasangan kontras. Varian \texttt{multilingual-e5-large-instruct} memperkenalkan kemampuan mengikuti instruksi tugas pada prefiks, contohnya \texttt{Instruct: Classify Indonesian civic report\textbackslash nQuery: }, sehingga \textit{embedding} yang dihasilkan dapat dikondisikan pada tugas hilir tertentu.
 
-Pola \textit{companion metadata} juga menjadi praktik penting dalam \textit{deployment} ONNX: sebuah file JSON yang diekspor bersamaan dengan model ONNX menyimpan informasi normalisasi (\textit{mean} dan \textit{std} setiap kanal warna), nama kelas keluaran, serta pemetaan dari label dataset mentah ke kategori semantik aplikasi. Pemisahan metadata dari bobot model memungkinkan pembaruan nama kelas atau logika pemetaan tanpa perlu mengekspor ulang model ONNX.
+\textit{Embedding} yang dihasilkan E5 diambil dari rata-rata token (\textit{mean pooling}) atas vektor token terakhir, kemudian dinormalisasi L2. Properti normalisasi L2 ini menjadikan kemiripan kosinus pada Persamaan~\ref{eq:cosine} setara dengan \textit{dot product} yang lebih murah secara komputasi. Pada \textit{benchmark} MIRACL yang mengevaluasi \textit{retrieval} 18 bahasa, \textit{multilingual-E5} bersaing dengan model multibahasa berukuran jauh lebih besar dan menjadi salah satu \textit{encoder} multibahasa terbaik yang tersedia secara terbuka.
+
+\subsection{Perbandingan Singkat}
+
+Tabel berikut merangkum perbandingan singkat enam \textit{encoder} di atas pada beberapa dimensi penting.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan model \textit{encoder} teks.}
+\label{tab:textencoder}
+\begin{tabular}{p{2.4cm} p{2.2cm} p{2.4cm} p{2.6cm} p{2.6cm}}
+\toprule
+\textbf{Model} & \textbf{Tokenizer} & \textbf{Bahasa} & \textbf{Tujuan Pra-latih} & \textbf{Catatan} \\
+\midrule
+BERT & WordPiece & Inggris & MLM + NSP & Tonggak awal \\
+mBERT & WordPiece & 104 bahasa & MLM & Transfer lintas bahasa \\
+IndoBERT & WordPiece & Indonesia & MLM & \textit{Benchmark} IndoNLU \\
+Cendol-mT5 & SentencePiece & Indonesia + daerah & \textit{Span corruption} + instruksi & Encoder-decoder mT5 \\
+BGE-M3 & SentencePiece & 100+ bahasa & Distilasi multifungsi & \textit{Dense} + \textit{sparse} + \textit{multi-vector} \\
+mE5 & SentencePiece & 100+ bahasa & Kontrastif (XLM-R) & Mendukung \textit{instruct} prefix \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % =====================================================================
-\section{Flutter dan Arsitektur Aplikasi \textit{Mobile}}
+\section{Fusi Multimodal}
+\label{sec:fusion}
 % =====================================================================
 
-\subsection{Flutter}
+\subsection{Taksonomi Skema Fusi}
 
-Flutter adalah \textit{framework} pengembangan aplikasi lintas platform berbasis bahasa Dart yang dikembangkan oleh Google \citep{flutterdoc2024}. Berbeda dari pendekatan \textit{hybrid} yang membungkus komponen antarmuka platform (seperti React Native), Flutter menggunakan \textit{rendering engine} sendiri (Skia/Impeller) untuk menggambar setiap piksel, menghasilkan tampilan yang konsisten di semua platform tanpa bergantung pada komponen antarmuka asli (\textit{native widgets}).
+Pada \textit{multimodal learning}, skema fusi mengatur titik di mana informasi dari modalitas yang berbeda digabungkan. Menurut \citet{baltrusaitisMultimodalSurvey2019} dan \citet{ramachandramMultimodalDL2017}, fusi dapat dikelompokkan menjadi tiga kategori utama:
 
-Dalam konteks penelitian ini, Flutter dipilih karena kemampuannya mengintegrasikan kode Dart dengan kode platform asli (Java/Kotlin untuk Android) melalui mekanisme \textit{Platform Channel}. Integrasi \textit{ONNX Runtime}---yang menyediakan API Java/Kotlin---ke dalam aplikasi Flutter dilakukan melalui \textit{bridge} ini, memungkinkan inferensi model berjalan dalam konteks Android asli dengan performa optimal sambil tetap menggunakan antarmuka pengguna yang dibangun sepenuhnya di Dart.
+\begin{enumerate}
+    \item \textbf{Early fusion} (\textit{feature-level fusion}): fitur dari setiap modalitas digabungkan pada tahap awal, sebelum melewati lapisan klasifikasi. Bentuk paling sederhana adalah konkatenasi vektor.
+    \item \textbf{Late fusion} (\textit{decision-level fusion}): setiap modalitas memiliki klasifikasi terpisah yang menghasilkan keputusan, dan keputusan tersebut digabung dengan \textit{voting}, rata-rata, atau \textit{weighted average}.
+    \item \textbf{Hybrid atau intermediate fusion}: kombinasi dari kedua pendekatan, contohnya fusi pada lapisan menengah jaringan dalam.
+\end{enumerate}
 
-\subsection{Riverpod}
+\subsection{Bentuk-Bentuk Fusi}
 
-Riverpod adalah \textit{library} manajemen \textit{state} untuk Flutter yang menawarkan keamanan tipe kompilasi (\textit{compile-time type safety}) dan reaktivitas yang fleksibel \citep{riverpoddoc2024}. Berbeda dari pendahulunya Provider, Riverpod tidak bergantung pada hierarki \textit{widget} untuk mendistribusikan \textit{state}, melainkan menggunakan konsep \textit{provider} yang berdiri sendiri dan dapat diakses dari mana saja dalam kode aplikasi.
+Selain konkatenasi sederhana, beberapa skema fusi yang lazim adalah:
 
-Dalam arsitektur aplikasi penelitian ini, Riverpod digunakan sebagai lapisan manajemen \textit{state} utama yang menjembatani antara lapisan \textit{service} (inferensi ONNX, akses basis data, lokasi GPS) dan lapisan antarmuka pengguna. Pola \textit{provider} Riverpod memungkinkan setiap komponen aplikasi bereaksi secara otomatis terhadap perubahan \textit{state}---misalnya, hasil klasifikasi yang baru saja diterima dari model ONNX---tanpa memerlukan pengelolaan \textit{lifecycle} yang eksplisit.
+\begin{itemize}
+    \item \textbf{Konkatenasi}: $\mathbf{e}_{\text{fuse}} = [\mathbf{e}_1; \mathbf{e}_2]$, sederhana dan menjaga seluruh informasi setiap modalitas.
+    \item \textbf{\textit{Cross-attention fusion}}: menggunakan modul \textit{cross-attention} untuk membuat token dari satu modalitas memperhatikan token dari modalitas lain. Contoh: Perceiver IO, Flamingo.
+    \item \textbf{\textit{Gated fusion}}: memakai \textit{gate} terpelajar yang mengatur kontribusi setiap modalitas, mirip dengan \textit{Mixture of Experts}.
+    \item \textbf{\textit{Bilinear pooling}}: produk luar dua vektor sebelum proyeksi, yang kaya secara ekspresif namun mahal pada dimensi tinggi.
+\end{itemize}
 
-\subsection{GoRouter}
+\subsection{Pertimbangan Kalibrasi Skala}
 
-GoRouter adalah \textit{library} navigasi deklaratif untuk Flutter yang menyediakan sistem navigasi berbasis \textit{URL path} yang serupa dengan navigasi web. Pendekatan deklaratif ini memungkinkan alur navigasi aplikasi---dari layar laporan baru, ke layar hasil AI, ke layar konfirmasi instansi---didefinisikan secara terpusat dalam satu konfigurasi \textit{router}, meningkatkan keterbacaan kode dan memudahkan pengelolaan alur \textit{deep link}.
+Salah satu risiko teknis pada \textit{early fusion} adalah perbedaan skala antar modalitas. Apabila \textit{embedding} satu modalitas memiliki magnitudo rata-rata jauh lebih besar daripada modalitas lain, model dapat secara implisit terlalu banyak bergantung pada modalitas yang dominan. Normalisasi L2 mengatasi hal ini secara sederhana. Alternatif yang lebih kompleks adalah \textit{batch normalization} per modalitas atau pelatihan kalibrasi.
 
-\subsection{SQLite dan sqflite}
+% =====================================================================
+\section{ONNX dan Inferensi Lintas Kerangka}
+\label{sec:onnx}
+% =====================================================================
 
-SQLite adalah sistem manajemen basis data relasional yang ringan dan \textit{serverless}, yang disematkan langsung ke dalam proses aplikasi. Penggunaan SQLite memungkinkan aplikasi menyimpan data secara persisten di perangkat tanpa memerlukan koneksi ke server basis data eksternal---pendekatan yang sesuai dengan desain sistem penelitian ini yang sepenuhnya lokal. Pada Flutter, SQLite diakses melalui \textit{library} sqflite yang menyediakan API asinkron Dart untuk operasi CRUD pada tabel \texttt{users}, \texttt{reports}, dan \texttt{report\_history}.
+\subsection{Spesifikasi ONNX}
+
+\textit{Open Neural Network Exchange} (ONNX) adalah standar format terbuka yang dirancang sebagai jembatan interoperabilitas antar-\textit{framework} \textit{machine learning} \citep{onnxruntime2024}. ONNX mendefinisikan grafik komputasi (\textit{computation graph}) yang bersifat \textit{framework-agnostic}, yang memungkinkan model yang dikembangkan dalam PyTorch, TensorFlow, atau \textit{framework} lainnya diekspor ke representasi tunggal yang dapat dieksekusi oleh berbagai \textit{runtime} pada berbagai platform.
+
+Representasi ONNX terdiri atas serangkaian operator standar yang didefinisikan dalam spesifikasi \textit{opset} bernomor. \textit{Opset} dengan versi yang lebih baru mendukung operator yang lebih komprehensif. Saat ekspor, PyTorch melakukan \textit{tracing} grafik komputasi model dan menerjemahkannya ke operator ONNX yang setara, dengan opsi optimasi seperti \textit{constant folding} yang mengeliminasi sub-grafik konstan untuk mengurangi ukuran model dan latensi inferensi.
+
+\subsection{ONNX Runtime}
+
+\textit{ONNX Runtime} adalah \textit{inference engine} lintas platform yang dioptimalkan untuk mengeksekusi model ONNX secara efisien \citep{onnxruntime2024}. \textit{Runtime} ini mendukung beberapa \textit{execution provider}, antara lain:
+
+\begin{itemize}
+    \item CPU \textit{Execution Provider} (default).
+    \item CUDA \textit{Execution Provider} untuk GPU NVIDIA.
+    \item NNAPI untuk Android.
+    \item CoreML untuk iOS dan macOS.
+    \item OpenVINO, TensorRT, dan \textit{provider} lain yang dioptimalkan vendor.
+\end{itemize}
+
+\subsection{Validasi Paritas Numerik}
+
+Sebelum model ONNX digunakan dalam produksi, perlu dipastikan bahwa keluarannya konsisten secara numerik dengan model asal. Validasi dilakukan dengan menjalankan kedua model pada \textit{batch} sampel yang sama dan menghitung selisih absolut maksimum (\textit{max abs diff}) di seluruh komponen vektor keluaran. Ambang batas yang umum dipakai adalah $10^{-5}$, yang memastikan prediksi top-1 identik pada kedua jalur.
+
+% =====================================================================
+\section{Inferensi \textit{On-device} versus \textit{On-server}}
+\label{sec:on-device-vs-on-server}
+% =====================================================================
+
+Pemilihan permukaan \textit{deployment} model berimplikasi langsung terhadap latensi, ketersediaan, biaya operasional, ukuran biner aplikasi, daya baterai perangkat pengguna, dan kemampuan pembaruan model. Bagian ini mengulas dua pendekatan utama yang umum dipakai pada sistem AI berbasis perangkat \textit{mobile}, yaitu inferensi \textit{on-device} dan inferensi \textit{on-server}.
+
+\subsection{Definisi}
+
+\textit{Inferensi on-device} mengacu pada eksekusi model di dalam perangkat pengguna, baik pada CPU, GPU \textit{mobile}, maupun \textit{Neural Processing Unit} (NPU) yang tersedia pada \textit{chipset} modern. Pada Android, jalur eksekusi yang umum dipakai adalah ONNX Runtime Mobile \citep{onnxruntimeMobileDocs2024}, TensorFlow Lite \citep{tfliteDocs2024}, dan NNAPI sebagai abstraksi akselerator perangkat keras. Pada iOS dan macOS, Core ML menjadi jalur resmi yang dipublikasikan oleh Apple \citep{appleCoreML2024}.
+
+\textit{Inferensi on-server} mengacu pada eksekusi model di luar perangkat pengguna, biasanya pada \textit{cluster} komputasi yang menjalankan \textit{web service} sebagai antarmuka inferensi. Klien (aplikasi \textit{mobile}) mengirim permintaan HTTP yang berisi masukan, lalu menerima respons berisi hasil prediksi. Pada penelitian ini, jalur \textit{on-server} dibangun dengan FastAPI \citep{fastapidoc2024} yang memuat tiga \textit{artifact} ONNX (\textit{encoder} citra, \textit{encoder} teks, dan \textit{classifier head}) sekali pada inisialisasi.
+
+\subsection{Trade-off Antara Kedua Pendekatan}
+
+Tabel~\ref{tab:on-device-vs-on-server} merangkum perbedaan utama antara kedua pendekatan pada beberapa dimensi yang relevan untuk sistem pelaporan multimodal.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan inferensi \textit{on-device} dan \textit{on-server}.}
+\label{tab:on-device-vs-on-server}
+\begin{tabular}{p{3.6cm} p{5.0cm} p{5.0cm}}
+\toprule
+\textbf{Dimensi} & \textbf{\textit{On-device}} & \textbf{\textit{On-server}} \\
+\midrule
+Latensi & Rendah, tanpa \textit{round-trip} jaringan & Bergantung pada kecepatan dan stabilitas jaringan \\
+Ketersediaan jaringan & Berfungsi tanpa jaringan & Membutuhkan koneksi internet aktif \\
+Privasi data & Data tidak meninggalkan perangkat & Data dikirim ke server, perlu pengamanan tambahan \\
+Biaya operasional & Tidak ada biaya server tetap & Biaya komputasi awan terus berjalan \\
+Ukuran paket aplikasi & Bertambah sesuai ukuran model & Tetap kecil, model dimuat di server \\
+Daya baterai perangkat & Konsumsi tinggi saat inferensi & Konsumsi rendah, hanya kirim permintaan \\
+Pembaruan model & Memerlukan rilis baru aplikasi & Pembaruan terpusat, tanpa rilis aplikasi \\
+Skala model & Terbatas oleh memori dan akselerator perangkat & Tidak dibatasi oleh perangkat pengguna \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Teknik Optimisasi untuk \textit{On-device}}
+
+Karena model \textit{deep learning} berskala besar tidak praktis untuk dieksekusi langsung pada perangkat pengguna, sejumlah teknik optimisasi umum diterapkan. Kuantisasi (\textit{quantization}) mengubah representasi parameter dari \textit{floating point} 32-bit menjadi presisi yang lebih rendah, contohnya INT8, dengan tetap menjaga akurasi pada batas yang dapat diterima \citep{amorEdgeAIPractice2025,wangEmpoweringEdgeIntelligence2025}. \textit{Pruning} membuang parameter atau neuron dengan kontribusi rendah sehingga model menjadi lebih ringkas. Distilasi pengetahuan (\textit{knowledge distillation}) melatih model murid berukuran kecil agar meniru perilaku model guru berukuran besar. Arsitektur ringan seperti MobileNet, EfficientNet, dan turunan keluarga DistilBERT dirancang khusus untuk eksekusi pada perangkat dengan sumber daya terbatas.
+
+\subsection{Teknik Optimisasi untuk \textit{On-server}}
+
+Pada jalur \textit{on-server}, optimisasi diarahkan pada \textit{throughput}, latensi, dan biaya per permintaan. Praktik umum yang diterapkan meliputi pemuatan model sekali pada inisialisasi (sehingga \textit{cold start} tidak terjadi pada setiap permintaan), \textit{batching} permintaan untuk memaksimalkan utilisasi akselerator, \textit{caching} hasil pra-proses, serta penggunaan \textit{execution provider} yang sesuai dengan perangkat keras server (CUDA pada GPU, OpenVINO pada CPU Intel, dan TensorRT pada GPU NVIDIA). Skema ini relatif lebih sederhana untuk dipelihara dibandingkan \textit{on-device} karena hanya satu titik permukaan komputasi yang perlu dioptimalkan.
+
+\subsection{Implikasi pada Penelitian Ini}
+
+Penelitian ini memilih jalur \textit{on-server} dengan FastAPI atas dasar empat pertimbangan teknis. Pertama, ukuran \textit{artifact} ONNX \textit{image encoder} DINOv3 \textit{large} mencapai 1,15 GB; ukuran ini di luar batas wajar paket aplikasi Android dan akan menyebabkan waktu pasang aplikasi yang lama serta penggunaan ruang penyimpanan yang berlebihan pada perangkat pengguna. Kedua, eksperimen ablasi yang melibatkan enam belas kombinasi \textit{encoder} memerlukan iterasi cepat pada server, sehingga jalur \textit{on-server} memungkinkan model diperbarui sentral tanpa harus merilis ulang aplikasi pada \textit{Play Store}. Ketiga, perangkat pengguna pada konteks pelaporan publik di Indonesia memiliki spesifikasi yang sangat heterogen, sehingga pengalaman pengguna lebih konsisten ketika beban komputasi dipusatkan di server. Keempat, kebijakan pembaruan model yang terpusat memberikan jaminan bahwa seluruh pengguna selalu menggunakan versi model paling mutakhir tanpa harus menunggu siklus rilis aplikasi.
+
+Sebagai konsekuensi, sistem ini bergantung pada ketersediaan jaringan dan ketersediaan layanan FastAPI sebagai titik inferensi tunggal. Mitigasi yang dapat dilakukan pada penelitian lanjutan meliputi distilasi atau kuantisasi INT8 untuk menghasilkan varian \textit{on-device} yang ringan sebagai \textit{fallback}, serta replikasi server untuk meningkatkan ketersediaan layanan secara horisontal \citep{wangCognitiveEdgeComputing2025}.
+
+% =====================================================================
+\section{\textit{Unified Modeling Language} (UML) pada Pengembangan Aplikasi}
+\label{sec:uml}
+% =====================================================================
+
+\subsection{Definisi dan Sejarah}
+
+\textit{Unified Modeling Language} (UML) adalah bahasa permodelan visual standar yang dipergunakan untuk merancang, memvisualisasikan, mendokumentasikan, dan mengkonstruksi sistem perangkat lunak \citep{boochUML2005}. UML dirumuskan pada pertengahan 1990-an sebagai unifikasi tiga metode permodelan berorientasi objek yang dikembangkan oleh Grady Booch, James Rumbaugh, dan Ivar Jacobson, kemudian dibakukan oleh \textit{Object Management Group} (OMG). Versi mutakhir UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (\textit{structural}) dan diagram perilaku (\textit{behavioral}).
+
+UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (memodelkan elemen statis, contohnya \textit{class}, \textit{component}, dan \textit{deployment diagram}) dan diagram perilaku (memodelkan dinamika sistem, contohnya \textit{use case}, \textit{sequence}, \textit{activity}, dan \textit{state machine diagram}). Penelitian ini memakai \textit{use case}, \textit{activity}, \textit{class}, dan \textit{sequence diagram} untuk mendokumentasikan rancangan SmartCityApps (Bab~\ref{ch:metode}). Uraian rinci jenis-jenis diagram UML serta pendekatan pelengkap \textit{C4 Model} \citep{brownC42018} disajikan pada Lampiran~\ref{app:uml-detail}.
+
+\subsection{Peran UML pada Pengembangan Aplikasi Mobile}
+
+Pada pengembangan aplikasi mobile, UML berfungsi sebagai alat komunikasi antara perancang antarmuka, pengembang, dan pemangku kepentingan. Diagram \textit{use case} mendefinisikan fitur yang harus tersedia bagi pengguna, diagram kelas memetakan domain model yang menyusun \textit{state} aplikasi, dan diagram \textit{sequence} menjelaskan alur interaksi antar komponen termasuk panggilan ke layanan jarak jauh seperti server inferensi. Pada arsitektur klien-server multimodal, diagram \textit{deployment} dan \textit{container} membantu memvisualisasikan pemisahan tanggung jawab antara aplikasi mobile sebagai \textit{thin client} dan server sebagai jalur inferensi yang berat.
+
+% =====================================================================
+\section{Aplikasi \textit{Mobile}: Android dan iOS}
+\label{sec:mobile}
+% =====================================================================
+
+Dua sistem operasi mobile yang dominan adalah Android (kernel Linux, \textit{runtime} ART, distribusi APK/AAB melalui \textit{Play Store}) dan iOS (kernel Darwin, bahasa Swift/Objective-C, distribusi IPA melalui \textit{App Store}) \citep{androidDevDocs2024,appleCoreML2024}. Pengembangan aplikasi mobile dapat dilakukan secara \textit{native} (SDK resmi tiap platform, performa terbaik namun dua basis kode), \textit{cross-platform compiled} (satu basis kode dikompilasi ke biner native, contohnya Flutter, .NET MAUI, React Native), atau \textit{hybrid web} (membungkus konten web dalam \textit{webview}, contohnya Cordova dan Ionic). Penelitian ini memilih pendekatan \textit{cross-platform compiled} dengan Flutter, dengan pengujian dibatasi pada Android.
+
+% =====================================================================
+\section{Flutter dan \textit{Stack} Pengembangan Mobile}
+\label{sec:flutter}
+% =====================================================================
+
+\subsection{Flutter sebagai \textit{Framework}}
+
+Flutter adalah \textit{framework} pengembangan aplikasi lintas platform berbasis bahasa Dart yang dikembangkan oleh Google \citep{flutterdoc2024}. Berbeda dari pendekatan \textit{hybrid}, Flutter menggunakan \textit{rendering engine} sendiri (Skia atau Impeller) untuk menggambar setiap piksel, sehingga tampilan konsisten lintas platform tanpa bergantung pada \textit{native widgets}; aplikasi dikompilasi \textit{ahead-of-time} ke kode mesin saat rilis.
+
+Pada penelitian ini, manajemen \textit{state} memakai \textbf{Riverpod} \citep{riverpoddoc2024}, yaitu \textit{library} reaktif dengan keamanan tipe saat kompilasi yang mendistribusikan \textit{state} melalui \textit{provider} mandiri tanpa bergantung pada hierarki \textit{widget}. Navigasi memakai \textbf{GoRouter}, \textit{library} navigasi deklaratif berbasis \textit{URL path} yang menyederhanakan \textit{deep link} dan \textit{redirect} berbasis kondisi otentikasi. Untuk persistensi, aplikasi memilih basis data \textit{cloud} Supabase (dipaparkan pada bagian berikutnya) alih-alih SQLite lokal, karena alur kerja melibatkan tiga peran pengguna yang membutuhkan akses terhadap data yang sama secara lintas perangkat.
+
+% =====================================================================
+\section{Supabase sebagai \textit{Backend} Basis Data}
+\label{sec:supabase}
+% =====================================================================
+
+\subsection{Definisi dan Latar Belakang}
+
+Supabase adalah \textit{platform Backend-as-a-Service} (BaaS) sumber terbuka yang menyediakan basis data PostgreSQL terkelola, otentikasi, penyimpanan berkas, fungsi tanpa server (\textit{Edge Functions}), dan langganan \textit{realtime} dalam satu paket terintegrasi \citep{supabaseDoc2024}. Supabase sering disebut sebagai alternatif sumber terbuka dari Firebase, dengan keunggulan utama yaitu basis data relasional penuh berbasis PostgreSQL, dukungan SQL standar, dan kemudahan migrasi keluar tanpa \textit{vendor lock-in}.
+
+Empat komponen utama Supabase yang relevan dengan penelitian ini adalah PostgreSQL terkelola (basis data relasional inti yang mendukung tipe \texttt{jsonb}, \textit{enum}, dan \textit{constraint}), PostgREST (REST API otomatis dari skema basis data), Otentikasi (identitas terintegrasi dengan pengguna tersimpan pada \texttt{auth.users}), dan Storage (penyimpanan berkas berbasis S3). Selain itu, Supabase menyediakan kanal \textit{realtime} berbasis WebSocket yang memancarkan perubahan baris kepada klien berlangganan, berguna untuk memperbarui daftar laporan tanpa \textit{polling}. Integrasi pada Flutter dilakukan melalui paket \texttt{supabase\_flutter} yang membungkus seluruh layanan ke dalam satu klien \textit{singleton}.
+
+\subsection{\textit{Row Level Security} (RLS)}
+
+Salah satu fitur kunci Supabase yang berasal dari PostgreSQL adalah \textit{Row Level Security} (RLS), yaitu kebijakan keamanan yang dievaluasi pada level baris. Dengan RLS, akses ke data dapat dibatasi berdasarkan identitas pengguna yang terotentikasi, contohnya \textit{policy} \texttt{auth.uid() = user\_id} memastikan setiap pengguna hanya dapat membaca atau memodifikasi laporan miliknya sendiri. RLS membuat aplikasi mobile dapat berkomunikasi langsung ke basis data tanpa perlu lapisan API kustom, karena keamanan dijamin pada level basis data. Pada penelitian ini RLS dipakai untuk memisahkan akses tiga peran (Warga Pelapor, Operator Instansi, dan Moderator), dengan konsekuensi ketergantungan pada layanan Supabase serta kebutuhan perancangan kebijakan RLS yang teliti.
+
+% =====================================================================
+\section{FastAPI dan \textit{Web Framework} untuk \textit{Serving}}
+\label{sec:fastapi}
+% =====================================================================
+
+FastAPI adalah \textit{web framework} Python yang dibangun di atas Starlette (untuk lapisan ASGI) dan Pydantic (untuk validasi data) \citep{fastapidoc2024}. Tiga karakteristik utama FastAPI adalah:
+
+\begin{enumerate}
+    \item \textbf{Dukungan asinkron native}: \textit{endpoint} dapat dideklarasikan dengan \texttt{async def}, sehingga server dapat menangani permintaan yang diblokir oleh I/O secara bersamaan tanpa membuat \textit{thread} baru per permintaan.
+    \item \textbf{Validasi tipe otomatis}: skema permintaan dideklarasikan sebagai kelas Pydantic, dan FastAPI secara otomatis mengembalikan kesalahan 422 jika permintaan tidak valid.
+    \item \textbf{Dokumentasi otomatis}: skema OpenAPI dan halaman \textit{Swagger UI} dihasilkan otomatis, mempercepat integrasi klien dan pengujian.
+\end{enumerate}
+
+FastAPI banyak digunakan untuk \textit{serving} model \textit{machine learning} karena kemudahan integrasi dengan pustaka inferensi seperti \textit{ONNX Runtime}, PyTorch, dan TensorFlow Serving, serta kompatibilitas dengan kontainer Docker dan orkestrasi Kubernetes. \textit{Framework} sejenis yang juga umum dipakai untuk tujuan serupa antara lain Flask (sinkron, lebih sederhana), Django REST Framework (untuk aplikasi besar dengan basis data), TorchServe (\textit{serving} khusus PyTorch), dan TensorFlow Serving (\textit{serving} khusus TensorFlow).
+
+% =====================================================================
+\section{Docker dan Kontainerisasi}
+\label{sec:docker}
+% =====================================================================
+
+Docker \citep{merkelDocker2014} adalah \textit{platform} kontainerisasi yang mengemas aplikasi beserta seluruh dependensinya ke dalam satu unit yang dapat dijalankan secara konsisten di berbagai lingkungan. Berbeda dari mesin virtual, kontainer berbagi \textit{kernel} sistem operasi induk dan mengisolasi proses melalui \textit{Linux namespaces} dan \textit{cgroups}, sehingga ringan dan cepat dijalankan. Pada penelitian ini Docker dipakai untuk mengemas server inferensi FastAPI beserta \textit{artifact} ONNX dengan pola \textit{multi-stage build}, sehingga lingkungan inferensi konsisten dan dapat direproduksi. Konsep inti Docker (\textit{image}, \textit{container}, \texttt{Dockerfile}, \textit{volume}, \textit{registry}), struktur \texttt{Dockerfile}, \textit{multi-stage build}, Docker Compose, serta manfaatnya bagi \textit{pipeline machine learning} diuraikan pada Lampiran~\ref{app:docker-detail}.
 
 % =====================================================================
 \section{Metrik Evaluasi Klasifikasi Multi-Kelas}
+\label{sec:metrics}
 % =====================================================================
 
 \subsection{\textit{Macro F1-Score}}
 
-Dalam konteks klasifikasi multi-kelas dengan distribusi kelas yang tidak sepenuhnya seimbang, \textit{macro F1-score} merupakan metrik evaluasi yang lebih informatif dibandingkan akurasi sederhana. Sementara akurasi menghitung rasio prediksi benar terhadap total sampel---yang dapat terlihat tinggi meski model gagal pada kelas minoritas---\textit{macro F1-score} memberikan bobot yang setara kepada setiap kelas tanpa memperhatikan frekuensi relatifnya.
+Dalam konteks klasifikasi multi-kelas dengan distribusi kelas yang tidak sepenuhnya seimbang, \textit{macro F1-score} merupakan metrik evaluasi yang lebih informatif dibandingkan akurasi sederhana. Sementara akurasi menghitung rasio prediksi benar terhadap total sampel, yang dapat terlihat tinggi meski model gagal pada kelas minoritas, \textit{macro F1-score} memberikan bobot yang setara kepada setiap kelas tanpa memperhatikan frekuensi relatifnya.
 
 \textit{F1-score} untuk setiap kelas $c$ didefinisikan sebagai rata-rata harmonik antara \textit{precision} dan \textit{recall}:
 
 \begin{equation}
-    F1_c = \frac{2 \cdot \text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+    F1_c = \frac{2 \cdot \text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c},
+    \label{eq:f1}
 \end{equation}
-
-di mana:
+dengan
 \begin{equation}
-    \text{Precision}_c = \frac{TP_c}{TP_c + FP_c}, \quad \text{Recall}_c = \frac{TP_c}{TP_c + FN_c}
+    \text{Precision}_c = \frac{TP_c}{TP_c + FP_c}, \quad
+    \text{Recall}_c = \frac{TP_c}{TP_c + FN_c}.
+    \label{eq:precrec}
 \end{equation}
 
-\textit{Macro F1-score} kemudian dihitung sebagai rata-rata aritmetika dari $F1_c$ seluruh kelas $K$:
+\textit{Macro F1-score} kemudian dihitung sebagai rata-rata aritmetika dari $F1_c$ pada seluruh $K$ kelas:
 
 \begin{equation}
-    \text{Macro F1} = \frac{1}{K} \sum_{c=1}^{K} F1_c
+    \text{Macro F1} = \frac{1}{K} \sum_{c=1}^{K} F1_c.
+    \label{eq:macrof1}
 \end{equation}
-
-Dalam penelitian ini, \textit{macro F1-score} digunakan sebagai kriteria utama pemilihan \textit{checkpoint} model terbaik selama pelatihan (berdasarkan nilai pada set validasi) maupun peringkat akhir dalam \textit{leaderboard} perbandingan model (berdasarkan nilai pada set uji).
 
 \subsection{Metrik Pendukung}
 
-Selain \textit{macro F1-score}, beberapa metrik pendukung juga dihitung untuk memberikan gambaran evaluasi yang lebih komprehensif:
+Beberapa metrik pendukung yang umum dilaporkan bersama \textit{macro F1-score} adalah:
 
 \begin{enumerate}
-    \item \textbf{Akurasi (\textit{Accuracy})}: Proporsi prediksi benar dari keseluruhan sampel. Berguna sebagai indikator umum performa model.
-
+    \item \textbf{Akurasi (\textit{Accuracy})}: proporsi prediksi benar dari keseluruhan sampel.
     \begin{equation}
-        \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+        \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}.
+        \label{eq:accuracy}
     \end{equation}
-
-    \item \textbf{\textit{Balanced Accuracy}}: Rata-rata \textit{recall} per kelas. Lebih robust terhadap ketidakseimbangan kelas dibandingkan akurasi standar.
-
+    \item \textbf{\textit{Balanced Accuracy}}: rata-rata \textit{recall} per kelas, lebih robust terhadap ketidakseimbangan kelas.
     \begin{equation}
-        \text{Balanced Accuracy} = \frac{1}{K} \sum_{c=1}^{K} \text{Recall}_c
+        \text{Balanced Accuracy} = \frac{1}{K} \sum_{c=1}^{K} \text{Recall}_c.
+        \label{eq:balancedacc}
     \end{equation}
-
-    \item \textbf{\textit{Macro ROC-AUC}}: Rata-rata \textit{Area Under the Receiver Operating Characteristic Curve} untuk setiap kelas dalam skenario \textit{one-vs-rest}. Mengukur kemampuan model membedakan setiap kelas dari semua kelas lainnya secara probabilistik.
-
-    \item \textbf{\textit{Confusion Matrix}}: Matriks $K \times K$ yang memvisualisasikan distribusi prediksi benar dan salah untuk setiap pasangan kelas, memungkinkan identifikasi pola kesalahan spesifik antar kelas yang saling memiliki kemiripan visual.
+    \item \textbf{\textit{Macro ROC-AUC}}: rata-rata \textit{Area Under the Receiver Operating Characteristic Curve} per kelas dalam skenario \textit{one-vs-rest}, mengukur kemampuan model membedakan setiap kelas dari semua kelas lain secara probabilistik.
+    \item \textbf{\textit{Confusion Matrix}}: matriks $K \times K$ yang memvisualisasikan distribusi prediksi benar dan salah untuk setiap pasangan kelas, memungkinkan identifikasi pola kesalahan spesifik antar kelas yang saling memiliki kemiripan visual atau tekstual.
+    \item \textbf{Kalibrasi Probabilitas}: ukuran sejauh mana probabilitas prediksi mencerminkan kebenaran. \textit{Expected Calibration Error} (ECE) menghitung perbedaan rata-rata antara akurasi dan keyakinan rata-rata pada \textit{bin} probabilitas.
 \end{enumerate}
 
 % =====================================================================
 \section{Teknik Pelatihan Model}
+\label{sec:training}
 % =====================================================================
 
-\subsection{Transfer Learning dan Fine-tuning}
+\subsection{\textit{Transfer Learning}}
 
-\textit{Transfer learning} adalah paradigma pelatihan di mana bobot model yang telah dilatih pada dataset skala besar (umumnya ImageNet dengan 1,2 juta gambar dan 1.000 kelas) digunakan sebagai inisialisasi untuk melatih model pada dataset target yang lebih kecil \citep{dosovitskiyImageWorth16x162021}. Pendekatan ini terbukti secara konsisten menghasilkan konvergensi yang lebih cepat dan akurasi akhir yang lebih tinggi dibandingkan pelatihan dari awal (\textit{training from scratch}), terutama ketika data target terbatas.
+\textit{Transfer learning} adalah paradigma pelatihan di mana bobot model yang telah dilatih pada dataset skala besar digunakan kembali pada tugas hilir \citep{dosovitskiyImageWorth16x162021}. Pendekatan ini terbukti secara konsisten menghasilkan konvergensi yang lebih cepat dan akurasi akhir yang lebih tinggi dibandingkan pelatihan dari awal (\textit{training from scratch}), terutama ketika data target terbatas. Pada konfigurasi \textit{linear probing}, hanya algoritma klasifikasi yang dilatih sementara \textit{backbone} dibekukan; pada konfigurasi \textit{fine-tuning} penuh, seluruh bobot dilatih ulang dengan \textit{learning rate} kecil (umumnya antara $10^{-5}$ dan $10^{-3}$).
 
-Dalam penelitian ini, seluruh model diinisialisasi dengan bobot pra-latih dari ImageNet melalui API \texttt{timm} (\textit{pretrained=True}). Proses \textit{fine-tuning} dilakukan dengan melatih ulang seluruh bobot model---bukan hanya lapisan kepala klasifikasi---menggunakan \textit{learning rate} yang kecil (3$\times 10^{-4}$) untuk menjaga representasi fitur yang telah dipelajari selama pra-latih sambil mengadaptasinya ke domain masalah lingkungan perkotaan.
+\subsection{Validasi dan Pemilihan Model}
 
-\subsection{AdamW dan \textit{Cosine Annealing}}
+Pelatihan biasanya menggunakan partisi \textit{train}, \textit{validation}, dan \textit{test} dengan stratifikasi label. \textit{Hyperparameter} dipilih berdasarkan kinerja model pada set validasi, sementara evaluasi akhir dilaporkan pada set uji yang belum pernah dilihat selama pengembangan. Pada dataset berukuran kecil, validasi silang $k$-\textit{fold} sering digunakan untuk meningkatkan stabilitas estimasi metrik. \textit{Early stopping} berdasarkan kinerja validasi menjadi cara umum untuk mencegah \textit{overfitting} pada sesi pelatihan yang panjang.
 
-Optimizer AdamW \citep{loshchilovDecoupledWeightDecay2019} merupakan varian dari Adam yang memisahkan penerapan \textit{weight decay} dari pembaruan adaptif gradien. Dalam Adam standar, \textit{weight decay} diterapkan melalui regularisasi L2 yang diintegrasikan ke dalam gradien, sehingga berinteraksi dengan mekanisme adaptif dan menghasilkan efek regularisasi yang berbeda dari yang diharapkan. AdamW memperbaiki hal ini dengan menerapkan \textit{weight decay} secara langsung pada bobot, terlepas dari gradien, menghasilkan regularisasi yang lebih bersih dan performa yang lebih baik pada sebagian besar skenario \textit{fine-tuning}.
+% =====================================================================
+\section{Penelitian Terkait}
+\label{sec:penelitian-terkait}
+% =====================================================================
 
-\textit{Cosine Annealing Learning Rate Scheduler} menjadwalkan penurunan \textit{learning rate} mengikuti fungsi kosinus dari nilai awal hingga mendekati nol sepanjang $T_{max}$ epoch. Penurunan bertahap ini memungkinkan model menjelajahi ruang parameter secara halus pada tahap akhir pelatihan, meningkatkan konvergensi ke titik minimum yang lebih baik.
+Bagian ini menelaah lima penelitian internasional yang relevan dengan kontribusi metodologis penelitian ini, yaitu klasifikasi multimodal berbasis fusi citra dan teks. Setiap entri disusun dalam tiga subbagian yaitu \textbf{Gambaran Umum}, \textbf{Analisis dan Metode}, dan \textbf{Kesimpulan} yang menjelaskan posisi penelitian ini terhadap entri tersebut.
 
-\subsection{\textit{Automatic Mixed Precision} (AMP)}
+\subsection{Radford et al. (2021): CLIP, Pretraining Kontrastif Citra dan Teks}
 
-\textit{Automatic Mixed Precision} adalah teknik yang secara otomatis memilih apakah suatu operasi dalam grafik komputasi dieksekusi dengan presisi penuh (\textit{float32}) atau presisi setengah (\textit{float16}), berdasarkan sensitivitas numerik operasi tersebut. Operasi yang sensitif terhadap presisi---seperti fungsi aktivasi dan normalisasi---tetap dijalankan dalam \textit{float32}, sementara operasi yang dominan seperti perkalian matriks dijalankan dalam \textit{float16}. Hasilnya adalah percepatan pelatihan yang signifikan pada GPU modern dengan CUDA tanpa kehilangan akurasi model, karena \textit{GradScaler} secara dinamis menyesuaikan skala gradien untuk mencegah \textit{underflow}.
+\subsubsection{Gambaran Umum}
 
-\subsection{\textit{Label Smoothing}}
+\citet{radfordCLIP2021} mengajukan CLIP (\textit{Contrastive Language-Image Pre-training}) sebagai paradigma baru pelatihan model visual berskala besar dengan supervisi berbasis bahasa alami. Karya ini dipublikasikan pada Proceedings of the 38th International Conference on Machine Learning (ICML 2021), volume 139 dengan rentang halaman 8748 sampai 8763. CLIP menjadi rujukan dasar bagi sebagian besar pendekatan klasifikasi multimodal modern karena memperkenalkan strategi pelatihan kontrastif yang menyelaraskan ruang representasi citra dan teks pada \textit{embedding} bersama.
 
-\textit{Label smoothing} adalah teknik regularisasi yang mengubah label \textit{one-hot} keras menjadi distribusi probabilitas halus: label target yang benar mendapatkan probabilitas $1 - \varepsilon$, sementara sisa probabilitas $\varepsilon$ didistribusikan secara merata ke semua kelas lainnya. Dengan nilai $\varepsilon = 0{,}05$ yang digunakan dalam penelitian ini, teknik ini mencegah model dari terlalu yakin (\textit{overconfident}) terhadap prediksinya, mengurangi \textit{overfitting}, dan meningkatkan generalisasi pada data uji \citep{szegedyRethinkingInceptionArchitecture2016}.
+\subsubsection{Analisis dan Metode}
+
+CLIP dilatih pada 400 juta pasangan citra dan teks yang dikumpulkan dari internet menggunakan tujuan pelatihan kontrastif simetris. Arsitektur model terdiri atas \textit{image encoder} berbasis Vision Transformer atau ResNet yang dimodifikasi dan \textit{text encoder} berbasis Transformer dengan penyandian \textit{byte-pair encoding}. Pelatihan mengoptimalkan kemiripan kosinus antara representasi citra dan representasi teks pasangan positif sambil meminimalkan kemiripan terhadap pasangan negatif pada \textit{batch} yang sama. Setelah pra-pelatihan, CLIP menunjukkan kemampuan transfer \textit{zero-shot} pada lebih dari tiga puluh dataset visual standar dengan akurasi yang mendekati atau melampaui \textit{baseline supervised} terlatih penuh.
+
+\subsubsection{Kesimpulan}
+
+Penelitian ini mengadopsi prinsip CLIP yaitu pemanfaatan \textit{image encoder} dan \textit{text encoder} pra-latih sebagai \textit{frozen feature extractor} untuk modalitas masing-masing. Perbedaan utamanya terletak pada strategi pengayaan modalitas, yaitu pada CLIP kedua \textit{encoder} diselaraskan secara kontrastif sehingga menghasilkan ruang \textit{embedding} bersama, sementara penelitian ini memilih DINOv3 \textit{large} untuk citra dan \textit{multilingual-E5 large} untuk teks yang dilatih pada tujuan terpisah, lalu disatukan melalui fusi awal berbasis konkatenasi. Pilihan ini memberikan keluwesan dalam mengganti pasangan \textit{encoder} secara independen pada eksperimen ablasi, sesuatu yang sulit dilakukan pada model \textit{end-to-end} seperti CLIP.
+
+\subsection{Audebert et al. (2019): Multimodal Deep Networks untuk Klasifikasi Dokumen}
+
+\subsubsection{Gambaran Umum}
+
+\citet{audebertMultimodalDoc2019} mengajukan jaringan saraf dalam multimodal untuk klasifikasi dokumen berbasis citra halaman dan teks hasil OCR (\textit{Optical Character Recognition}). Karya ini dipublikasikan sebagai \textit{preprint} arXiv (2019) dan dipresentasikan pada International Conference on Document Analysis and Recognition. Pendekatan tersebut secara metodologis paling dekat dengan penelitian ini karena menggabungkan modalitas visual dan tekstual pada satu \textit{pipeline} klasifikasi multikelas.
+
+\subsubsection{Analisis dan Metode}
+
+Arsitektur yang diusulkan menggunakan MobileNetV2 sebagai \textit{image encoder} pada citra halaman dokumen dan FastText sebagai \textit{text encoder} pada hasil OCR. Kedua \textit{embedding} dikonkatenasi sebelum dilewatkan ke lapisan \textit{multilayer perceptron} untuk klasifikasi. Eksperimen dilakukan pada dataset RVL-CDIP dan Tobacco3482 yang berisi enam belas kategori dokumen administratif. Hasil menunjukkan bahwa fusi multimodal mengungguli baseline unimodal sebesar beberapa poin persentase pada akurasi top-1, dengan kontribusi modalitas teks lebih besar daripada modalitas citra pada dokumen yang konten visualnya tidak terlalu diskriminatif.
+
+\subsubsection{Kesimpulan}
+
+Penelitian ini mengikuti pola fusi awal berbasis konkatenasi yang sama dengan \citet{audebertMultimodalDoc2019}. Perbedaan utamanya yaitu domain aplikasi (laporan warga Jakarta CRM versus dokumen administratif), pasangan \textit{encoder} (DINOv3 \textit{large} dan \textit{multilingual-E5} versus MobileNetV2 dan FastText), serta \textit{classifier head} yang dipakai (CatBoost dengan kalibrasi PGS versus MLP). Penggunaan \textit{encoder} berskala besar pada penelitian ini dimungkinkan karena kedua \textit{encoder} dibekukan, sehingga biaya komputasi tetap terkendali walaupun parameter \textit{encoder} jauh lebih banyak daripada arsitektur ringan pada karya tersebut.
+
+\subsection{Ofli, Alam, dan Imran (2020): Multimodal Deep Learning untuk Disaster Response}
+
+\subsubsection{Gambaran Umum}
+
+\citet{ofliMultimodalDisaster2020} mengembangkan sistem klasifikasi multimodal pada laporan bencana di media sosial sebagai bagian dari upaya \textit{disaster response} berbasis komputasi. Karya ini diterima pada \textit{Proceedings of the 17th International Conference on Information Systems for Crisis Response and Management} (ISCRAM 2020). Domain aplikasi sistem ini, yaitu klasifikasi laporan warga melalui kanal Twitter, secara konseptual paling dekat dengan klasifikasi laporan warga pada platform CRM Jakarta walaupun kanal pelaporan dan tata bahasa target berbeda.
+
+\subsubsection{Analisis dan Metode}
+
+Arsitektur yang diuji adalah jaringan saraf dalam dengan dua jalur paralel, yaitu \textit{image encoder} VGG16 untuk citra dan jaringan konvolusi pada \textit{embedding} kata GloVe untuk teks. Kedua keluaran lapisan \textit{fully connected} digabungkan dengan operasi konkatenasi sebelum dilewatkan ke lapisan klasifikasi akhir. Dataset yang dipakai adalah CrisisMMD yang berisi laporan bencana berbentuk pasangan teks dan citra dari Twitter. Eksperimen dilakukan pada dua tugas, yaitu klasifikasi informativeness (apakah tweet informatif atau tidak) dan klasifikasi tipe humanitarian. Hasilnya menunjukkan bahwa fusi multimodal mengungguli baseline unimodal pada keempat dataset bencana yang diuji.
+
+\subsubsection{Kesimpulan}
+
+Penelitian ini mengambil inspirasi dari skema fusi konkatenasi pada lapisan tinggi yang juga dipakai oleh \citet{ofliMultimodalDisaster2020}. Perbedaan utamanya yaitu pemilihan \textit{encoder} (VGG16 dan GloVe-CNN versus DINOv3 \textit{large} dan \textit{multilingual-E5 large}), domain (Twitter berbahasa Inggris versus CRM Jakarta berbahasa Indonesia), dan \textit{classifier head} (\textit{fully connected layer} versus CatBoost dengan kalibrasi PGS). Karena DINOv3 dan \textit{multilingual-E5} merupakan \textit{foundation model} yang dilatih pada data jauh lebih besar daripada VGG16 dan GloVe, penelitian ini mengharapkan kualitas representasi yang lebih kuat tanpa perlu pelatihan ulang \textit{encoder}.
+
+\subsection{Alam, Ofli, dan Imran (2018): CrisisMMD, Dataset Multimodal Bencana}
+
+\subsubsection{Gambaran Umum}
+
+\citet{alamCrisisMMD2018} mempublikasikan CrisisMMD pada Proceedings of the 12th International AAAI Conference on Web and Social Media (ICWSM 2018), Stanford, California. CrisisMMD adalah dataset multimodal pertama yang menyediakan anotasi terstruktur pada pasangan teks dan citra dari Twitter selama tujuh kejadian bencana alam besar. Dataset ini menjadi \textit{benchmark} utama bagi sebagian besar penelitian klasifikasi multimodal pada konteks media sosial krisis.
+
+\subsubsection{Analisis dan Metode}
+
+CrisisMMD berisi 16.058 \textit{tweet} berlabel dengan tiga skema anotasi berlapis, yaitu (1) informativeness, (2) tipe humanitarian, dan (3) severity damage assessment. Setiap \textit{tweet} terdiri atas pasangan citra dan teks; anotasi dilakukan oleh anotator manusia melalui kerangka kerja Qatar Computing Research Institute. Hasil analisis distribusi label menunjukkan ketidakseimbangan kelas yang signifikan, sehingga sebagian besar penelitian lanjutan harus menerapkan strategi pembobotan kelas atau \textit{focal loss}.
+
+\subsubsection{Kesimpulan}
+
+Penelitian ini secara struktural mengikuti praktik baik CrisisMMD, yaitu menyediakan dataset terstratifikasi pada partisi \textit{train}, validasi, dan uji dengan label dinas yang dibersihkan dari ratusan SKPD mentah. Perbedaan kontribusi pada aspek dataset terletak pada bahasa target (Bahasa Indonesia versus Inggris), kanal pelaporan (CRM Jakarta yang merupakan portal resmi pemerintah daerah versus Twitter yang merupakan media sosial publik), dan jumlah kategori (sembilan dinas operasional versus tiga skema anotasi). Skala dataset penelitian ini (61.773 sampel) lebih besar daripada CrisisMMD pada satu skema anotasi, sehingga memberikan ruang lebih luas untuk pelatihan \textit{classifier head}.
+
+\subsection{Koshy dan Elango (2023): Multimodal Tweet Classification dengan Transformer Bidirectional Attention}
+
+\subsubsection{Gambaran Umum}
+
+\citet{koshyMultimodalTweet2023} mengusulkan kerangka klasifikasi multimodal untuk \textit{tweet} bencana dengan model transformer berbasis bidirectional attention. Karya ini dipublikasikan pada \textit{Neural Computing and Applications} volume 35 nomor 2, halaman 1607 sampai 1627, tahun 2023, oleh Springer Nature. Pendekatan ini secara teknis paling dekat dengan kombinasi \textit{encoder} berbasis transformer pada penelitian ini dan menjadi pembanding kuat pada arah penelitian klasifikasi multimodal mutakhir.
+
+\subsubsection{Analisis dan Metode}
+
+Arsitektur yang diusulkan terdiri atas tiga komponen utama, yaitu (1) Vision Transformer (ViT) yang di-\textit{fine-tune} pada citra \textit{tweet}, (2) RoBERTa yang di-\textit{fine-tune} pada teks \textit{tweet}, dan (3) lapisan \textit{biLSTM} dengan mekanisme bidirectional attention yang menggabungkan kedua representasi. Eksperimen dilakukan pada tujuh dataset bencana yang berbeda, yaitu \textit{wildfire}, \textit{hurricane}, \textit{earthquake}, dan \textit{flood} dari berbagai kejadian. Hasilnya menunjukkan bahwa pendekatan transformer multimodal dengan bidirectional attention mengungguli baseline berbasis konkatenasi sederhana pada akurasi dan F1 score, dengan kontribusi attention dalam menangani ketidakseimbangan informasi antar modalitas.
+
+\subsubsection{Kesimpulan}
+
+Penelitian ini berbeda dari \citet{koshyMultimodalTweet2023} pada beberapa aspek metodologis. Pertama, kedua \textit{encoder} pada penelitian ini dibekukan tanpa \textit{fine-tuning}, sedangkan ViT dan RoBERTa pada karya tersebut di-\textit{fine-tune} ulang. Kedua, skema fusi yang dipakai adalah konkatenasi pada lapisan \textit{embedding} (fusi awal), bukan attention pada lapisan tinggi. Ketiga, \textit{classifier head} berbasis CatBoost dipilih dengan justifikasi pada Bagian~\ref{sec:justifikasi-catboost} sebagai pengganti lapisan \textit{biLSTM}. Pilihan tersebut menyederhanakan jalur ekspor ke ONNX dan inferensi pada server FastAPI tanpa kehilangan kemampuan kalibrasi probabilitas yang justru ditingkatkan melalui Posterior Gaussian Sampling.
+
+\subsection{Ringkasan Perbandingan}
+
+Tabel~\ref{tab:perbandingan-related-work} merangkum perbedaan antara penelitian ini dengan pekerjaan-pekerjaan sebelumnya pada beberapa dimensi yang relevan.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}
+\label{tab:perbandingan-related-work}
+\small
+\begin{tabular}{p{2.4cm} p{1.6cm} p{2.4cm} p{1.8cm} p{2.0cm} p{2.0cm}}
+\toprule
+\textbf{Penelitian} & \textbf{Modalitas} & \textbf{Encoder} & \textbf{Skema Fusi} & \textbf{Classifier Head} & \textbf{Domain} \\
+\midrule
+\citet{radfordCLIP2021} & Citra + teks & ViT + Transformer & Kontrastif & Linear/MLP zero-shot & Visual umum \\
+\citet{audebertMultimodalDoc2019} & Citra + teks OCR & MobileNetV2 + FastText & Konkatenasi & MLP & Klasifikasi dokumen \\
+\citet{ofliMultimodalDisaster2020} & Citra + teks & VGG16 + GloVe-CNN & Konkatenasi & FC layer & Tweet bencana \\
+\citet{alamCrisisMMD2018} & Citra + teks & Dataset benchmark & Tidak ada & Tidak ada & Tweet bencana \\
+\citet{koshyMultimodalTweet2023} & Citra + teks & ViT + RoBERTa & Bidirectional attention & biLSTM + softmax & Tweet bencana \\
+Penelitian ini & Citra + teks & DINOv3 large + multilingual-E5 large & Konkatenasi (early fusion) & CatBoost + PGS & Laporan warga Jakarta CRM \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\bigskip
+
+Bab ini telah memaparkan landasan teoretis yang menopang penelitian ini, mulai dari konteks \textit{smart city} dan partisipasi publik, akuisisi data melalui \textit{web scraping}, kerangka AI/ML/DL, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi melalui PCA, mekanisme \textit{attention} dan \textit{Transformer}, arsitektur \textit{backbone} visual modern (DINOv3, EVA-02, Hiera), model \textit{encoder} teks Bahasa Indonesia dan multibahasa (BERT, IndoBERT, Cendol-mT5, BGE-M3, multilingual-E5), skema fusi multimodal, ekosistem ONNX dan \textit{ONNX Runtime}, perbandingan inferensi \textit{on-device} versus \textit{on-server}, permodelan UML pada pengembangan aplikasi, lanskap aplikasi mobile dengan Flutter, basis data \textit{cloud} Supabase, kontainerisasi Docker, \textit{web framework} FastAPI, metrik evaluasi, teknik pelatihan, hingga penelitian terkait yang menjadi titik berangkat metodologis. Bab Metode Penelitian berikutnya akan memanfaatkan landasan ini untuk mendefinisikan rancangan eksperimen, prosedur ekspor model, dan rancangan sistem secara konkret.

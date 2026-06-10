@@ -199,11 +199,11 @@
 \setcounter{page}{1}
 % Chapters
 \cleardoublepage \phantomsection
-\include{chapters/bab1}  
-\include{chapters/bab2}
-\include{chapters/bab3}
-%\include{chapters/bab4}
-%\include{chapters/bab5}
+\include{chapters/Bab1}
+\include{chapters/Bab2}
+\include{chapters/Bab3}
+\include{chapters/Bab4}
+\include{chapters/Bab5}
 
 %================================================================================
 % BACK MATTER
@@ -222,12 +222,18 @@
 % 2. Lampiran
 \clearpage
 \appendix
-% Trik: Stop mencatat anak lampiran ke Daftar Isi Utama
-% Agar di TOC Utama hanya muncul "DAFTAR LAMPIRAN", tidak muncul "Lampiran A..."
-\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}} 
+\addcontentsline{toc}{chapter}{LAMPIRAN}
+% Format chapter caption to read "LAMPIRAN A" instead of "BAB A" in appendix
+\renewcommand{\chaptertitlename}{LAMPIRAN}
 
 % Masukkan file lampiran
-%\input{appendix/lampiran1}
-%\input{appendix/lampiran2}
+\input{appendix/lampiran1}
+\input{appendix/lampiran2}
+\input{appendix/lampiran3}
+\input{appendix/lampiran4}
+\input{appendix/lampiran5}
+\input{appendix/lampiran6}
+\input{appendix/lampiran7}
+\input{appendix/lampiran8}
 
 \end{document}

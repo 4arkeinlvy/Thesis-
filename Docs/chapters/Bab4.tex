@@ -1,0 +1,327 @@
+\chapter{HASIL DAN PEMBAHASAN}
+\label{ch:hasil}
+
+Bab ini melaporkan hasil eksperimen dan implementasi yang dirancang pada Bab~\ref{ch:metode}. Pemaparan diawali dengan lingkungan pengujian, dilanjutkan dengan persiapan dan eksplorasi dataset, hasil eksperimen utama menggunakan kombinasi DINOv3 \textit{large}, \textit{multilingual-E5 large}, dan CatBoost yang dikalibrasi PGS, hasil ablasi modalitas, hasil ablasi kalibrasi, hasil ablasi pasangan \textit{encoder}, validasi paritas ONNX, hasil implementasi aplikasi Flutter beserta integrasi Supabase, kemudian diakhiri dengan pembahasan dan analisis kesalahan.
+
+% =====================================================================
+\section{Lingkungan Pengujian}
+\label{sec:lingkungan-pengujian}
+% =====================================================================
+
+Eksperimen pelatihan dan ekstraksi \textit{embedding} dijalankan pada lingkungan komputasi awan RunPod yang diakses melalui SSH, dengan akselerator GPU yang dipilih sesuai ketersediaan. Lingkungan perangkat lunak yang dipakai dirangkum pada Tabel~\ref{tab:lingkungan-software}.
+
+\begin{table}[htbp]
+\centering
+\caption{Lingkungan perangkat lunak utama.}
+\label{tab:lingkungan-software}
+\begin{tabular}{p{4.5cm} p{8.0cm}}
+\toprule
+\textbf{Komponen} & \textbf{Versi atau Detail} \\
+\midrule
+Python & 3.11 \\
+PyTorch & 2.x dengan CUDA toolkit \\
+ONNX dan ONNX Runtime & 1.x untuk ekspor dan inferensi \\
+CatBoost & 1.2.x dengan opsi \textit{posterior sampling} \\
+FastAPI & 0.x untuk server inferensi \\
+Flutter & 3.x untuk klien Android \\
+Supabase Dart Client & versi stabil terbaru \\
+RunPod & GPU \textit{cloud} NVIDIA GeForce RTX 4090 (24 GB VRAM), sesuai Tabel~\ref{tab:runpod} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Pengujian aplikasi Flutter dilakukan pada perangkat Android fisik dengan koneksi USB \textit{tethering}, dengan port server FastAPI yang diteruskan melalui \texttt{adb reverse} sehingga \textit{endpoint} \texttt{/predict} dapat diakses oleh aplikasi seolah-olah berjalan di perangkat lokal.
+
+% =====================================================================
+\section{Persiapan dan Eksplorasi Data}
+\label{sec:persiapan-data}
+% =====================================================================
+
+Setelah pemetaan 487 nama SKPD mentah ke sembilan kategori target dan pembagian stratifikasi, partisi akhir dataset berisi 43.241 sampel pelatihan, 9.266 sampel validasi, dan 9.266 sampel uji. Ketidakseimbangan kelas tidak dihilangkan melalui \textit{resampling}, melainkan dikompensasi melalui pembobotan kelas (\textit{class weights}) pada algoritma CatBoost. Distribusi sampel pelatihan per instansi dirangkum pada Gambar~\ref{fig:class-distribution} dan Tabel~\ref{tab:class-distribution}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{bab_4/class_distribution.png}
+    \caption{Distribusi sembilan instansi (dinas) pada set train.}
+    \label{fig:class-distribution}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Distribusi sampel per instansi (dinas) pada set train.}
+\label{tab:class-distribution}
+\begin{tabular}{c l r r}
+\toprule
+\textbf{ID} & \textbf{Kategori} & \textbf{Jumlah Sampel} & \textbf{Proporsi (\%)} \\
+\midrule
+0 & Dinas Bina Marga & 9.467 & 21,89 \\
+1 & Satuan Polisi Pamong Praja & 5.883 & 13,60 \\
+2 & Dinas Perhubungan & 8.175 & 18,90 \\
+3 & Kelurahan & 8.386 & 19,39 \\
+4 & Dinas Pertamanan dan Hutan & 4.200 & 9,71 \\
+5 & Dinas Sumber Daya Air & 1.823 & 4,22 \\
+6 & Dinas Cipta Karya, Tata Ruang, dan Pertanahan & 1.033 & 2,39 \\
+7 & Badan Pembinaan BUMD & 1.179 & 2,73 \\
+8 & Instansi lain & 3.095 & 7,16 \\
+\midrule
+\multicolumn{2}{l}{\textbf{Total}} & \textbf{43.241} & \textbf{100,00} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Distribusi yang ditampilkan menunjukkan bahwa ketidakseimbangan kelas masih ada walaupun sudah dilakukan penyeimbangan. Empat kelas teratas (Dinas Bina Marga, Kelurahan, Dinas Perhubungan, dan Satpol PP) mencakup lebih dari 73 persen total sampel, sedangkan tiga kelas terkecil (Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, serta Dinas Sumber Daya Air) hanya mencakup sekitar 9 persen. Ketidakseimbangan ini menjadi pertimbangan saat pemilihan metrik utama, yaitu \textit{macro F1 score} yang memberikan bobot sama pada setiap kelas, sebagaimana diuraikan pada Bagian~\ref{sec:skenario-pengujian}.
+
+% =====================================================================
+\section{Hasil Eksperimen Utama}
+\label{sec:hasil-utama}
+% =====================================================================
+
+Konfigurasi terbaik yang dipilih untuk \textit{deployment} adalah kombinasi \textit{image encoder} DINOv3 \textit{large}, \textit{text encoder multilingual-E5 large}, fusi awal berbasis konkatenasi, \textit{classifier head} CatBoost, dan kalibrasi probabilitas dengan PGS. Tabel~\ref{tab:hasil-utama} merangkum metrik kinerja konfigurasi tersebut pada set uji.
+
+\begin{table}[htbp]
+\centering
+\caption{Metrik kinerja konfigurasi terbaik pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}
+\label{tab:hasil-utama}
+\begin{tabular}{l c c}
+\toprule
+\textbf{Konfigurasi} & \textbf{Balanced Accuracy} & \textbf{Macro F1} \\
+\midrule
+CatBoost (tanpa PGS) & 0,7996 & 0,7684 \\
+CatBoost dengan PGS & \textbf{0,8074} & \textbf{0,7747} \\
+$\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Konfigurasi terbaik mencapai \textit{balanced accuracy} 0,8074 dan \textit{macro F1} 0,7747 pada set uji 9.266 sampel, dengan akurasi keseluruhan 0,8073 dan \textit{macro ROC-AUC} (\textit{one-vs-rest}) sebesar 0,9667. Capaian ini di atas baseline yang dilaporkan oleh \citet{hanifPenugasanOtomatis2024} sebesar akurasi 80,5 persen pada delapan kelas, mengingat penelitian ini bekerja pada sembilan kelas yang lebih luas dan menggantikan DINOv2 dengan DINOv3 \textit{large}. Rerata waktu pelatihan satu konfigurasi CatBoost adalah 308 detik tanpa PGS dan 602 detik dengan PGS, yang membuktikan bahwa biaya komputasi pelatihan masih dapat ditoleransi pada satu sesi eksperimen.
+
+\subsection{Metrik Per-Kelas}
+\label{sec:metrik-per-kelas}
+
+Untuk mengamati kinerja model pada masing-masing instansi, Tabel~\ref{tab:per-class} menyajikan \textit{precision}, \textit{recall}, dan \textit{F1-score} per kelas pada set uji untuk konfigurasi terbaik (DINOv3 \textit{large} + mE5 \textit{large} + CatBoost+PGS).
+
+\begin{table}[htbp]
+\centering
+\caption{Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}
+\label{tab:per-class}
+\begin{tabular}{l c c c r}
+\toprule
+\textbf{Kategori (Dinas)} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Support} \\
+\midrule
+Dinas Bina Marga & 0,8644 & 0,8797 & 0,8720 & 2.029 \\
+Satuan Polisi Pamong Praja & 0,8432 & 0,8699 & 0,8564 & 1.261 \\
+Dinas Perhubungan & 0,8443 & 0,8699 & 0,8569 & 1.752 \\
+Kelurahan & 0,8103 & 0,6939 & 0,7476 & 1.797 \\
+Dinas Pertamanan dan Hutan & 0,8924 & 0,9122 & \textbf{0,9022} & 900 \\
+Dinas Sumber Daya Air & 0,5577 & 0,7417 & 0,6367 & 391 \\
+Dinas Cipta Karya, Tata Ruang, dan Pertanahan & 0,8398 & 0,8778 & 0,8584 & 221 \\
+Badan Pembinaan BUMD & 0,6711 & 0,7937 & 0,7273 & 252 \\
+Instansi lain & 0,5486 & 0,4857 & \textbf{0,5152} & 663 \\
+\midrule
+\textbf{Macro average} & 0,7635 & 0,7916 & \textbf{0,7747} & 9.266 \\
+\textbf{Weighted average} & 0,8086 & 0,8073 & 0,8061 & 9.266 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tabel per-kelas mengungkap bahwa kelas dengan dukungan besar dan kata kunci spesifik (Dinas Pertamanan dan Hutan, $F1 = 0{,}9022$; Dinas Bina Marga, $F1 = 0{,}8720$) terklasifikasi paling baik. Sebaliknya, kelas \textit{catch-all} ``Instansi lain'' ($F1 = 0{,}5152$) menjadi yang terlemah karena memuat laporan heterogen tanpa pola visual atau tekstual yang konsisten, diikuti Dinas Sumber Daya Air ($F1 = 0{,}6367$) yang memiliki \textit{precision} rendah (0,5577) akibat tertukar dengan kelas lain yang juga berkaitan dengan saluran air dan banjir. Menariknya, dua kelas minoritas lain yaitu Dinas Cipta Karya ($F1 = 0{,}8584$, hanya 221 sampel) dan Badan Pembinaan BUMD ($F1 = 0{,}7273$, 252 sampel) tetap terklasifikasi cukup baik, yang menunjukkan bahwa kelangkaan sampel tidak selalu berarti kinerja buruk apabila pola laporannya khas.
+
+% =====================================================================
+\section{Hasil Ablasi Modalitas}
+\label{sec:ablasi-modalitas}
+% =====================================================================
+
+Untuk memvalidasi kontribusi setiap modalitas, eksperimen ablasi dijalankan dengan tiga konfigurasi, yaitu citra saja, teks saja, dan fusi awal. Hasilnya dirangkum pada Tabel~\ref{tab:ablasi-modalitas} dan Gambar~\ref{fig:modality-ablation}.
+
+\begin{table}[htbp]
+\centering
+\caption{Hasil ablasi modalitas pada set uji.}
+\label{tab:ablasi-modalitas}
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Konfigurasi} & \textbf{Acc CatBoost} & \textbf{F1 CatBoost} & \textbf{Acc PGS} & \textbf{F1 PGS} \\
+\midrule
+Citra saja (DINOv3 large) & 0,6265 & 0,6016 & 0,6238 & 0,5973 \\
+Teks saja (mE5 large) & 0,7850 & 0,7498 & 0,7874 & 0,7515 \\
+Fusi awal (citra + teks) & \textbf{0,7996} & \textbf{0,7684} & \textbf{0,8074} & \textbf{0,7747} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{bab_4/modality_ablation.png}
+    \caption{Ablasi modalitas pada CatBoost dan CatBoost+PGS.}
+    \label{fig:modality-ablation}
+\end{figure}
+
+Hasil ini menyampaikan tiga temuan penting. Pertama, modalitas teks saja jauh lebih diskriminatif dibandingkan modalitas citra saja, yaitu \textit{macro F1} 0,7498 untuk teks dibandingkan 0,6016 untuk citra. Hal ini wajar karena narasi laporan sering kali memuat petunjuk eksplisit tentang dinas yang dituju, sedangkan citra hanya menampilkan kondisi visual yang ambigu pada beberapa kategori. Kedua, fusi awal memberikan peningkatan yang konsisten di atas modalitas tunggal terbaik, yaitu peningkatan \textit{macro F1} sebesar 0,0186 (1,86 \textit{percentage point}) terhadap teks saja pada konfigurasi PGS, menunjukkan bahwa citra membawa informasi tambahan yang tidak selalu tertangkap oleh teks. Ketiga, pengaruh PGS pada modalitas citra saja adalah negatif tipis (selisih $-0,0043$ pada F1), sedangkan pada modalitas teks saja dan fusi awal pengaruhnya positif. Hal ini mengindikasikan bahwa PGS bekerja optimal ketika model awal sudah memberikan probabilitas yang relatif terkalibrasi, kondisi yang lebih sulit dipenuhi oleh model yang hanya mengandalkan modalitas visual.
+
+% =====================================================================
+\section{Hasil Ablasi Kalibrasi (PGS)}
+\label{sec:ablasi-pgs}
+% =====================================================================
+
+Pengaruh kalibrasi probabilitas dengan PGS dilaporkan pada Tabel~\ref{tab:ablasi-pgs} dan divisualisasikan pada Gambar~\ref{fig:pgs-comparison}. Konfigurasi yang dievaluasi adalah pasangan \textit{encoder} terbaik (DINOv3 \textit{large} + mE5 \textit{large}) dengan dan tanpa PGS.
+
+\begin{table}[htbp]
+\centering
+\caption{Hasil ablasi kalibrasi pada set uji.}
+\label{tab:ablasi-pgs}
+\begin{tabular}{l c c}
+\toprule
+\textbf{Model} & \textbf{Balanced Accuracy} & \textbf{Macro F1} \\
+\midrule
+CatBoost (tanpa PGS) & 0,7996 & 0,7684 \\
+CatBoost dengan PGS & \textbf{0,8074} & \textbf{0,7747} \\
+$\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{bab_4/pgs_comparison.png}
+    \caption{Perbandingan balanced accuracy dan macro F1 dengan dan tanpa PGS.}
+    \label{fig:pgs-comparison}
+\end{figure}
+
+PGS memberikan peningkatan \textit{balanced accuracy} sebesar 0,78 \textit{percentage point} dan \textit{macro F1} sebesar 0,63 \textit{percentage point} terhadap baseline tanpa PGS. Selain memberikan peningkatan akurasi, PGS juga menghasilkan ukuran ketidakpastian (\textit{mean uncertainty}) sebesar 0,00339 yang dapat ditampilkan pada antarmuka aplikasi sebagai sinyal kepercayaan kepada warga pelapor. Sinyal ini menjadi penting saat warga harus memutuskan apakah hasil klasifikasi otomatis perlu dikoreksi secara manual sebelum laporan dikirim.
+
+% =====================================================================
+\section{Hasil Ablasi Pasangan Encoder}
+\label{sec:ablasi-encoder}
+% =====================================================================
+
+Tabel~\ref{tab:ablasi-encoder} dan Gambar~\ref{fig:encoder-matrix} merangkum hasil ablasi pasangan \textit{image encoder} dan \textit{text encoder} dengan kalibrasi PGS aktif. Total enam belas pasangan dievaluasi (empat \textit{image encoder} dikali empat \textit{text encoder}).
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Macro F1 (CatBoost+PGS) pada matrix grid pasangan encoder.}
+\label{tab:ablasi-encoder}
+\begin{tabular}{l c c c c}
+\toprule
+\textbf{Image $\backslash$ Text} & \textbf{mE5 large} & \textbf{BGE-M3} & \textbf{IndoBERT} & \textbf{Cendol-mT5} \\
+\midrule
+DINOv3 large  & \textbf{0,7747} & 0,7628 & 0,7449 & 0,7340 \\
+DINOv2 large  & 0,7736 & 0,7651 & 0,7471 & 0,7305 \\
+EVA-02 large  & 0,7747 & 0,7634 & 0,7429 & 0,7323 \\
+Hiera large   & 0,7652 & 0,7558 & 0,7285 & 0,7149 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.86\textwidth]{bab_4/encoder_matrix.png}
+    \caption{Heatmap macro F1 pada matrix grid pasangan encoder.}
+    \label{fig:encoder-matrix}
+\end{figure}
+
+Pengamatan utama dari matrix grid ini adalah sebagai berikut. Pertama, \textit{text encoder multilingual-E5 large} secara konsisten menjadi pilihan terbaik di seluruh empat \textit{image encoder}, mengungguli BGE-M3, IndoBERT, dan Cendol-mT5 pada setiap baris. Hal ini sejalan dengan kekuatan multilingual-E5 dalam menyandikan kalimat Bahasa Indonesia yang informal dan singkat ke ruang vektor yang diskriminatif. Kedua, di antara empat \textit{image encoder}, DINOv3 \textit{large} dan EVA-02 \textit{large} menunjukkan kinerja yang nyaris identik pada \textit{macro F1} (0,7747), keduanya unggul terhadap DINOv2 \textit{large} dan Hiera \textit{large}. Penelitian ini memilih DINOv3 \textit{large} untuk \textit{deployment} karena merupakan keluarga \textit{encoder} paling mutakhir pada saat eksperimen. Ketiga, Hiera \textit{large} secara konsisten menjadi yang terlemah pada keempat pasangan, yang menunjukkan bahwa arsitektur hierarchical yang dioptimalkan untuk efisiensi inferensi belum mengejar kualitas representasi DINOv3 atau EVA-02 pada domain laporan publik perkotaan.
+
+% =====================================================================
+\section{Validasi Paritas ONNX}
+\label{sec:paritas-onnx}
+% =====================================================================
+
+Setelah \textit{checkpoint} CatBoost terbaik dipilih, model \textit{native} \texttt{.cbm} diekspor ke format ONNX bersama dengan \textit{image encoder} DINOv3 \textit{large} dan \textit{text encoder multilingual-E5 large}. Validasi paritas dilakukan dengan menjalankan kedua jalur (PyTorch dan ONNX) pada batch sampel uji yang sama, lalu menghitung selisih probabilitas absolut maksimum di seluruh komponen vektor keluaran. Hasilnya dirangkum pada Tabel~\ref{tab:paritas-onnx}.
+
+\begin{table}[htbp]
+\centering
+\caption{Validasi paritas numerik PyTorch terhadap ONNX pada set uji.}
+\label{tab:paritas-onnx}
+\begin{tabular}{l c}
+\toprule
+\textbf{Komponen} & \textbf{$|\Delta p|_{\max}$} \\
+\midrule
+\textit{Image encoder} (DINOv3 large) & $< 10^{-5}$ \\
+\textit{Text encoder} (multilingual-E5 large) & $< 10^{-5}$ \\
+\textit{Classifier head} (CatBoost+PGS) & $< 10^{-5}$ \\
+End-to-end (gabungan ketiga komponen) & $< 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Selisih probabilitas absolut maksimum di bawah ambang $10^{-5}$ pada seluruh komponen memastikan prediksi top-1 identik antara jalur PyTorch dan jalur ONNX, sehingga server FastAPI yang memuat ketiga \textit{artifact} ONNX dapat dipakai sebagai jalur produksi tanpa kekhawatiran terjadi divergensi numerik dengan jalur pelatihan.
+
+% =====================================================================
+\section{Hasil Implementasi Aplikasi Flutter}
+\label{sec:hasil-flutter}
+% =====================================================================
+
+Aplikasi SmartCityApps berhasil diimplementasikan menggunakan Flutter dengan arsitektur berbasis fitur, manajemen \textit{state} Riverpod, navigasi GoRouter, dan \textit{backend} Supabase. Aplikasi mendukung tiga peran pengguna, yaitu Warga Pelapor, Operator Instansi, dan Moderator atau \textit{SuperAdmin}, dengan akses yang dibatasi melalui Row Level Security pada tabel \texttt{profiles}, \texttt{reports}, dan \texttt{report\_history}.
+
+\subsection{Skema Basis Data Supabase}
+
+Tabel utama yang menopang aplikasi adalah \texttt{profiles} (data pengguna dan peran), \texttt{reports} (laporan dengan instansi prediksi, confidence, probabilitas multiclass, assignment instansi terdekat, lokasi, status, tautan gambar, dan bukti penyelesaian), dan \texttt{report\_history} (audit perubahan status laporan). Berkas gambar disimpan pada \textit{bucket} \texttt{report-images} di Supabase Storage. Komunikasi realtime dengan klien Flutter difasilitasi oleh Supabase Postgres Realtime sehingga perubahan status pada laporan langsung tercermin di antarmuka pengguna tanpa perlu \textit{polling}. Skema lengkap dirangkum pada Gambar~\ref{fig:erd-supabase}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{bab_3/erd_supabase.png}
+    \caption{ERD basis data Supabase untuk laporan, prediksi, assignment instansi terdekat, bukti penyelesaian, dan kebijakan per peran.}
+    \label{fig:erd-supabase}
+\end{figure}
+
+\subsection{Alur Pelaporan oleh Warga}
+
+Skenario alur pelaporan oleh Warga Pelapor diuji secara end-to-end pada perangkat Android fisik. Tahapan yang berhasil dijalankan adalah pengambilan foto melalui kamera atau galeri, pengisian narasi laporan, akuisisi koordinat GPS dengan opsi pemilihan manual di peta bila layanan lokasi tidak tersedia, klasifikasi otomatis melalui \textit{endpoint} \texttt{/predict} server FastAPI, tinjauan hasil pada layar tinjauan AI, opsi koreksi kategori secara manual, tampilan instansi tujuan terdekat dari backend, dan terakhir penyimpanan laporan ke tabel \texttt{reports} di Supabase beserta unggahan gambar ke Storage.
+
+\subsection{Alur Verifikasi oleh Operator Instansi}
+
+Operator Instansi mengakses dasbor admin yang menampilkan antrean laporan yang sudah dikategorisasi oleh AI, difilter berdasarkan instansi yang ditugaskan kepada operator. Operator dapat memverifikasi laporan, menolak dengan mengisi alasan penolakan, atau menandai laporan sebagai selesai. Perubahan status menjadi selesai mewajibkan unggah foto bukti penyelesaian. Setiap perubahan status menulis baris audit ke tabel \texttt{report\_history} sehingga jejak verifikasi dapat ditelusuri.
+
+\subsection{Alur Moderasi}
+
+Moderator memiliki hak akses lintas instansi untuk meninjau seluruh laporan, mengubah penugasan operator, dan memantau statistik serta jejak audit. Pengujian alur moderasi memastikan bahwa Row Level Security berfungsi dengan benar, yaitu Moderator dapat mengakses tabel lintas instansi sedangkan Operator hanya dapat mengakses laporan pada instansi yang ditugaskan.
+
+\subsection{Demo Perutean Instansi Terdekat}
+
+Mesin perutean memilih instansi tujuan terdekat berdasarkan sembilan instansi prediksi dan koordinat laporan. Tabel~\ref{tab:demo-perutean} menampilkan tiga contoh laporan beserta instansi prediksi dan contoh assignment yang disimpan.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Contoh perutean instansi terdekat dari hasil klasifikasi dan koordinat laporan.}
+\label{tab:demo-perutean}
+\begin{tabular}{p{4.5cm} p{3.5cm} p{4.5cm}}
+\toprule
+\textbf{Ringkasan Laporan} & \textbf{Instansi Prediksi} & \textbf{Assignment Instansi Terdekat} \\
+\midrule
+Foto jalan berlubang dengan narasi ``ada lubang besar di Jalan Sudirman'' & Dinas Bina Marga & Unit Bina Marga terdekat dari koordinat laporan \\
+Foto sampah menumpuk dengan narasi ``sampah dibakar di pinggir jalan'' & Satpol PP & Unit Satpol PP terdekat dari koordinat laporan \\
+Foto pohon tumbang dengan narasi ``pohon roboh karena hujan deras kemarin'' & Dinas Pertamanan dan Hutan & Unit Pertamanan dan Hutan Kota terdekat dari koordinat laporan \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{Pembahasan dan Analisis Kesalahan}
+\label{sec:pembahasan-error}
+% =====================================================================
+
+\subsection{Pasangan Kelas yang Sering Tertukar}
+
+\textit{Confusion matrix} ternormalisasi pada konfigurasi terbaik ditampilkan pada Gambar~\ref{fig:confusion-matrix}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{bab_4/confusion_matrix.png}
+    \caption{\textit{Confusion matrix} ternormalisasi (per baris) pada set uji untuk konfigurasi terbaik DINOv3 large + mE5 large + CatBoost+PGS.}
+    \label{fig:confusion-matrix}
+\end{figure}
+
+Analisis \textit{confusion matrix} pada konfigurasi terbaik mengidentifikasi tiga pola kesalahan yang dominan. Pertama, kelas \textbf{Kelurahan} memiliki \textit{recall} terendah di antara kelas mayoritas (0,6939), dengan laporan miliknya tersebar ke Dinas Perhubungan (134 sampel), Dinas Sumber Daya Air (110 sampel), Instansi lain (92 sampel), dan Satpol PP (86 sampel); hal ini wajar karena laporan tingkat kelurahan mencakup masalah lingkungan permukiman yang beririsan dengan banyak instansi. Kedua, kelas \textbf{Instansi lain} sebagai kategori \textit{catch-all} paling sulit dipisahkan (hanya 322 dari 663 sampel benar), karena memuat laporan heterogen yang menyerupai kelas lain. Ketiga, \textbf{Dinas Sumber Daya Air} memiliki \textit{precision} rendah (0,5577) akibat laporan banjir dan saluran air dari kelas lain (terutama Bina Marga dan Kelurahan) yang keliru diprediksi sebagai Sumber Daya Air. Berbeda dengan dugaan awal, kelas minoritas Dinas Cipta Karya justru memiliki \textit{F1} tinggi (0,8584), sehingga kesalahan lebih banyak ditentukan oleh tumpang-tindih semantik antar kelas daripada sekadar kelangkaan sampel.
+
+\subsection{Sumber Ambiguitas}
+
+Tiga sumber ambiguitas dapat diidentifikasi. Pertama, label noise pada tahap pemetaan 487 nama SKPD ke sembilan kategori target, yaitu beberapa laporan secara historis dapat ditugaskan ke lebih dari satu instansi tergantung kebijakan operator. Kedua, narasi yang sangat singkat tanpa kata kunci eksplisit, contohnya hanya menulis ``mohon ditangani'' tanpa menyebut jenis masalah, sehingga kontribusi modalitas teks menjadi rendah. Ketiga, citra dengan kualitas rendah seperti foto buram atau pencahayaan minim, sehingga kontribusi modalitas citra juga rendah. Pada situasi ketiga ini, kalibrasi probabilitas dengan PGS justru bermanfaat karena menampilkan ketidakpastian tinggi yang dapat memicu pengguna untuk mengoreksi kategori secara manual.
+
+\subsection{Keterbatasan Dataset}
+
+Selain ketidakseimbangan kelas, dataset Jakarta CRM memiliki keterbatasan lain, yaitu cakupan geografis yang hanya mencakup wilayah DKI Jakarta sehingga generalisasi ke daerah lain belum diuji, serta domain laporan yang dibatasi pada kategori publik sehingga laporan sensitif seperti yang berkaitan dengan keamanan tidak masuk ke set pelatihan. Kedua keterbatasan ini terbuka sebagai arah penelitian lanjutan, misalnya dengan memperluas dataset ke daerah lain atau menambahkan cakupan kategori yang lebih luas.
+
+\subsection{Diskusi Keputusan Engineering}
+
+Tiga keputusan \textit{engineering} utama pada penelitian ini menerima konfirmasi empiris dari hasil eksperimen. Pertama, keputusan untuk membekukan kedua \textit{encoder} terbukti efisien karena memungkinkan ablasi pasangan \textit{encoder} dijalankan dalam satu sesi eksperimen tanpa biaya pelatihan ulang \textit{encoder}. Kedua, keputusan memilih CatBoost sebagai \textit{classifier head} terbukti tepat karena seluruh delapan properti yang dijabarkan pada Bagian~\ref{sec:justifikasi-catboost} terealisasi pada hasil eksperimen, mulai dari biaya pelatihan rendah, kalibrasi probabilitas yang dapat diaudit, hingga paritas numerik yang terjaga pada ekspor ONNX. Inferensi \textit{classifier head} CatBoost+PGS dengan 30 ensembel virtual pada seluruh 9.266 sampel uji hanya memerlukan sekitar 0,05 ms per sampel, sehingga latensi \textit{end-to-end} server didominasi oleh tahap ekstraksi \textit{embedding} kedua \textit{encoder}, bukan oleh \textit{classifier head}. Ketiga, keputusan memilih jalur inferensi \textit{on-server} terbukti praktis karena ukuran \textit{artifact} ONNX \textit{image encoder} sebesar 1,15 GB tidak dapat dibundel ke paket aplikasi Android, sebagaimana diuraikan pada Bagian~\ref{sec:on-device-vs-on-server}.

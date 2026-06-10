@@ -1,0 +1,60 @@
+@startuml activity_report_lifecycle
+!include _thesis_style.puml
+
+|Warga Pelapor|
+start
+:Buka SmartCityApps;
+:Ambil / unggah foto;
+:Tulis deskripsi laporan;
+
+|SmartCityApps|
+:Capture latitude dan longitude;
+:Kirim image + deskripsi + lat/lon\nke backend FastAPI;
+
+|FastAPI Backend|
+:Validasi request;
+:Preprocess image dan text;
+:Jalankan inferensi server-side;
+:Hitung probabilitas multiclass\ndan confidence;
+
+if (Confidence >= threshold?) then (Ya)
+  :Cari instansi aktif terdekat\nberdasarkan kelas + koordinat;
+  :Return predicted class,\nconfidence, assignment;
+else (Tidak)
+  :Tandai perlu review manual;
+  :Return scores untuk validasi petugas;
+endif
+
+|SmartCityApps|
+:Tampilkan hasil prediksi,\nconfidence, dan instansi terdekat;
+
+|Warga Pelapor|
+if (Kategori sudah tepat?) then (Ya)
+  :Konfirmasi kategori;
+else (Tidak)
+  :Koreksi kategori manual;
+endif
+
+|SmartCityApps|
+:Upload foto laporan ke Supabase Storage;
+:Simpan laporan, prediksi,\nassignment, lokasi, dan status;
+
+|Petugas Instansi|
+:Review laporan;
+:Tangani masalah di lapangan;
+:Pilih status selesai/resolved;
+
+if (Foto bukti penyelesaian tersedia?) then (Ya)
+  |SmartCityApps|
+  :Upload foto bukti penyelesaian;
+  :Kirim RPC update_report_status\nbeserta note dan photo_url;
+  |Supabase|
+  :Simpan status selesai,\nresolved_by, resolved_at,\ndan evidence metadata;
+else (Tidak)
+  |SmartCityApps|
+  :Tolak perubahan status selesai\nhingga foto bukti diunggah;
+endif
+
+stop
+
+@enduml

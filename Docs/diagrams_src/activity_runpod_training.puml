@@ -1,0 +1,76 @@
+@startuml activity_runpod_training
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+skinparam activity {
+    BackgroundColor #ffffff
+    BorderColor #2c3e50
+    DiamondBackgroundColor #fef9e7
+    DiamondBorderColor #b7950b
+    StartColor #27ae60
+    EndColor #c0392b
+    ArrowColor #34495e
+    FontColor #2c3e50
+}
+skinparam shadowing false
+skinparam roundCorner 12
+
+title Activity Diagram Alur Pelatihan Model di RunPod Cloud
+
+|Mesin Lokal Peneliti|
+start
+:Persiapkan dataset Jakarta CRM;
+:Persiapkan kode pelatihan dan notebook;
+:Buat pod RunPod dengan GPU yang sesuai;
+
+|Mesin Lokal Peneliti|
+:Hubungkan ke pod via SSH;
+:Sinkronisasi kode dan dataset\ndengan rsync;
+
+|Pod RunPod (GPU)|
+:Setup environment Python 3.11;
+:Install requirements (PyTorch, CatBoost,\nONNX, Transformers, scikit-learn);
+:Verifikasi GPU dan CUDA;
+
+partition "Ekstraksi Embedding (sekali per encoder)" {
+    fork
+        :Jalankan 04_extract_image_embeddings;
+        :Image encoder DINOv3/v2/EVA-02/Hiera large\n(frozen, eval mode) → vektor 1024d;
+        :Simpan cache .npy ke artifacts/embeddings/;
+    fork again
+        :Jalankan 05_extract_text_embeddings;
+        :Text encoder mE5/BGE-M3/IndoBERT/Cendol-mT5\n(frozen, eval mode) → vektor 1024d;
+        :Simpan cache .npy ke artifacts/embeddings/;
+    end fork
+}
+
+partition "Pelatihan Classifier Head (per pasangan encoder)" {
+    repeat
+        :Pilih pasangan (image_enc, text_enc);
+        :Load embedding dari cache;
+        :Konkatenasi → vektor 2048d;
+        :Latih CatBoost dengan logloss\n(hyperparameter pada Tabel 3.X);
+        :Latih CatBoost+PGS\n(virtual ensemble 30 anggota);
+        :Evaluasi pada validasi (macro F1, balanced accuracy);
+        :Simpan checkpoint .cbm dan log;
+    repeat while (17 pasangan tercakup?) is (belum) not (selesai)
+}
+
+:Pilih pasangan terbaik\n(DINOv3 large + mE5 large);
+:Latih ulang pada train + validation\nuntuk model final;
+:Evaluasi pada set uji 9.266 sampel;
+
+partition "Ekspor ONNX" {
+    :Ekspor image encoder ke ONNX;
+    :Ekspor text encoder ke ONNX;
+    :Ekspor classifier head ke ONNX;
+    :Validasi paritas numerik\n(|Δp|_max < 1e-5);
+}
+
+|Mesin Lokal Peneliti|
+:Unduh artefak ONNX dan checkpoint\nvia rsync;
+:Commit ke repository penelitian;
+stop
+
+@enduml

@@ -1,37 +1,44 @@
 \chapter{PENDAHULUAN}
+\label{ch:pendahuluan}
 
 % =====================================================================
 \section{Latar Belakang}
 % =====================================================================
 
-Pelaporan masalah lingkungan oleh masyarakat saat ini masih menghadapi hambatan struktural yang signifikan. Berdasarkan analisis data yang dikumpulkan oleh tim peneliti pada portal pengaduan masyarakat kota besar di Indonesia, rata-rata waktu yang dibutuhkan untuk merespons satu laporan masuk---mulai dari penerimaan hingga penugasan ke instansi yang bertanggung jawab---mencapai hampir dua jam. Keterlambatan tersebut bukan semata disebabkan oleh keterbatasan kapasitas instansi, melainkan oleh sifat manual dari proses triase: petugas harus membaca setiap laporan yang masuk, menginterpretasinya, lalu secara manual menentukan instansi yang paling tepat untuk menanganinya. Dengan volume laporan yang terus meningkat seiring dengan pertumbuhan populasi perkotaan, pendekatan manual ini tidak lagi berkelanjutan \citep{siretPublicComplainingBlessing2022}.
+Pelaporan masalah lingkungan oleh masyarakat saat ini masih menghadapi hambatan struktural yang signifikan. Pada platform Cepat Respon Masyarakat (CRM) yang dikelola oleh Pemerintah Provinsi DKI Jakarta, sebanyak 185.852 laporan warga ditindaklanjuti sepanjang tahun 2024 melalui tiga belas kanal pengaduan terintegrasi, dengan lebih dari 95.000 laporan diterima hanya pada semester pertama tahun yang sama \citep{jakartaSmartCityKaleidoskop2024,jakartaSmartCityCRMSemesterI2024}. Pada tingkat nasional, Sistem Pengelolaan Pengaduan Pelayanan Publik Nasional (SP4N-LAPOR!) yang dikelola oleh Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (KemenPANRB) telah menerima 2,1 juta laporan kumulatif dengan 679 instansi terhubung, yaitu 34 kementerian, 101 lembaga, dan 544 pemerintah daerah \citep{menpanrbSP4N21Juta2024}. Volume laporan yang besar tersebut menuntut proses triase yang cepat dan akurat agar laporan dapat segera diteruskan kepada instansi yang berwenang.
 
-Masalah lingkungan perkotaan seperti jalanan rusak, kecelakaan, sampah menumpuk, vandalisme, dan pohon tumbang memiliki karakteristik yang khas: masalah-masalah ini dapat dideteksi secara visual. Seorang warga yang menemukan lubang besar di jalan tepat di depannya memiliki bukti visual yang jauh lebih kuat daripada deskripsi teks mana pun. Namun, sistem pelaporan berbasis teks atau formulir tidak mampu memanfaatkan informasi visual tersebut; sistem hanya menerima apa yang dituliskan pelapor, yang kerap singkat, ambigu, atau tidak konsisten. Kondisi ini menyebabkan keterlambatan penanganan atau kesalahan dalam prioritas penanganan masalah, terutama ketika laporan yang masuk berjumlah besar \citep{firgiaImplementasiSistemInformasi2022}.
+Realitas operasional menunjukkan bahwa proses triase manual menjadi sumber keterlambatan utama. Laporan resmi KemenPANRB mencatat rerata waktu tindak lanjut nasional sebesar 6,1 hari kerja pada awal 2023, dengan target maksimum 10 hari kerja \citep{menpanrbSP4NLapor2023}. Pada tingkat satu laporan secara individual, penelitian sebelumnya yang mengamati alur internal CRM Jakarta melaporkan bahwa rerata waktu yang dibutuhkan petugas untuk membaca, menafsirkan, dan menugaskan satu laporan kepada instansi yang tepat mencapai hampir dua jam \citep{hanifPenugasanOtomatis2024}. Keterlambatan tersebut bukan semata disebabkan oleh keterbatasan kapasitas instansi, melainkan oleh sifat manual dari proses triase. Petugas dituntut membaca setiap laporan yang masuk, menafsirkan deskripsi yang sering kali singkat dan ambigu, kemudian secara manual menentukan instansi yang paling tepat untuk menanganinya. Dengan volume laporan yang terus meningkat seiring pertumbuhan populasi perkotaan, pendekatan manual ini tidak lagi berkelanjutan \citep{siretPublicComplainingBlessing2022}.
 
-Solusi yang muncul secara alami adalah integrasi \textit{Artificial Intelligence} (AI) berbasis pengenalan citra ke dalam sistem pelaporan. Dengan kemajuan arsitektur \textit{deep learning} modern, sebuah model yang telah dilatih dengan data gambar masalah lingkungan mampu mengklasifikasikan jenis masalah secara otomatis hanya dari foto yang diambil oleh pelapor---tanpa memerlukan interpretasi manual dari petugas. Klasifikasi otomatis ini menjadi fondasi untuk penugasan laporan ke instansi yang tepat secara instan, memangkas waktu respons secara dramatis. Hasil penelitian \citet{shenSmartCityGovernance2025} menunjukkan bahwa penerapan model pengenalan citra berbasis kecerdasan buatan dalam tata kelola kota mampu meningkatkan akurasi identifikasi kejadian secara signifikan dibandingkan dengan proses manual konvensional, sekaligus mereduksi beban kerja petugas dalam proses kategorisasi laporan.
+Bukti tambahan dari sisi praktis pemerintah daerah menunjukkan bahwa tingkat tindak lanjut efektif laporan warga melalui platform CRM Provinsi DKI Jakarta hanya mencapai 93,2 persen \citep{harianhaluanCRMJakarta2024}, yang berarti masih terdapat ribuan laporan yang tidak dapat diselesaikan secara optimal akibat penugasan yang lambat atau kurang tepat. Pada konteks akademis, penelitian \citet{hanifPenugasanOtomatis2024} menunjukkan bahwa otomatisasi penugasan laporan multimodal pada CRM Jakarta menggunakan kombinasi DINOv2, multilingual-E5, dan Posterior Gaussian Sampling dapat mencapai akurasi 80,5 persen pada delapan kategori instansi, jauh lebih cepat daripada proses manual yang membutuhkan hingga dua jam per laporan. Penelitian \citet{zahroFairerPublicComplaint2025} pada platform LaporGub Provinsi Jawa Tengah juga melaporkan akurasi 78,5 persen menggunakan XLM-RoBERTa dengan focal loss pada 53.774 laporan, sekalipun penelitian tersebut hanya menggunakan modalitas teks. Studi \citet{shenSmartCityGovernance2025} memperkuat temuan tersebut dengan menyimpulkan bahwa pemanfaatan model multimodal berskala besar dalam tata kelola kota meningkatkan akurasi identifikasi kejadian secara signifikan dibandingkan proses manual konvensional, sekaligus mereduksi beban kerja petugas dalam proses kategorisasi laporan.
 
-Kendati demikian, pendekatan berbasis server konvensional---di mana gambar dikirim ke server pusat untuk diproses oleh model AI---menghadirkan tantangan tersendiri: latensi jaringan yang tidak dapat diprediksi, biaya infrastruktur server GPU yang tinggi, serta risiko privasi karena gambar lokasi kejadian harus dikirim ke pihak ketiga. Perkembangan terbaru dalam bidang \textit{on-device machine learning} menawarkan alternatif yang lebih efisien: model AI yang berjalan langsung di perangkat \textit{smartphone} pengguna tanpa memerlukan koneksi internet untuk proses inferensi \citep{sadiqSensingSmartCities2025}.
+Masalah lingkungan perkotaan seperti jalanan rusak, kecelakaan, sampah menumpuk, vandalisme, dan pohon tumbang memiliki karakteristik yang khas, yaitu masalah-masalah tersebut dapat dideteksi melalui dua kanal informasi yang saling melengkapi. Kanal pertama adalah citra (foto) yang merekam kondisi nyata di lokasi kejadian dan menyediakan bukti visual yang kuat. Kanal kedua adalah narasi teks dalam Bahasa Indonesia yang ditulis oleh pelapor untuk menjelaskan konteks, urgensi, dan rincian peristiwa yang tidak selalu terlihat pada foto. Kombinasi kedua modalitas ini sering kali jauh lebih informatif daripada salah satunya saja. Sayangnya, banyak sistem pelaporan publik hanya memperlakukan citra sebagai lampiran pasif dan teks sebagai isian formulir tanpa mengintegrasikan keduanya untuk membantu kategorisasi otomatis. Akibatnya, proses triase tetap bertumpu pada penilaian petugas dan rentan terhadap inkonsistensi serta keterlambatan \citep{firgiaImplementasiSistemInformasi2022}.
 
-Kemajuan ini dimungkinkan oleh dua faktor yang berkembang secara bersamaan. Pertama, munculnya arsitektur jaringan saraf visual yang ringan namun sangat akurat---seperti keluarga \textit{Hybrid State Space Models} (MambaOut), \textit{Hierarchical Vision Transformers} (Hiera), \textit{modern ConvNets} (ConvNeXt V2), \textit{Efficient Vision Transformers} (EfficientViT), dan \textit{Foundation Vision Models} (EVA-02)---yang dirancang untuk efisiensi komputasi tanpa mengorbankan akurasi \citep{yuMambaOut2024,ryaliHiera2023,liuConvNeXtV22023}. Kedua, standar pertukaran model \textit{Open Neural Network Exchange} (ONNX) yang memungkinkan model yang dilatih di Python dengan PyTorch untuk dieksekusi di platform Android melalui \textit{ONNX Runtime} tanpa modifikasi arsitektur \citep{onnxruntime2024}.
+Kemajuan terbaru dalam bidang \textit{Artificial Intelligence} (AI), khususnya pada arsitektur \textit{deep learning} berbasis \textit{Transformer}, memungkinkan integrasi pengenalan citra dan pemahaman teks secara bersamaan dalam satu \textit{pipeline} klasifikasi. Pada sisi citra, model \textit{self-supervised} berskala besar seperti DINOv3 \citep{simeoniDINOv32025} mampu menghasilkan representasi visual padat (\textit{dense embedding}) yang transferable ke berbagai domain tanpa membutuhkan pelabelan ulang yang masif. Pada sisi teks, model \textit{encoder} multibahasa seperti \textit{multilingual-E5} \citep{wangE5Multilingual2024} mampu menyandikan kalimat Bahasa Indonesia ke ruang vektor yang sejalan dengan ratusan bahasa lainnya, sehingga laporan warga yang ditulis secara informal sekalipun dapat diolah menjadi fitur diskriminatif. Pendekatan multimodal ini menjadi anchor metodologis yang dipakai pada penelitian ini, yaitu memperluas pekerjaan \citet{hanifPenugasanOtomatis2024} dengan mengganti DINOv2 menjadi DINOv3, memperluas cakupan kategori menjadi sembilan dinas, serta menyediakan jalur ekspor ONNX yang dilayani melalui FastAPI dan dikonsumsi oleh aplikasi mobile.
 
-Dengan mengombinasikan kemajuan ini, dimungkinkan untuk membangun sebuah aplikasi Android yang mengklasifikasikan masalah lingkungan langsung di perangkat pengguna, secara \textit{real-time}, tanpa mengirimkan gambar ke server mana pun. Hasil klasifikasi kemudian secara otomatis merekomendasikan instansi pemerintah daerah yang tepat---seperti Dinas Bina Marga, Dinas Lingkungan Hidup, Satpol PP, Dinas Perhubungan, atau BPBD---untuk ditindaklanjuti. Pendekatan ini selaras dengan visi \textit{smart city} yang tidak hanya memanfaatkan teknologi, tetapi juga membangun ekosistem partisipasi publik yang responsif, efisien, dan dapat diakses secara luas oleh seluruh lapisan masyarakat.
+Pendekatan multimodal yang diusulkan dalam penelitian ini memilih skema fusi awal (\textit{early fusion}) dengan konkatenasi \textit{embedding}, kemudian melatih algoritma klasifikasi berbasis CatBoost di atas vektor fusi tersebut. CatBoost \citep{prokhorenkovaCatBoost2018} adalah varian \textit{gradient boosting} pada pohon keputusan yang sangat kompetitif untuk masukan tabular berdimensi tinggi seperti \textit{embedding} padat. Pemilihan CatBoost sebagai \textit{classifier head} pada \textit{pipeline} fusi multimodal ini didasarkan pada beberapa pertimbangan praktis, yaitu kebutuhan komputasi pelatihan yang rendah, ketahanan terhadap \textit{overfitting} pada dataset berukuran sedang, dukungan \textit{ordered boosting} yang mengurangi \textit{target leakage}, kemampuan kalibrasi probabilitas melalui Posterior Gaussian Sampling \citep{ustimenkoCatBoostUncertainty2023}, serta kemampuan ekspor model akhir ke format ONNX untuk inferensi yang konsisten lintas \textit{platform}. Karena kedua \textit{encoder} dibekukan (\textit{frozen}) selama pelatihan, permukaan parameter yang dilatih hanya tersisa pada algoritma CatBoost, sehingga eksperimen dapat dijalankan secara cepat dan reproducible. Argumen yang lebih lengkap mengenai pemilihan CatBoost dipaparkan pada Bab~\ref{ch:metode} bagian Justifikasi Pemilihan CatBoost.
 
-Penelitian ini oleh karenanya mengusulkan pengembangan prototipe sistem pelaporan masalah lingkungan berbasis kecerdasan buatan \textit{on-device} dengan judul: \textbf{``PENGEMBANGAN SISTEM PELAPORAN MASALAH LINGKUNGAN DENGAN INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}''}.
+Untuk menjembatani \textit{pipeline} multimodal ini ke perangkat pengguna, penelitian membangun sebuah server inferensi berbasis FastAPI dengan \textit{endpoint} \texttt{/predict} multipart yang menerima berkas gambar, narasi laporan, latitude, dan longitude, kemudian mengembalikan instansi prediksi beserta peluang masing-masing kelas dan assignment instansi terdekat. Sisi klien dibangun sebagai aplikasi Android SmartCityApps menggunakan \textit{framework} Flutter, dengan \textit{state management} Riverpod, navigasi GoRouter, otentikasi dan persistensi cloud melalui Supabase yang menyediakan basis data PostgreSQL, penyimpanan berkas, dan otentikasi tiga peran (Warga Pelapor, Operator Instansi, dan Moderator) \citep{flutterdoc2024,riverpoddoc2024,supabaseDoc2024}. Pemisahan antara komputasi inferensi berat di sisi server dengan antarmuka pengguna yang ringan di sisi mobile memberikan tiga keuntungan, yaitu fleksibilitas pembaruan model tanpa rilis ulang aplikasi, konsumsi daya yang rendah pada perangkat pengguna, dan kemampuan menjalankan model berukuran besar yang tidak praktis untuk \textit{deployment} sepenuhnya \textit{on-device}. Total ukuran artefak ONNX (\textit{image encoder} 1,15 GB, \textit{text encoder}, dan \textit{classifier head}) jauh melebihi batas wajar paket aplikasi Android, sehingga keputusan untuk menyajikan inferensi melalui server adalah pilihan yang konsisten dengan praktik baik \textit{edge AI deployment} \citep{amorEdgeAIPractice2025,wangEmpoweringEdgeIntelligence2025}. Komunikasi antara klien dan server menggunakan protokol HTTP standar dengan format \textit{multipart/form-data} sehingga gambar, teks, dan koordinat dapat dikirim dalam satu permintaan tunggal.
+
+Setelah model menghasilkan prediksi dinas, backend FastAPI menjalankan routing instansi terdekat berdasarkan kelas prediksi dan koordinat latitude-longitude laporan. Model tetap menghasilkan keluaran multiclass pada sembilan instansi target; tahap routing tidak mengubah keluaran tersebut menjadi kluster baru, melainkan memilih unit instansi aktif yang paling dekat dan relevan dengan lokasi kejadian. Hasil yang dikirim ke aplikasi mencakup instansi prediksi, nilai \textit{confidence}, skor probabilitas setiap kelas, nama instansi tujuan, dan estimasi jarak.
+
+Penelitian ini akan mengeksplorasi penggunaan arsitektur \textit{early-fusion multimodal} yang menggabungkan \textit{encoder} visual DINOv3-large \citep{simeoniDINOv32025} dan \textit{encoder} teks multilingual-E5-large \citep{wangE5Multilingual2024} dengan kepala klasifikasi gradient boosting CatBoost \citep{prokhorenkovaCatBoost2018} yang dilengkapi mekanisme \textit{Posterior Gaussian Sampling} \citep{ustimenkoCatBoostUncertainty2023} dalam mengklasifikasikan laporan warga Jakarta CRM ke dalam sembilan kategori dinas operasional. Penelitian ini mencoba mengisi \textit{gap} dengan memperkenalkan kombinasi \textit{frozen encoder} visual-bahasa modern dan \textit{gradient-boosted head} pada domain laporan warga berbahasa Indonesia, yang sepanjang penelusuran penulis belum pernah dilakukan oleh karya terkait \citep{radfordCLIP2021,audebertMultimodalDoc2019,ofliMultimodalDisaster2020,alamCrisisMMD2018,koshyMultimodalTweet2023} yang umumnya berfokus pada domain bencana, dokumen, atau visual umum berbahasa Inggris. Selain itu, penelitian ini juga akan menggunakan dataset autentik hasil \textit{web scraping} dari portal aduan publik Jakarta CRM yang berisi pasangan citra dan narasi tekstual berbahasa Indonesia, dipetakan ke sembilan instansi target setelah konsolidasi dari 487 nama SKPD mentah. Dalam konteks ini, penulis berencana melakukan penelitian untuk dapat meningkatkan efisiensi dan akurasi perutean laporan warga ke instansi yang tepat sekaligus mengukur ketidakpastian prediksi melalui ensembel virtual yang ditawarkan PGS. Dengan menerapkan rancangan ini, sistem yang dibangun memiliki potensi besar untuk membantu memetakan keluhan warga ke dinas yang relevan secara konsisten dan dapat dipertanggungjawabkan. Oleh karena itu, tujuan penelitian ini adalah untuk mengeksplorasi kemampuan arsitektur \textit{early-fusion} multimodal berbasis DINOv3-large dan multilingual-E5-large dengan kepala CatBoost+PGS dalam mengklasifikasikan laporan warga Jakarta berdasarkan citra dan narasi tekstual. Dengan demikian, penelitian ini diharapkan dapat memberikan solusi yang lebih efektif dan efisien dalam perutean laporan warga, sekaligus menghasilkan \textit{pipeline} lintas-platform berupa server inferensi FastAPI dan klien Android berbasis Flutter, serta memberikan wawasan baru mengenai penggunaan model AI multimodal modern, khususnya kombinasi DINOv3, multilingual-E5, dan CatBoost+PGS, pada domain layanan publik berbahasa Indonesia. Penelitian ini oleh karenanya mengusulkan pengembangan prototipe sistem pelaporan masalah lingkungan berbasis fusi multimodal citra dan teks dengan judul: \textbf{``PENGEMBANGAN SISTEM PELAPORAN MASALAH LINGKUNGAN DENGAN INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}''}.
 
 % =====================================================================
 \section{Rumusan Masalah}
 % =====================================================================
 
-Berdasarkan uraian latar belakang di atas, penelitian ini merumuskan empat pertanyaan penelitian utama:
+Berdasarkan uraian latar belakang di atas, penelitian ini merumuskan lima pertanyaan penelitian utama yang dirancang agar dapat diverifikasi secara empiris:
 
 \begin{enumerate}
-    \item Bagaimana merancang dan membangun sistem pelaporan masalah lingkungan berbasis \textit{mobile} yang mengintegrasikan kecerdasan buatan \textit{on-device} untuk mengklasifikasikan jenis masalah secara otomatis dari gambar?
+    \item Bagaimana arsitektur klien-server berbasis Flutter, FastAPI, dan Supabase dapat memenuhi kebutuhan fungsional pelaporan multimodal pada SmartCityApps dengan tetap menjaga konsumsi sumber daya perangkat pengguna seminimum mungkin?
 
-    \item \textit{Backbone} arsitektur jaringan saraf visual manakah---dari kandidat ConvNeXt V2, EfficientViT, MambaOut, Hiera, dan EVA-02---yang menghasilkan performa klasifikasi terbaik pada dataset delapan kelas masalah lingkungan perkotaan?
+    \item Sejauh mana kombinasi DINOv3 \textit{large}, \textit{multilingual-E5 large}, dan CatBoost dengan skema \textit{early fusion} dapat mengklasifikasikan laporan warga Jakarta CRM ke sembilan kategori dinas, diukur menggunakan \textit{macro F1 score}, \textit{balanced accuracy}, dan \textit{confusion matrix}?
 
-    \item Bagaimana mengekspor model yang telah dilatih ke format ONNX dan mengintegrasikannya ke dalam aplikasi Android Flutter tanpa kehilangan akurasi inferensi yang signifikan?
+    \item Sejauh mana ekspor model ke format ONNX mempertahankan paritas numerik terhadap implementasi PyTorch, diukur menggunakan selisih probabilitas maksimum pada set uji?
 
-    \item Bagaimana merancang mekanisme perutean laporan otomatis yang dapat merekomendasikan instansi pemerintah daerah yang tepat berdasarkan hasil klasifikasi AI?
+    \item Bagaimana backend menentukan instansi tujuan terdekat berdasarkan sembilan kategori hasil prediksi serta koordinat latitude-longitude laporan?
+
+    \item Mengapa skema inferensi \textit{on-server} berbasis FastAPI dipilih ketimbang \textit{on-device} berbasis ONNX Runtime Mobile untuk arsitektur DINOv3 \textit{large} dan \textit{multilingual-E5 large}, serta bagaimana konsekuensinya terhadap latensi, ketersediaan, dan biaya operasional?
 \end{enumerate}
 
 % =====================================================================
@@ -41,45 +48,52 @@ Berdasarkan uraian latar belakang di atas, penelitian ini merumuskan empat perta
 Ruang lingkup penelitian ini dibatasi sebagai berikut:
 
 \begin{enumerate}
-    \item \textbf{Jenis Masalah Lingkungan}
+    \item \textbf{Domain dan Kategori Laporan}
     \begin{enumerate}
-        \item Penelitian berfokus pada delapan kategori masalah yang dapat diidentifikasi secara visual, yaitu: \textit{Accident Issues} (kecelakaan lalu lintas), \textit{Littering Garbage on Public Places Issues} (sampah di tempat umum), \textit{Vandalism Issues} (vandalisme), \textit{Pothole Issues} (lubang jalan), \textit{Damaged Road Issues} (kerusakan permukaan jalan), \textit{Broken Road Sign Issues} (rambu lalu lintas rusak), dan \textit{Fallen Tree Issues} (pohon tumbang).
-        \item Kategori \textit{Illegal Parking Issues} dan \textit{Mixed Issues} dikecualikan karena memiliki ambiguitas visual yang tinggi dan berpotensi menurunkan kualitas pelatihan model secara keseluruhan.
-        \item Tidak mencakup masalah lingkungan yang tidak dapat diidentifikasi secara visual, seperti polusi udara dan pencemaran air secara kimiawi.
+        \item Domain penelitian adalah aduan publik Jakarta yang dikelola melalui kanal CRM (\textit{Citizen Relationship Management}) Provinsi DKI Jakarta.
+        \item Kategori dinas yang diklasifikasikan dibatasi pada sembilan kategori target hasil pemetaan dari 487 nama Satuan Kerja Perangkat Daerah (SKPD) mentah, dengan ketidakseimbangan kelas yang ditangani melalui pembobotan kelas (\textit{class weights}).
+        \item Penelitian tidak membahas masalah lingkungan yang tidak dapat dideteksi secara visual maupun tekstual oleh pelapor warga, misalnya pencemaran udara mikro atau pencemaran air secara kimiawi.
     \end{enumerate}
 
-    \item \textbf{Data}
+    \item \textbf{Modalitas dan Data}
     \begin{enumerate}
-        \item Data gambar masalah lingkungan diperoleh dari dataset publik yang tersedia di platform HuggingFace Hub (\texttt{Programmer-RD-AI/road-issues-detection-dataset}).
-        \item Teks deskripsi laporan dikumpulkan sebagai konteks laporan, namun tidak dimasukkan sebagai input ke dalam model AI.
+        \item Modalitas masukan terdiri atas citra (foto laporan) dan teks (narasi laporan dalam Bahasa Indonesia, kolom \textit{laporan}).
+        \item Pengumpulan data dilakukan dari catatan CRM Jakarta dengan proses pembersihan label, normalisasi teks, dan penanganan ketidakseimbangan kelas melalui pembobotan kelas (\textit{class weights}).
+        \item \textit{Encoder} citra dan teks bersifat dibekukan (\textit{frozen}); permukaan yang dilatih hanya algoritma CatBoost.
     \end{enumerate}
 
-    \item \textbf{Platform dan Teknologi}
+    \item \textbf{Arsitektur dan Teknologi}
     \begin{enumerate}
-        \item Sistem diimplementasikan sebagai aplikasi Android menggunakan \textit{framework} Flutter.
-        \item Inferensi AI berjalan sepenuhnya \textit{on-device} menggunakan \textit{ONNX Runtime for Android}, tanpa ketergantungan pada server eksternal untuk proses klasifikasi.
-        \item Penyimpanan data bersifat lokal menggunakan basis data SQLite melalui \textit{library} sqflite---tidak ada \textit{backend} server.
+        \item \textit{Encoder} citra adalah DINOv3 \textit{large} \citep{simeoniDINOv32025} yang menghasilkan \textit{embedding} dengan dimensi 1024.
+        \item \textit{Encoder} teks adalah \textit{multilingual-E5 large} \citep{wangE5Multilingual2024} yang menghasilkan \textit{embedding} dengan dimensi 1024.
+        \item Skema fusi yang digunakan adalah \textit{early fusion} berbasis konkatenasi, menghasilkan vektor fitur berdimensi 2048 yang menjadi masukan bagi CatBoost.
+        \item Server inferensi diimplementasikan menggunakan FastAPI dengan \textit{endpoint} \texttt{/health} dan \texttt{/predict} \textit{multipart}.
+        \item Aplikasi mobile diimplementasikan menggunakan Flutter pada platform Android dengan \textit{backend} berbasis Supabase yang menyediakan otentikasi, basis data PostgreSQL, dan penyimpanan berkas. Platform iOS dibahas pada Bab~\ref{ch:tinjauan} secara teoritis sebagai cakupan ekosistem mobile, namun implementasi dan pengujian iOS berada di luar lingkup penelitian.
     \end{enumerate}
 
     \item \textbf{Fitur Utama Aplikasi}
     \begin{enumerate}
         \item Pengguna dapat mengambil foto atau memilih gambar dari galeri sebagai bukti visual masalah lingkungan.
-        \item Sistem mengklasifikasikan gambar secara otomatis ke salah satu dari delapan kategori, beserta tingkat kepercayaan (\textit{confidence}) dan peringkat prediksi teratas (\textit{top predictions}).
-        \item Berdasarkan hasil klasifikasi, sistem merekomendasikan instansi pemerintah daerah yang paling relevan untuk menindaklanjuti laporan.
+        \item Pengguna dapat menulis narasi laporan dalam Bahasa Indonesia untuk melengkapi gambar.
+        \item Sistem mengirimkan kombinasi gambar, teks, latitude, dan longitude ke server FastAPI, kemudian menampilkan instansi prediksi beserta tingkat kepercayaan (\textit{confidence}), peringkat prediksi teratas, dan instansi tujuan terdekat.
+        \item Sistem merekomendasikan instansi pemerintah daerah terdekat berdasarkan hasil klasifikasi dan koordinat latitude-longitude laporan.
         \item Pengguna dapat mengoreksi hasil klasifikasi secara manual sebelum menyimpan laporan.
-        \item Riwayat laporan beserta koordinat GPS lokasi kejadian disimpan secara lokal di perangkat pengguna.
+        \item Riwayat laporan beserta koordinat GPS lokasi kejadian disimpan secara aman di Supabase dengan \textit{row-level security} per peran pengguna.
     \end{enumerate}
 
-    \item \textbf{Pengguna}
+    \item \textbf{Peran Pengguna}
     \begin{enumerate}
-        \item Masyarakat umum sebagai pelapor masalah lingkungan perkotaan.
+        \item Warga Pelapor, yaitu masyarakat umum yang melaporkan masalah lingkungan perkotaan.
+        \item Operator Instansi, yaitu petugas dinas pemerintah daerah yang menerima dan memverifikasi laporan sesuai instansi yang ditugaskan.
+        \item Moderator (Super Admin), yaitu pengguna dengan hak akses lintas instansi untuk meninjau seluruh laporan dan mengubah penugasan.
     \end{enumerate}
 
     \item \textbf{Limitasi}
     \begin{enumerate}
-        \item Sistem yang dibangun merupakan prototipe dan belum terintegrasi dengan sistem informasi pemerintah daerah yang sesungguhnya.
-        \item Pengujian terbatas pada platform Android; iOS tidak termasuk dalam lingkup penelitian ini.
-        \item Performa model AI bergantung pada kualitas foto yang diambil; gambar yang sangat buram, gelap, atau diambil dari sudut yang tidak representatif dapat menurunkan akurasi klasifikasi.
+        \item Sistem yang dibangun merupakan prototipe dan belum terintegrasi dengan sistem informasi pemerintah daerah yang sesungguhnya seperti CRM Jakarta produksi atau SP4N-LAPOR! KemenPANRB.
+        \item Pengujian terbatas pada platform Android. Implementasi iOS, walaupun tersedia secara konseptual karena Flutter mendukung kedua platform, tidak menjadi target rilis penelitian ini.
+        \item Performa model bergantung pada kualitas foto dan kelayakan narasi laporan. Foto yang sangat buram atau narasi yang kosong dapat menurunkan akurasi klasifikasi.
+        \item Keandalan layanan secara keseluruhan bergantung pada ketersediaan server FastAPI yang menjadi titik inferensi tunggal serta layanan Supabase sebagai penyedia basis data dan otentikasi.
     \end{enumerate}
 \end{enumerate}
 
@@ -89,28 +103,32 @@ Ruang lingkup penelitian ini dibatasi sebagai berikut:
 
 \subsection{Tujuan Penelitian}
 
-Berdasarkan rumusan masalah yang telah diuraikan, penelitian ini memiliki empat tujuan utama:
+Berdasarkan rumusan masalah yang telah diuraikan, penelitian ini memiliki lima tujuan utama:
 
 \begin{enumerate}
-    \item Mengembangkan prototipe aplikasi Android untuk pelaporan masalah lingkungan yang mengintegrasikan klasifikasi gambar berbasis AI secara \textit{on-device}.
+    \item Mengembangkan prototipe aplikasi Android berbasis Flutter, FastAPI, dan Supabase untuk pelaporan masalah lingkungan yang mengintegrasikan klasifikasi multimodal (citra dan teks) berbasis AI, dengan tetap menjaga konsumsi sumber daya perangkat pengguna seminimum mungkin.
 
-    \item Melakukan studi komparatif terhadap lima arsitektur \textit{backbone} jaringan saraf visual modern---ConvNeXt V2, EfficientViT, MambaOut, Hiera, dan EVA-02---untuk mengidentifikasi model dengan performa terbaik pada domain klasifikasi masalah lingkungan perkotaan, diukur dengan \textit{macro F1-score}.
+    \item Membangun arsitektur \textit{early fusion} yang mengonkatenasi \textit{embedding} DINOv3 \textit{large} dan \textit{multilingual-E5 large} dengan algoritma klasifikasi CatBoost untuk memetakan laporan warga ke sembilan kategori dinas pada Jakarta CRM, diukur menggunakan \textit{macro F1 score}, \textit{balanced accuracy}, dan \textit{confusion matrix}.
 
-    \item Membangun \textit{pipeline} ekspor model dari PyTorch ke format ONNX dan memvalidasi kesesuaian numerik hasil inferensi antara model PyTorch asli dan model ONNX yang berjalan di Android.
+    \item Membangun \textit{pipeline} ekspor \textit{encoder} citra, \textit{encoder} teks, dan \textit{classifier head} ke format ONNX serta server inferensi FastAPI, dengan validasi paritas numerik antara implementasi PyTorch dan ONNX pada selisih probabilitas maksimum di bawah ambang yang ditetapkan.
 
-    \item Merancang mekanisme perutean laporan otomatis yang memetakan hasil klasifikasi AI ke rekomendasi instansi pemerintah daerah berdasarkan empat kluster operasional.
+    \item Merancang mekanisme perutean instansi otomatis yang memilih instansi tujuan terdekat berdasarkan hasil klasifikasi 9 instansi dan koordinat latitude-longitude laporan.
+
+    \item Menelaah dan mendokumentasikan keputusan deployment skema inferensi \textit{on-server} ketimbang \textit{on-device} pada konteks model berskala besar, sehingga konsekuensinya terhadap latensi, ketersediaan, dan biaya operasional dapat dijelaskan secara empiris.
 \end{enumerate}
 
 \subsection{Manfaat Penelitian}
 
 \begin{enumerate}
-    \item \textbf{Manfaat bagi Masyarakat:} Aplikasi ini mempermudah proses pelaporan masalah lingkungan melalui panduan klasifikasi otomatis berbasis AI, sehingga laporan yang dihasilkan lebih terstruktur dan informatif bagi instansi terkait.
+    \item \textbf{Manfaat bagi Masyarakat:} Aplikasi ini mempermudah proses pelaporan masalah lingkungan dengan memberikan panduan klasifikasi otomatis berbasis citra dan teks. Laporan yang dihasilkan menjadi lebih terstruktur dan informatif bagi instansi yang dituju.
 
-    \item \textbf{Manfaat bagi Pemerintah Daerah:} Mekanisme perutean otomatis memiliki potensi untuk memangkas waktu triase manual secara signifikan---dari rata-rata hampir dua jam menjadi hampir instan---memungkinkan laporan didistribusikan ke instansi yang tepat tanpa intervensi manusia.
+    \item \textbf{Manfaat bagi Pemerintah Daerah:} Mekanisme perutean otomatis memiliki potensi untuk memangkas waktu triase manual secara signifikan, dari rerata hampir dua jam per laporan menjadi hampir instan, sehingga laporan dapat didistribusikan ke instansi yang tepat tanpa intervensi manusia. Operator Instansi memperoleh antrean laporan yang sudah terkategorisasi sesuai bidang masing-masing.
 
-    \item \textbf{Manfaat bagi Ilmu Pengetahuan:} Penelitian ini memberikan kontribusi berupa hasil \textit{benchmark} komparatif antara lima arsitektur \textit{backbone} visual modern pada domain spesifik klasifikasi masalah lingkungan perkotaan, serta demonstrasi \textit{pipeline} lengkap dari pelatihan model berbasis PyTorch hingga inferensi \textit{on-device} di Android menggunakan ONNX Runtime.
+    \item \textbf{Manfaat bagi Ilmu Pengetahuan:} Penelitian ini memberikan kontribusi berupa demonstrasi praktis fusi awal antara fitur citra hasil pelatihan mandiri (\textit{self-supervised}) yang kuat dengan \textit{embedding} teks multibahasa pada domain layanan publik Bahasa Indonesia, serta \textit{pipeline} lengkap dari pelatihan model berbasis PyTorch hingga inferensi berbasis ONNX yang dilayani melalui FastAPI.
 
-    \item \textbf{Manfaat bagi Ekosistem \textit{Smart City}:} Sistem ini membuktikan bahwa kecerdasan buatan yang berjalan di perangkat pengguna---tanpa infrastruktur \textit{cloud}---merupakan jalur yang layak untuk membangun layanan publik cerdas yang inklusif, hemat biaya, dan tidak bergantung pada konektivitas internet yang stabil.
+    \item \textbf{Manfaat bagi Ekosistem \textit{Smart City}:} Sistem ini membuktikan bahwa pemisahan antara jalur inferensi berat di sisi server dengan klien Flutter yang ringan merupakan strategi yang layak untuk membangun layanan publik cerdas berbasis AI multimodal, sehingga model dapat diperbarui dari satu permukaan \textit{deployment} tanpa harus merilis ulang aplikasi pengguna.
+
+    \item \textbf{Manfaat bagi Pengembangan Lanjutan:} Dokumentasi keputusan deployment \textit{on-server} dengan justifikasi ukuran model dan kebutuhan komputasi memberikan dasar yang dapat ditelusuri untuk penelitian lanjutan yang mengeksplorasi distilasi atau kuantisasi guna memungkinkan inferensi \textit{on-device} sebagai \textit{fallback}.
 \end{enumerate}
 
 % =====================================================================
@@ -121,16 +139,32 @@ Metodologi penelitian ini disusun dalam empat tahap utama yang saling berkesinam
 
 \subsection{Pengumpulan dan Persiapan Data}
 
-Dataset gambar masalah lingkungan perkotaan diperoleh dari HuggingFace Hub melalui \textit{snapshot download} ke direktori lokal. Data kemudian diproses melalui tahapan pembersihan label, penyeimbangan kelas menggunakan teknik \textit{balanced sampling} dengan target 800 sampel per kelas, dan pembagian data secara stratifikasi dengan mempertimbangkan kelompok asal gambar (\textit{group-aware stratified split}) untuk mencegah kebocoran data antar partisi \textit{train}, \textit{validation}, dan \textit{test}.
+Dataset Jakarta CRM dikumpulkan dari kanal aduan publik dengan setiap baris mencatat foto kejadian, narasi laporan dalam Bahasa Indonesia, dan label dinas penanggung jawab. Data kemudian diproses melalui tahapan pembersihan label (penghapusan duplikat, normalisasi nama dinas), pembersihan teks (normalisasi unicode, penghapusan tanda baca berlebih, \textit{whitespace collapsing}), serta penanganan ketidakseimbangan kelas melalui pembobotan kelas (\textit{class weights}) pada algoritma klasifikasi, bukan melalui pengubahan jumlah sampel (\textit{resampling}). Pembagian data dilakukan secara stratifikasi ke dalam partisi \textit{train} (43.241 sampel), \textit{validation} (9.266 sampel), dan \textit{test} (9.266 sampel), dengan menjaga proporsi label tiap kelas tetap konsisten pada setiap partisi.
 
-\subsection{Benchmarking Model AI}
+\subsection{Ekstraksi Embedding dengan Encoder Beku}
 
-Pada tahap ini dilakukan studi komparatif terhadap lima arsitektur \textit{backbone} modern yang diakses melalui \textit{library} \texttt{timm} (\textit{PyTorch Image Models}): ConvNeXt V2 Tiny, EfficientViT B2, MambaOut Tiny, Hiera Tiny, dan EVA-02 Tiny. Setiap model dilatih dengan konfigurasi yang identik---optimizer AdamW, \textit{cosine annealing learning rate}, \textit{early stopping}, dan \textit{automatic mixed precision} FP16---untuk memastikan perbandingan yang adil dan terukur. Seleksi model terbaik didasarkan pada metrik \textit{macro F1-score} pada set validasi.
+Setiap foto dilewatkan melalui \textit{encoder} citra DINOv3 \textit{large} versi ONNX untuk menghasilkan vektor representasi berdimensi 1024. Pra-proses citra mengikuti pengaturan standar yang diwajibkan oleh DINOv3, yaitu \textit{resize} sisi pendek, \textit{center crop} ke ukuran target, normalisasi piksel dengan \textit{mean} dan \textit{std} ImageNet, serta konversi ke format tensor NCHW. Setiap narasi laporan dilewatkan melalui \textit{tokenizer} \textit{multilingual-E5} dan kemudian \textit{encoder} teks versi ONNX untuk menghasilkan vektor representasi yang juga berdimensi 1024. Kedua \textit{encoder} bersifat dibekukan (\textit{frozen}); tidak ada gradien yang mengalir kembali ke parameter \textit{encoder} selama pelatihan.
 
-\subsection{Ekspor Model ke ONNX dan Validasi}
+\subsection{Pelatihan Kepala CatBoost dan Ekspor Model}
 
-Model terbaik hasil \textit{benchmark} diekspor ke format ONNX menggunakan \texttt{torch.onnx.export} dengan \textit{opset} versi 17 dan optimasi \textit{constant folding}. Validasi numerik dilakukan dengan membandingkan \textit{logit} keluaran model PyTorch dan model ONNX pada gambar sampel yang sama. Model beserta metadata normalisasi (\textit{mean}, \textit{std}, nama kelas, pemetaan label ke kategori) dikemas menjadi aset dalam aplikasi Flutter.
+Vektor citra dan teks dikonkatenasi sehingga membentuk fitur berdimensi 2048. \textit{Classifier head} berbasis CatBoost dilatih pada vektor fusi tersebut dengan tujuan meminimalkan \textit{logloss} multi-kelas. \textit{Hyperparameter} CatBoost yang ditelusuri meliputi \texttt{iterations}, \texttt{depth}, \texttt{learning\_rate}, \texttt{l2\_leaf\_reg}, dan \texttt{bagging\_temperature}, dengan kriteria pemilihan model terbaik berbasis \textit{macro F1 score} pada set validasi. Untuk meningkatkan kualitas estimasi probabilitas, \textit{classifier head} dikalibrasi menggunakan Posterior Gaussian Sampling (PGS) \citep{ustimenkoCatBoostUncertainty2023}. Model akhir disimpan dalam format \texttt{.cbm} (\textit{native} CatBoost) dan diekspor ke format ONNX. Validasi paritas numerik dilakukan dengan membandingkan probabilitas keluaran model \textit{native} dengan model ONNX pada sampel set uji.
 
-\subsection{Pengembangan Aplikasi Android dengan Flutter}
+\subsection{Pengembangan Server FastAPI dan Aplikasi Flutter}
 
-Aplikasi Android dibangun menggunakan \textit{framework} Flutter dengan arsitektur berbasis fitur (\textit{feature-based architecture}), manajemen \textit{state} Riverpod, navigasi deklaratif GoRouter, dan penyimpanan lokal sqflite. Model ONNX diintegrasikan melalui \textit{bridge on-device AI classification service} yang memanfaatkan \textit{ONNX Runtime for Android}. Mekanisme perutean instansi diimplementasikan dalam modul \textit{classification routing} yang memetakan hasil klasifikasi AI ke empat kluster operasional instansi pemerintah daerah.
+Server inferensi dibangun menggunakan FastAPI yang memuat ketiga \textit{artifact} ONNX (\textit{encoder} citra, \textit{encoder} teks, dan algoritma CatBoost) sekali pada saat inisialisasi. \textit{Endpoint} \texttt{/predict} menerima permintaan \textit{multipart/form-data} berisi berkas gambar, kolom teks \texttt{laporan}, latitude, dan longitude, kemudian menjalankan jalur fusi awal yang sama dengan jalur pelatihan. Aplikasi Flutter SmartCityApps dibangun dengan arsitektur berbasis fitur, manajemen \textit{state} Riverpod, navigasi GoRouter, dan persistensi cloud Supabase. Layanan klasifikasi pada Flutter mengirim permintaan ke \textit{endpoint} FastAPI, menerima respons berbentuk kategori dinas, probabilitas, confidence, dan assignment instansi terdekat, lalu meneruskan hasil ke layar tinjauan AI yang menyediakan peluang koreksi manual oleh pengguna, peta lokasi GPS, serta opsi penyimpanan laporan ke basis data Supabase dengan otentikasi tiga peran.
+
+% =====================================================================
+\section{Sistematika Penulisan}
+% =====================================================================
+
+Skripsi ini disusun ke dalam lima bab dengan rincian berikut:
+
+\textbf{Bab~\ref{ch:pendahuluan} Pendahuluan} memaparkan latar belakang permasalahan triase manual laporan warga pada platform CRM Jakarta dan SP4N-LAPOR!, rumusan lima pertanyaan penelitian, ruang lingkup, tujuan dan manfaat penelitian, serta metode penelitian secara ringkas dan sistematika penulisan.
+
+\textbf{Bab~\ref{ch:tinjauan} Tinjauan Pustaka} mengulas landasan teori yang melatari penelitian, mencakup konsep \textit{Smart City} dan partisipasi publik, dasar AI dan \textit{deep learning}, arsitektur \textit{Transformer} dan \textit{Vision Transformer}, \textit{encoder} citra DINOv3 dan \textit{encoder} teks \textit{multilingual-E5}, skema fusi multimodal, lingkungan deployment yang mencakup ONNX serta inferensi \textit{on-device} dibandingkan \textit{on-server}, ekosistem Flutter dan Supabase, serta penelitian terkait yang mendahului pekerjaan ini.
+
+\textbf{Bab~\ref{ch:metode} Metode Penelitian} menguraikan tahapan penelitian secara rinci, mulai dari diagram alir kerangka berpikir, analisis kebutuhan dengan tiga peran pengguna, akuisisi dan persiapan dataset Jakarta CRM, lingkungan komputasi pelatihan, pemrosesan multimodal, ekspor ONNX, justifikasi pemilihan CatBoost sebagai \textit{classifier head}, rancangan aplikasi Flutter SmartCityApps dan server FastAPI, routing instansi terdekat, diagram UML dan arsitektur sistem, serta skenario pengujian dan metrik evaluasi.
+
+\textbf{Bab~\ref{ch:hasil} Hasil dan Pembahasan} menyajikan lingkungan pengujian, persiapan dan eksplorasi dataset, hasil eksperimen utama dengan kombinasi DINOv3 \textit{large}, \textit{multilingual-E5 large}, dan CatBoost yang dikalibrasi PGS, hasil ablasi modalitas, hasil ablasi pasangan \textit{encoder}, validasi paritas ONNX, hasil implementasi aplikasi Flutter, serta pembahasan dan analisis kesalahan.
+
+\textbf{Bab~\ref{ch:simpulan} Simpulan dan Saran} merangkum jawaban atas lima rumusan masalah berdasarkan hasil eksperimen dan implementasi, kemudian memberikan saran untuk penelitian lanjutan yang dapat memperluas pekerjaan ini.
