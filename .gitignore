@@ -41,3 +41,5 @@ smartCityReport/smart_city_reporter_app/env/*.json
 
 # Build artifacts
 *.app
+# Pasted PAT scratch file
+token.txt
