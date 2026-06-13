@@ -12,7 +12,7 @@ Akses ke \textit{pod} dilakukan melalui kunci publik SSH yang didaftarkan pada a
 
 \begin{enumerate}
     \item \textbf{Penyiapan kunci SSH}: pembuatan pasangan kunci pada mesin lokal dan unggah kunci publik ke profil RunPod.
-    \item \textbf{Login ke pod}: \texttt{ssh root@<pod-host> -p <port> -i \textasciitilde/.ssh/id\_ed25519}.
+    \item \textbf{Login ke pod}: \texttt{ssh root@<pod-host>\allowbreak{} -p <port>\allowbreak{} -i \textasciitilde/.ssh/\allowbreak{}id\_ed25519}.
     \item \textbf{Sinkronisasi dataset}: pengiriman dataset bersih dan direktori gambar dari mesin lokal ke \textit{pod} menggunakan \texttt{rsync} melalui kanal SSH.
     \item \textbf{Penyiapan lingkungan Python}: pemasangan dependensi pelatihan, mencakup \texttt{torch}, \texttt{transformers}, \texttt{timm}, \texttt{catboost}, dan \texttt{onnxruntime-gpu}.
     \item \textbf{Eksekusi pelatihan}: peluncuran Jupyter Lab pada \textit{pod} dan akses dari peramban lokal melalui \textit{SSH tunnel} ke \textit{port} 8888.

@@ -65,7 +65,7 @@ status & report\_status & \textit{Enum} status (\textit{submitted}, \textit{veri
 verified\_by & uuid (FK) & Operator yang memverifikasi laporan. \\
 verified\_at & timestamptz & Waktu verifikasi. \\
 rejection\_reason & text & Alasan penolakan bila status \textit{rejected}. \\
-resolution\_* & text/uuid/timestamptz & Bukti dan metadata penyelesaian, mencakup foto bukti, catatan, petugas, dan waktu selesai. \\
+resolution\_* & text/\allowbreak{}uuid/\allowbreak{}timestamptz & Bukti dan metadata penyelesaian, mencakup foto bukti, catatan, petugas, dan waktu selesai. \\
 created\_at & timestamptz & Waktu laporan dikirim. \\
 updated\_at & timestamptz & Waktu perubahan terakhir. \\
 \bottomrule

@@ -1,31 +1,9 @@
 @startuml activity_runpod_train_export
-!theme plain
-skinparam backgroundColor #FFFFFF
-skinparam shadowing false
-skinparam defaultFontName "Helvetica"
-skinparam defaultFontSize 12
-skinparam ArrowColor #5D6D7E
-skinparam ArrowThickness 1.1
-skinparam roundCorner 14
-skinparam ActivityMargin 14
-skinparam activity {
-    BackgroundColor #EAF2F8
-    BorderColor #2E4053
-    BorderThickness 1.1
-    DiamondBackgroundColor #F4F6F7
-    DiamondBorderColor #2E4053
-    DiamondFontColor #1B2631
-    StartColor #1E8449
-    EndColor #7B241C
-    BarColor #2E4053
-    FontColor #1B2631
-}
-skinparam swimlane {
-    BorderColor #2E4053
-    TitleFontStyle bold
-    TitleFontColor #1B2631
-}
+!include _thesis_style.puml
 
+' Lane order declared so "Mesin Lokal" stays on the left and
+' "Pod RunPod" on the right, consistent with the setup-phase diagram.
+|Mesin Lokal Peneliti|
 |Pod RunPod (GPU)|
 start
 :Mulai dari cache embedding

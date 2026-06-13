@@ -3,6 +3,8 @@
 
 Bab ini memaparkan landasan teoretis yang menjadi pijakan rancangan sistem klasifikasi multimodal pada penelitian ini. Pemaparan disusun dari konsep yang paling umum, yaitu \textit{smart city} dan partisipasi publik, menuju konsep yang lebih spesifik, yaitu akuisisi data melalui \textit{web scraping}, kerangka kecerdasan buatan, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi, mekanisme \textit{attention}, arsitektur \textit{Transformer}, keluarga \textit{backbone} visual dan \textit{encoder} teks modern, fusi multimodal, ekosistem inferensi ONNX, permodelan UML, kontainerisasi Docker, hingga \textit{stack} aplikasi mobile dan \textit{web framework}. Setiap bagian berusaha menjelaskan tidak hanya definisi, melainkan juga motivasi, sejarah singkat, dan formulasi matematis bila diperlukan, sebagai dasar bagi keputusan metodologis yang dijelaskan pada Bab Metode Penelitian.
 
+Pemilihan rujukan memprioritaskan publikasi mutakhir periode 2021--2026 untuk menggambarkan kondisi terkini, khususnya pada \textit{backbone} visual dan \textit{encoder} teks yang dipakai. Namun, beberapa rujukan fondasional yang lebih lama dari lima tahun tetap disitasi pada sumber aslinya karena bersifat normatif atau merupakan asal-usul metode yang dipakai langsung pada penelitian ini, contohnya algoritma CatBoost \citep{prokhorenkovaCatBoost2018}, arsitektur \textit{Transformer}, notasi UML \citep{boochUML2005}, \textit{C4 model} \citep{brownC42018}, serta standar \textit{flowchart} ISO 5807 \citep{iso5807}. Rujukan semacam ini diperlakukan sebagai pengecualian fondasional, bukan sebagai klaim kebaruan.
+
 % =====================================================================
 \section{\textit{Smart City} dan \textit{Smart Environment}}
 \label{sec:smartcity}
@@ -280,7 +282,7 @@ Sebagai pembanding pada eksperimen ablasi, penelitian ini juga mengevaluasi empa
 
 E5 (\textit{EmbEddings from bidirEctional Encoder rEpresentations}) adalah keluarga \textit{text encoder} yang dilatih khusus untuk menghasilkan \textit{embedding} kalimat yang baik melalui pelatihan kontras dua tahap pada pasangan teks yang relevan secara semantik. Tahap pertama adalah \textit{contrastive pre-training} pada miliaran pasangan teks lemah dari sumber publik (judul-deskripsi, pertanyaan-jawaban di forum, dan sebagainya), dan tahap kedua adalah \textit{fine-tuning} pada dataset \textit{retrieval} berkualitas tinggi dengan kontras berbobot.
 
-\textit{multilingual-E5} \citep{wangE5Multilingual2024} memperluas E5 ke skenario multibahasa dengan basis arsitektur XLM-RoBERTa. Tiga varian dirilis, yaitu \texttt{multilingual-e5-small}, \texttt{multilingual-e5-base}, dan \texttt{multilingual-e5-large}. Varian \texttt{large} memiliki sekitar 560 juta parameter dan menghasilkan \textit{embedding} berdimensi 1024. Salah satu konvensi penting pada E5 adalah penggunaan prefiks pada teks masukan, yaitu \texttt{query: }$\langle$kueri$\rangle$ untuk teks pendek seperti pertanyaan, dan \texttt{passage: }$\langle$dokumen$\rangle$ untuk teks panjang seperti dokumen. Prefiks ini bukan sekadar \textit{cosmetic}, melainkan dipakai pula saat pelatihan untuk membedakan peran teks dalam pasangan kontras. Varian \texttt{multilingual-e5-large-instruct} memperkenalkan kemampuan mengikuti instruksi tugas pada prefiks, contohnya \texttt{Instruct: Classify Indonesian civic report\textbackslash nQuery: }, sehingga \textit{embedding} yang dihasilkan dapat dikondisikan pada tugas hilir tertentu.
+\textit{multilingual-E5} \citep{wangE5Multilingual2024} memperluas E5 ke skenario multibahasa dengan basis arsitektur XLM-RoBERTa. Tiga varian dirilis, yaitu \texttt{multilingual-\allowbreak{}e5-\allowbreak{}small}, \texttt{multilingual-\allowbreak{}e5-\allowbreak{}base}, dan \texttt{multilingual-\allowbreak{}e5-\allowbreak{}large}. Varian \texttt{large} memiliki sekitar 560 juta parameter dan menghasilkan \textit{embedding} berdimensi 1024. Salah satu konvensi penting pada E5 adalah penggunaan prefiks pada teks masukan, yaitu \texttt{query: }$\langle$kueri$\rangle$ untuk teks pendek seperti pertanyaan, dan \texttt{passage: }$\langle$dokumen$\rangle$ untuk teks panjang seperti dokumen. Prefiks ini bukan sekadar \textit{cosmetic}, melainkan dipakai pula saat pelatihan untuk membedakan peran teks dalam pasangan kontras. Varian \texttt{multilingual-e5-large-instruct} memperkenalkan kemampuan mengikuti instruksi tugas pada prefiks, contohnya \texttt{Instruct: Classify Indonesian civic report\textbackslash nQuery: }, sehingga \textit{embedding} yang dihasilkan dapat dikondisikan pada tugas hilir tertentu.
 
 \textit{Embedding} yang dihasilkan E5 diambil dari rata-rata token (\textit{mean pooling}) atas vektor token terakhir, kemudian dinormalisasi L2. Properti normalisasi L2 ini menjadikan kemiripan kosinus pada Persamaan~\ref{eq:cosine} setara dengan \textit{dot product} yang lebih murah secara komputasi. Pada \textit{benchmark} MIRACL yang mengevaluasi \textit{retrieval} 18 bahasa, \textit{multilingual-E5} bersaing dengan model multibahasa berukuran jauh lebih besar dan menjadi salah satu \textit{encoder} multibahasa terbaik yang tersedia secara terbuka.
 
@@ -384,7 +386,8 @@ Tabel~\ref{tab:on-device-vs-on-server} merangkum perbedaan utama antara kedua pe
 \centering
 \caption{Perbandingan inferensi \textit{on-device} dan \textit{on-server}.}
 \label{tab:on-device-vs-on-server}
-\begin{tabular}{p{3.6cm} p{5.0cm} p{5.0cm}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{3.4cm} p{4.9cm} p{4.9cm}}
 \toprule
 \textbf{Dimensi} & \textbf{\textit{On-device}} & \textbf{\textit{On-server}} \\
 \midrule
@@ -423,7 +426,7 @@ Sebagai konsekuensi, sistem ini bergantung pada ketersediaan jaringan dan keters
 
 \textit{Unified Modeling Language} (UML) adalah bahasa permodelan visual standar yang dipergunakan untuk merancang, memvisualisasikan, mendokumentasikan, dan mengkonstruksi sistem perangkat lunak \citep{boochUML2005}. UML dirumuskan pada pertengahan 1990-an sebagai unifikasi tiga metode permodelan berorientasi objek yang dikembangkan oleh Grady Booch, James Rumbaugh, dan Ivar Jacobson, kemudian dibakukan oleh \textit{Object Management Group} (OMG). Versi mutakhir UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (\textit{structural}) dan diagram perilaku (\textit{behavioral}).
 
-UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (memodelkan elemen statis, contohnya \textit{class}, \textit{component}, dan \textit{deployment diagram}) dan diagram perilaku (memodelkan dinamika sistem, contohnya \textit{use case}, \textit{sequence}, \textit{activity}, dan \textit{state machine diagram}). Penelitian ini memakai \textit{use case}, \textit{activity}, \textit{class}, dan \textit{sequence diagram} untuk mendokumentasikan rancangan SmartCityApps (Bab~\ref{ch:metode}). Uraian rinci jenis-jenis diagram UML serta pendekatan pelengkap \textit{C4 Model} \citep{brownC42018} disajikan pada Lampiran~\ref{app:uml-detail}.
+UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (memodelkan elemen statis, contohnya \textit{class}, \textit{component}, dan \textit{deployment diagram}) dan diagram perilaku (memodelkan dinamika sistem, contohnya \textit{use case}, \textit{sequence}, \textit{activity}, dan \textit{state machine diagram}). Penelitian ini memakai \textit{use case}, \textit{activity}, \textit{class}, \textit{sequence}, serta \textit{component} dan \textit{deployment diagram} untuk mendokumentasikan rancangan SmartCityApps (Bab~\ref{ch:metode}). Uraian rinci jenis-jenis diagram UML serta pendekatan pelengkap \textit{C4 Model} \citep{brownC42018} disajikan pada Lampiran~\ref{app:uml-detail}.
 
 \subsection{Peran UML pada Pengembangan Aplikasi Mobile}
 
@@ -632,6 +635,7 @@ Tabel~\ref{tab:perbandingan-related-work} merangkum perbedaan antara penelitian 
 \caption{Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}
 \label{tab:perbandingan-related-work}
 \small
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{p{2.4cm} p{1.6cm} p{2.4cm} p{1.8cm} p{2.0cm} p{2.0cm}}
 \toprule
 \textbf{Penelitian} & \textbf{Modalitas} & \textbf{Encoder} & \textbf{Skema Fusi} & \textbf{Classifier Head} & \textbf{Domain} \\

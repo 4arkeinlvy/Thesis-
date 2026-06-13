@@ -1,99 +1,172 @@
 @startuml class_diagram_flutter
 !include _thesis_style.puml
 
-left to right direction
+hide empty members
+skinparam dpi 150
+skinparam linetype polyline
+skinparam nodesep 14
+skinparam ranksep 26
+skinparam packageStyle rectangle
 
+' ============================================================
+' Class diagram (production view) of the SmartCityApps Flutter
+' client. Reflects the actual Riverpod + GoRouter + Supabase
+' code base: interface-segregated repositories, sealed role and
+' scope hierarchies, the cloud classification service stack, and
+' the create-report controller. Domain models map 1:1 to the
+' Supabase `reports` / `report_history` / `profiles` tables.
+' ============================================================
 
-package "core.services" {
-    abstract class AiClassificationService {
-        +classify(imageFile: XFile, description: String) : Future<AiPrediction>
+package "features.auth" <<Modul Otentikasi>> {
+    class AuthRepository {
+        -client: SupabaseClient
+        +signUp(...) : Future<SignUpResult>
+        +signIn(email, password) : Future<void>
+        +signOut() : Future<void>
+        +fetchCurrentUserProfile() : Future<UserProfile?>
+        +authStateChanges() : Stream<LocalAuthSession?>
     }
+    class SignUpResult <<DTO>> {
+        +user: UserProfile?
+        +requiresEmailConfirmation: bool
+    }
+    class LocalAuthSession <<value>> {
+        +userId: String
+    }
+    class UserProfile <<model>> {
+        +id: String
+        +fullName: String
+        +email: String
+        +role: String
+        +assignedAgency: IssueCategory?
+    }
+    abstract class UserRole <<sealed>> {
+        +canSubmitReports: bool
+        +canModerateReports: bool
+        +canReassignAgency: bool
+        +{static} fromProfile(p: UserProfile) : UserRole
+    }
+    class Citizen <<role>>
+    class AgencyAdmin <<role>> {
+        +agency: IssueCategory
+    }
+    class SuperAdmin <<role>>
+}
 
+package "core.services" <<Layanan Inti>> {
+    interface AiClassificationService <<interface>> {
+        +classify(image, description, location) : Future<AiPrediction>
+    }
     class CloudAiClassificationService {
         -client: CloudClassificationService
-        +classify(imageFile, description) : Future<AiPrediction>
+        +classify(...) : Future<AiPrediction>
     }
-
     class DemoAiClassificationService {
-        +classify(imageFile, description) : Future<AiPrediction>
+        +classify(...) : Future<AiPrediction>
     }
-
     class CloudClassificationService {
-        -baseUrl: String
-        -timeout: Duration
-        +classify(imageFile: File, laporan: String) : Future<CloudPrediction>
+        +baseUrl: String
+        +classify(...) : Future<CloudPrediction>
         +healthCheck() : Future<bool>
     }
-
-    class LocationService {
-        +getCoordinates() : Future<{lat, lng}>
-        +reverseGeocode(lat, lng) : Future<String>
+    class CloudPrediction <<DTO>> {
+        +predictedDinasId: int
+        +confidence: double
+        +allProbabilities: Map
+        +reviewRequired: bool
+        +assignment: ReportAssignment?
     }
-
+    class LocationService {
+        +getCoordinates() : Future<Position>
+        +reverseGeocode(...) : Future<String>
+    }
     class MediaService {
         +pickFromCamera() : Future<XFile?>
         +pickFromGallery() : Future<XFile?>
     }
 }
 
-package "features.reports" {
-    class CreateReportController {
+package "features.reports" <<Modul Laporan>> {
+    class CreateReportController <<Notifier>> {
         -aiService: AiClassificationService
-        -reportsRepo: ReportsRepository
-        -mediaService: MediaService
-        -locationService: LocationService
-        -state: CreateReportState
-        +pickFromCamera()
-        +pickFromGallery()
-        +setDescription(text: String)
-        +useCurrentLocation()
-        +classifyImage()
-        +submit() : Future<String>
+        -reportsRepository: ReportsRepository
+        +classifyImage() : Future<void>
+        +updateCategory(c: IssueCategory) : void
+        +submit() : Future<void>
     }
-
+    class CreateReportState <<state>> {
+        +prediction: AiPrediction?
+        +selectedCategory: IssueCategory?
+        +location: ReportLocationData?
+        +canSubmit: bool
+    }
+    interface ReportsReader <<interface>> {
+        +watchByUser(userId) : Stream<List<CityReport>>
+        +watchByCategory(c) : Stream<List<CityReport>>
+        +watchAll() : Stream<List<CityReport>>
+        +watchHistory(id) : Stream<List<ReportHistoryEntry>>
+    }
+    interface ReportAdminActions <<interface>> {
+        +verify(id, note) : Future<CityReport>
+        +markResolved(id, photo, note) : Future<CityReport>
+        +reject(id, reason) : Future<CityReport>
+        +reassign(id, newAgency, note) : Future<CityReport>
+    }
     class ReportsRepository {
         -client: SupabaseClient
-        +submitReport(profile, imageFile, category,\nprediction, description, location) : Future<CityReport>
-        +watchByUser(userId) : Stream<List<CityReport>>
-        +watchByCategory(category) : Stream<List<CityReport>>
-        +verify(reportId, note) : Future<CityReport>
-        +reject(reportId, reason) : Future<CityReport>
-        +markResolved(reportId, note) : Future<CityReport>
-        +reassign(reportId, newAgency, note) : Future<CityReport>
+        +submitReport(...) : Future<CityReport>
     }
+    abstract class ReportsScope <<sealed>> {
+        +watch(r: ReportsReader) : Stream<List<CityReport>>
+        +{static} forRole(role, userId) : ReportsScope
+    }
+    class CitizenScope <<scope>>
+    class AgencyScope <<scope>>
+    class GlobalScope <<scope>>
 
-    class CityReport {
+    class CityReport <<model>> {
         +id: String
-        +userId: String
         +category: IssueCategory
-        +aiPrediction: String
         +aiConfidence: double
-        +imageUrl: String
-        +description: String
+        +aiProbabilities: Map
+        +status: ReportStatus
+        +assignment: ReportAssignment?
+        +{static} fromMap(map) : CityReport
+    }
+    class ReportHistoryEntry <<model>> {
+        +reportId: String
+        +status: ReportStatus
+        +note: String
+    }
+    class AiPrediction <<model>> {
+        +category: IssueCategory
+        +confidence: double
+        +assignment: ReportAssignment?
+        +topPredictions(n) : List
+    }
+    class ReportAssignment <<model>> {
+        +agencyId: String
+        +agencyCategory: IssueCategory
+        +distanceMeters: double
+    }
+    class ReportLocationData <<model>> {
         +latitude: double
         +longitude: double
         +address: String
-        +status: ReportStatus
     }
-
-    class AiPrediction {
-        +category: IssueCategory
-        +confidence: double
-        +rawPayload: Map<String,dynamic>
+    enum IssueCategory <<9 kelas target>> {
+        dinasBinaMarga
+        satpolPP
+        dinasPerhubungan
+        kelurahan
+        dinasPertamananHutan
+        dinasSDA
+        dinasCiptaKarya
+        badanBUMD
+        instansiLain
+        --
+        +dbValue / cloudId / label
     }
-
-    enum IssueCategory <<9 instansi target>> {
-        dinasBinaMarga (id=0)
-        satpolPP (id=1)
-        dinasPerhubungan (id=2)
-        kelurahan (id=3)
-        dinasPertamananHutan (id=4)
-        dinasSumberDayaAir (id=5)
-        dinasCiptaKaryaTataRuang (id=6)
-        badanPembinaanBUMD (id=7)
-        instansiLain (id=8)
-    }
-
     enum ReportStatus {
         submitted
         verified
@@ -103,78 +176,65 @@ package "features.reports" {
     }
 }
 
-package "features.auth (3 peran pengguna)" {
-    class AuthRepository {
-        -client: SupabaseClient
-        +signUp(fullName, email, phone, password, photo)
-        +signIn(email, password)
-        +signOut()
-        +sendPasswordReset(email)
-        +fetchCurrentUserProfile() : Future<UserProfile?>
-        +authStateChanges() : Stream<LocalAuthSession?>
-    }
+' ---- auth + roles ----
+AuthRepository ..> UserProfile
+AuthRepository ..> SignUpResult
+AuthRepository ..> LocalAuthSession
+UserRole ..> UserProfile : fromProfile()
+UserRole <|-- Citizen
+UserRole <|-- AgencyAdmin
+UserRole <|-- SuperAdmin
+AgencyAdmin --> IssueCategory
+UserProfile --> "0..1" IssueCategory : assignedAgency
 
-    class UserProfile {
-        +id: String
-        +fullName: String
-        +email: String
-        +role: UserRole
-        +assignedAgency: IssueCategory?
-    }
-
-    abstract class UserRole <<sealed>> {
-        marker abstrak\nuntuk tiga peran
-    }
-    class Citizen <<role>> {
-        Warga Pelapor\n(tidak menambah field)
-    }
-    class AgencyAdmin <<role>> {
-        +agency: IssueCategory
-        Operator instansi tertentu
-    }
-    class SuperAdmin <<role>> {
-        Moderator lintas instansi\n(tidak menambah field)
-    }
-
-    UserRole <|-- Citizen
-    UserRole <|-- AgencyAdmin
-    UserRole <|-- SuperAdmin
-}
-
+' ---- core.services realizations / collaborations ----
 AiClassificationService <|.. CloudAiClassificationService
 AiClassificationService <|.. DemoAiClassificationService
-CloudAiClassificationService o-- CloudClassificationService : delegates to >
+CloudAiClassificationService --> CloudClassificationService
+CloudClassificationService ..> CloudPrediction : creates
+CloudPrediction *-- "0..1" ReportAssignment
+AiClassificationService ..> AiPrediction : returns
 
-CreateReportController --> AiClassificationService : uses >
-CreateReportController --> ReportsRepository : uses >
-CreateReportController --> MediaService : uses >
-CreateReportController --> LocationService : uses >
+' ---- create-report controller ----
+CreateReportController *-- CreateReportState
+CreateReportController --> AiClassificationService
+CreateReportController --> ReportsRepository
+CreateReportState o-- "0..1" AiPrediction
+CreateReportState o-- "0..1" ReportLocationData
 
-ReportsRepository --> CityReport : produces >
-CityReport --> IssueCategory : has >
-CityReport --> ReportStatus : has >
-CreateReportController ..> AiPrediction : holds >
+' ---- reports repository (interface segregation) ----
+ReportsRepository ..|> ReportsReader
+ReportsRepository ..|> ReportAdminActions
+ReportsRepository ..> CityReport : maps rows
+ReportsRepository ..> ReportHistoryEntry
 
-AuthRepository --> UserProfile : produces >
-UserProfile --> UserRole : has >
-UserProfile --> IssueCategory : assignedAgency >
+' ---- role-scoped read strategy ----
+ReportsScope <|-- CitizenScope
+ReportsScope <|-- AgencyScope
+ReportsScope <|-- GlobalScope
+ReportsScope ..> ReportsReader : reads via
+ReportsScope ..> UserRole : forRole()
+AgencyScope --> IssueCategory
 
-note right of UserRole
-  Tiga peran pengguna aplikasi:
-  Citizen (Warga Pelapor),
-  AgencyAdmin (Operator Instansi),
-  SuperAdmin (Moderator).
-  Berbeda dari IssueCategory
-  yang memiliki 9 nilai
-  (kategori instansi prediksi).
-end note
+' ---- domain model relations ----
+AiPrediction --> IssueCategory
+AiPrediction o-- "0..1" ReportAssignment
+ReportAssignment --> IssueCategory
+CityReport *-- IssueCategory
+CityReport *-- ReportStatus
+CityReport o-- "0..1" ReportAssignment
+ReportHistoryEntry --> ReportStatus
 
-note bottom of IssueCategory
-  IssueCategory = sembilan instansi
-  target klasifikasi multimodal.
-  Setiap nilai memiliki id integer
-  yang dipakai pada respons
-  cloud_id dari /predict.
+' ---- force vertical stacking of the three packages ----
+UserRole -[hidden]down-> AiClassificationService
+MediaService -[hidden]down-> CreateReportController
+
+note right of ReportsRepository
+  Satu kelas merealisasikan dua antarmuka tersegregasi:
+  **ReportsReader** (baca: warga & admin) dan
+  **ReportAdminActions** (mutasi: moderator, super-admin).
+  Persistensi: Supabase Postgres + Storage via
+  SupabaseClient (RPC update_report_status).
 end note
 
 @enduml

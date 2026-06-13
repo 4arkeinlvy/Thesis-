@@ -1,22 +1,5 @@
 @startuml activity_runpod_setup
-!theme plain
-skinparam backgroundColor white
-skinparam defaultFontName "Helvetica"
-skinparam defaultFontSize 11
-skinparam activity {
-    BackgroundColor #ffffff
-    BorderColor #2c3e50
-    DiamondBackgroundColor #fef9e7
-    DiamondBorderColor #b7950b
-    StartColor #27ae60
-    EndColor #c0392b
-    ArrowColor #34495e
-    FontColor #2c3e50
-}
-skinparam shadowing false
-skinparam roundCorner 12
-
-title Alur Setup RunPod dan Ekstraksi Embedding (Fase Persiapan)
+!include _thesis_style.puml
 
 |Mesin Lokal Peneliti|
 start

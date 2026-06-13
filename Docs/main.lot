@@ -3,48 +3,49 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {2.1}{\ignorespaces Perbandingan model \textit {encoder} teks.}}{31}{table.caption.10}%
 \contentsline {table}{\numberline {2.2}{\ignorespaces Perbandingan inferensi \textit {on-device} dan \textit {on-server}.}}{35}{table.caption.11}%
-\contentsline {table}{\numberline {2.3}{\ignorespaces Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}}{49}{table.caption.12}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}}{50}{table.caption.12}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Perbandingan aplikasi pelaporan publik sejenis.}}{59}{table.caption.18}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Perbandingan aplikasi pelaporan publik sejenis.}}{58}{table.caption.18}%
 \contentsline {table}{\numberline {3.2}{\ignorespaces Pemetaan rumusan masalah ke komponen solusi.}}{59}{table.caption.19}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Distribusi sampel per instansi target setelah pemetaan.}}{64}{table.caption.21}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Distribusi sampel per instansi target setelah pemetaan.}}{65}{table.caption.21}%
 \contentsline {table}{\numberline {3.4}{\ignorespaces Pembagian dataset stratifikasi.}}{65}{table.caption.22}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Konfigurasi \textit {pod} RunPod untuk pelatihan dan ekstraksi \textit {embedding}.}}{66}{table.caption.23}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Hyperparameter CatBoost.}}{69}{table.caption.24}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Matriks rancangan eksperimen ablasi (4 \textit {encoder} citra \(\times \) 4 \textit {encoder} teks \(\times \) 2 varian \textit {head}).}}{72}{table.caption.25}%
-\contentsline {table}{\numberline {3.8}{\ignorespaces Spesifikasi \textit {endpoint} server FastAPI.}}{76}{table.caption.28}%
-\contentsline {table}{\numberline {3.9}{\ignorespaces Ringkasan \textit {use case} utama SmartCityApps.}}{81}{table.caption.31}%
-\contentsline {table}{\numberline {3.10}{\ignorespaces Modul dan layanan utama aplikasi Flutter.}}{84}{table.caption.35}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Konfigurasi \textit {pod} RunPod untuk pelatihan dan ekstraksi \textit {embedding}.}}{68}{table.caption.23}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Hyperparameter CatBoost.}}{71}{table.caption.24}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Matriks rancangan eksperimen ablasi (4 \textit {encoder} citra \(\times \) 4 \textit {encoder} teks \(\times \) 2 varian \textit {head}).}}{74}{table.caption.25}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Spesifikasi \textit {endpoint} server FastAPI.}}{78}{table.caption.28}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Ringkasan \textit {use case} utama SmartCityApps.}}{82}{table.caption.31}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Modul dan layanan utama aplikasi Flutter.}}{88}{table.caption.35}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Lingkungan perangkat lunak utama.}}{92}{table.caption.36}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Distribusi sampel per instansi (dinas) pada set train.}}{93}{table.caption.38}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Metrik kinerja konfigurasi terbaik pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{94}{table.caption.39}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{94}{table.caption.40}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Hasil ablasi modalitas pada set uji.}}{95}{table.caption.41}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Hasil ablasi kalibrasi pada set uji.}}{96}{table.caption.43}%
-\contentsline {table}{\numberline {4.7}{\ignorespaces Macro F1 (CatBoost+PGS) pada matrix grid pasangan encoder.}}{97}{table.caption.45}%
-\contentsline {table}{\numberline {4.8}{\ignorespaces Validasi paritas numerik PyTorch terhadap ONNX pada set uji.}}{99}{table.caption.47}%
-\contentsline {table}{\numberline {4.9}{\ignorespaces Contoh perutean instansi terdekat dari hasil klasifikasi dan koordinat laporan.}}{102}{table.caption.49}%
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {C.1}{\ignorespaces Daftar \textit {encoder} citra yang dievaluasi.}}{127}{table.caption.62}%
-\contentsline {table}{\numberline {C.2}{\ignorespaces Daftar \textit {encoder} teks yang dievaluasi.}}{127}{table.caption.63}%
-\addvspace {10\p@ }
-\contentsline {table}{\numberline {D.1}{\ignorespaces Atribut tabel \texttt {profiles}.}}{129}{table.caption.64}%
-\contentsline {table}{\numberline {D.2}{\ignorespaces Atribut tabel \texttt {reports}.}}{131}{table.caption.65}%
-\contentsline {table}{\numberline {D.3}{\ignorespaces Atribut tabel \texttt {report\_history}.}}{132}{table.caption.66}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Lingkungan perangkat lunak utama.}}{96}{table.caption.36}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Distribusi sampel per instansi (dinas) pada set train.}}{97}{table.caption.38}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Metrik kinerja konfigurasi terbaik pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{98}{table.caption.39}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{99}{table.caption.40}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Hasil ablasi modalitas pada set uji.}}{99}{table.caption.41}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Hasil ablasi kalibrasi pada set uji.}}{101}{table.caption.43}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Macro F1 (CatBoost+PGS) pada matrix grid pasangan encoder.}}{104}{table.caption.45}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Validasi paritas numerik PyTorch terhadap ONNX pada set uji.}}{105}{table.caption.47}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Contoh perutean instansi terdekat dari hasil klasifikasi dan koordinat laporan.}}{109}{table.caption.50}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces Latensi inferensi per tahap pada satu sampel (diukur pada CPU lingkungan pengembangan, rerata 20 iterasi setelah \textit {warm-up}).}}{113}{table.caption.52}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {F.1}{\ignorespaces Perbandingan algoritma tokenizer subword.}}{140}{table.caption.67}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {H.1}{\ignorespaces \textit {Use case description} untuk Mendaftar atau Masuk Akun.}}{149}{table.caption.68}%
-\contentsline {table}{\numberline {H.2}{\ignorespaces \textit {Use case description} untuk Mengambil Foto Laporan.}}{150}{table.caption.69}%
-\contentsline {table}{\numberline {H.3}{\ignorespaces \textit {Use case description} untuk Menulis Narasi Laporan.}}{150}{table.caption.70}%
-\contentsline {table}{\numberline {H.4}{\ignorespaces \textit {Use case description} untuk Mengirim Laporan untuk Klasifikasi.}}{151}{table.caption.71}%
-\contentsline {table}{\numberline {H.5}{\ignorespaces \textit {Use case description} untuk Meninjau Hasil Klasifikasi AI.}}{151}{table.caption.72}%
-\contentsline {table}{\numberline {H.6}{\ignorespaces \textit {Use case description} untuk Mengoreksi Kategori Manual.}}{152}{table.caption.73}%
-\contentsline {table}{\numberline {H.7}{\ignorespaces \textit {Use case description} untuk Menyimpan Laporan ke Riwayat.}}{152}{table.caption.74}%
-\contentsline {table}{\numberline {H.8}{\ignorespaces \textit {Use case description} untuk Melihat Riwayat dan Peta Laporan.}}{153}{table.caption.75}%
+\contentsline {table}{\numberline {C.1}{\ignorespaces Daftar \textit {encoder} citra yang dievaluasi.}}{138}{table.caption.64}%
+\contentsline {table}{\numberline {C.2}{\ignorespaces Daftar \textit {encoder} teks yang dievaluasi.}}{138}{table.caption.65}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {D.1}{\ignorespaces Atribut tabel \texttt {profiles}.}}{140}{table.caption.66}%
+\contentsline {table}{\numberline {D.2}{\ignorespaces Atribut tabel \texttt {reports}.}}{142}{table.caption.67}%
+\contentsline {table}{\numberline {D.3}{\ignorespaces Atribut tabel \texttt {report\_history}.}}{143}{table.caption.68}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {F.1}{\ignorespaces Perbandingan algoritma tokenizer subword.}}{151}{table.caption.69}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {H.1}{\ignorespaces \textit {Use case description} untuk Mendaftar atau Masuk Akun.}}{160}{table.caption.70}%
+\contentsline {table}{\numberline {H.2}{\ignorespaces \textit {Use case description} untuk Mengambil Foto Laporan.}}{161}{table.caption.71}%
+\contentsline {table}{\numberline {H.3}{\ignorespaces \textit {Use case description} untuk Menulis Narasi Laporan.}}{161}{table.caption.72}%
+\contentsline {table}{\numberline {H.4}{\ignorespaces \textit {Use case description} untuk Mengirim Laporan untuk Klasifikasi.}}{162}{table.caption.73}%
+\contentsline {table}{\numberline {H.5}{\ignorespaces \textit {Use case description} untuk Meninjau Hasil Klasifikasi AI.}}{162}{table.caption.74}%
+\contentsline {table}{\numberline {H.6}{\ignorespaces \textit {Use case description} untuk Mengoreksi Kategori Manual.}}{163}{table.caption.75}%
+\contentsline {table}{\numberline {H.7}{\ignorespaces \textit {Use case description} untuk Menyimpan Laporan ke Riwayat.}}{163}{table.caption.76}%
+\contentsline {table}{\numberline {H.8}{\ignorespaces \textit {Use case description} untuk Melihat Riwayat dan Peta Laporan.}}{164}{table.caption.77}%

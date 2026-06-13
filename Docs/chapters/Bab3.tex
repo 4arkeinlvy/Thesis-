@@ -10,6 +10,8 @@ Bab ini memaparkan metodologi penelitian yang digunakan untuk membangun sistem p
 
 Penelitian ini disusun ke dalam tiga tahap besar yang saling berkesinambungan, yaitu (1) tahap akuisisi dan persiapan data, (2) tahap pelatihan model, dan (3) tahap \textit{deployment}. Diagram alir sederhana pada Gambar~\ref{fig:kerangka-berpikir} merangkum alur keseluruhan dari perolehan data mentah, pelatihan model 9 instansi, \textit{deployment} inferensi pada backend FastAPI, hingga aplikasi Android SmartCityApps yang berinteraksi dengan pengguna akhir sebagai klien.
 
+Seluruh diagram alir dan diagram aktivitas pada bagian ini (Gambar~\ref{fig:kerangka-berpikir}--\ref{fig:kerangka-deployment}) disusun menggunakan notasi \textit{activity diagram} UML \citep{boochUML2005} yang dilengkapi konvensi simbol \textit{flowchart} standar \citep{iso5807}, yaitu \textit{node} awal dan akhir, kotak proses, belah ketupat keputusan, batang \textit{fork/join} untuk percabangan paralel, serta \textit{partition} atau \textit{swimlane} untuk memisahkan tanggung jawab antar aktor atau lingkungan eksekusi. \textit{Partition} inilah yang tampil sebagai kotak pengelompok di dalam diagram (kotak di dalam kotak), dan secara notasi berbeda dari kontainer berlapis pada diagram komponen dan \textit{deployment} di Bagian~\ref{sec:server-design}.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.98\textwidth]{bab_3/kerangka_berpikir.png}
@@ -23,7 +25,7 @@ Tahap akuisisi data mencakup proses \textit{web scraping} portal aduan Jakarta C
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/brian_akuisisi_data.png}
+    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/kerangka_akuisisi.png}
     \caption{Diagram alir tahap akuisisi data dari \textit{web scraping} portal CRM Jakarta sampai pembagian data stratifikasi.}
     \label{fig:kerangka-akuisisi}
 \end{figure}
@@ -34,7 +36,7 @@ Tahap pelatihan model dilakukan di lingkungan komputasi awan (\textit{cloud}) Ru
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/brian_runpod_setup.png}
+    \includegraphics[width=0.85\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/activity_runpod_setup.png}
     \caption{Fase persiapan pelatihan: setup pod RunPod, instalasi dependensi, dan ekstraksi \textit{embedding} citra dan teks ke berkas \textit{cache}.}
     \label{fig:kerangka-pelatihan-setup}
 \end{figure}
@@ -73,7 +75,7 @@ Pengguna utama sistem ini adalah masyarakat Jakarta yang berinteraksi langsung d
 
 \subsubsection{Latar Belakang Institusi}
 
-Penelitian ini berorientasi pada konteks tata kelola Pemerintah Provinsi DKI Jakarta yang memiliki kanal aduan publik berbasis CRM. Struktur instansi yang menjadi target perutean meliputi Dinas Bina Marga, Dinas Perhubungan, Dinas Lingkungan Hidup, Satpol PP, Dinas Pertamanan dan Hutan Kota, Badan Pembina BUMD, Dinas Cipta Karya Tata Ruang dan Pertanahan, Dinas Sumber Daya Air, dan Kelurahan, beserta kategori \textit{Instansi Lain} sebagai kelas \textit{catch-all} untuk laporan di luar kelas utama.
+Penelitian ini berorientasi pada konteks tata kelola Pemerintah Provinsi DKI Jakarta yang memiliki kanal aduan publik berbasis CRM. Struktur instansi yang menjadi target perutean meliputi Dinas Bina Marga, Dinas Perhubungan, Satpol PP, Dinas Pertamanan dan Hutan Kota, Badan Pembina BUMD, Dinas Cipta Karya Tata Ruang dan Pertanahan, Dinas Sumber Daya Air, dan Kelurahan, beserta kategori \textit{Instansi Lain} sebagai kelas \textit{catch-all} untuk laporan di luar kelas utama. Kesembilan instansi target ini ditetapkan secara konsisten pada Bagian~\ref{sec:dataset}.
 
 \subsection{Analisis Aplikasi Sejenis}
 
@@ -103,7 +105,8 @@ Setiap pertanyaan penelitian (RQ) yang diajukan pada Bab~\ref{ch:pendahuluan} di
 \centering
 \caption{Pemetaan rumusan masalah ke komponen solusi.}
 \label{tab:rumusan-solusi}
-\begin{tabular}{p{0.7cm} p{6.5cm} p{6.5cm}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.7cm} p{6.3cm} p{6.3cm}}
 \toprule
 \textbf{RQ} & \textbf{Rumusan Masalah} & \textbf{Solusi yang Dirancang} \\
 \midrule
@@ -111,6 +114,7 @@ RQ1 & Bagaimana merancang aplikasi pelaporan multimodal? & Aplikasi Flutter deng
 RQ2 & Bagaimana arsitektur fusi awal yang efektif? & DINOv3 + mE5 + konkatenasi 2048-d + CatBoost+PGS. \\
 RQ3 & Bagaimana ekspor ke ONNX dan server inferensi? & \textit{Pipeline} ONNX \textit{opset} 17 + FastAPI multipart + Docker. \\
 RQ4 & Bagaimana mekanisme perutean otomatis? & Routing instansi terdekat berdasarkan kelas prediksi 9 instansi dan koordinat latitude-longitude laporan. \\
+RQ5 & Mengapa inferensi \textit{on-server} dipilih ketimbang \textit{on-device}? & Analisis ukuran \textit{artifact} (\textit{image encoder} 1,15 GB), latensi, ketersediaan, dan biaya; inferensi dipusatkan pada server FastAPI. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -189,7 +193,9 @@ Setelah pembersihan, dataset bersih berukuran \textbf{61.773 laporan} siap dipak
 
 Istilah ``kategori'' dan ``kelas'' dipakai hanya pada konteks teori klasifikasi (\textit{multi-class problem}, \textit{class weight}, \textit{per-class precision}), bukan sebagai sinonim ``instansi''. Pada bab Hasil dan Pembahasan istilah \textbf{instansi prediksi} digunakan untuk merujuk keluaran model dan \textbf{instansi tujuan terdekat} untuk merujuk hasil perutean berbasis lokasi.
 
-Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{multi-class} dengan jumlah sampel yang tidak seimbang, label dinas mentah dipetakan ke sembilan instansi target yang lebih representatif dan operasional. Pemetaan dan distribusi sampel per instansi dirangkum pada Tabel~\ref{tab:kategori-target}.
+Label dinas pada dataset ini bukan anotasi yang dibuat ulang oleh peneliti, melainkan \textbf{label operasional} (\textit{operational ground truth}) yang diambil dari sistem produksi CRM Jakarta, yaitu instansi yang secara historis benar-benar menindaklanjuti setiap laporan. Penugasan tersebut mengikuti aturan kewenangan resmi pada Surat Keputusan Sekretaris Daerah Provinsi DKI Jakarta Nomor 99 Tahun 2022 yang menetapkan instansi penanggung jawab untuk setiap jenis aduan, sebagaimana didokumentasikan oleh penelitian acuan \citep{hanifPenugasanOtomatis2024}. Dengan demikian, validitas label bertumpu pada keputusan administratif yang dapat ditelusuri ke dasar hukum, bukan pada penilaian subjektif anotator, sehingga re-anotasi manual terhadap 61.773 sampel tidak diperlukan dan masalah \textit{inter-annotator agreement} yang lazim pada pelabelan manual tidak berlaku. Sebagai konsekuensinya, kualitas label mewarisi derajat \textit{noise} operasional yang melekat pada sistem, yaitu potensi ketidakkonsistenan keputusan petugas antar-waktu serta keberadaan laporan yang secara sah dapat ditangani lebih dari satu instansi; karakteristik ini diperlakukan secara eksplisit sebagai ketidakpastian \textit{aleatoric} dan ditinjau pada analisis kesalahan di Bab~\ref{ch:hasil}.
+
+Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{multi-class} dengan jumlah sampel yang tidak seimbang, label dinas mentah dipetakan ke sembilan instansi target yang lebih representatif dan operasional. Pemetaan ini bersifat deterministik dan mengikuti dua prinsip: (1) \textit{penggabungan hierarkis}, yaitu suku dinas dan unit pelaksana teknis dikonsolidasikan ke dinas induknya sesuai struktur organisasi Pemerintah Provinsi DKI Jakarta; dan (2) \textit{pemotongan berbasis frekuensi}, yaitu delapan instansi dengan volume laporan terbanyak (mencakup lebih dari 90 persen total laporan) dipertahankan sebagai kelas tersendiri, sedangkan ekor-panjang yang heterogen dikonsolidasikan ke satu kelas \textit{catch-all} ``Instansi Lain''. Strategi dua-prinsip ini selaras dengan penelitian acuan \citep{hanifPenugasanOtomatis2024}. Pemetaan dan distribusi sampel per instansi dirangkum pada Tabel~\ref{tab:kategori-target}.
 
 \begin{table}[htbp]
 \centering
@@ -237,7 +243,8 @@ Test & 9.266 & 15\% \\
 
 Setiap baris pada partisi diberi anotasi \texttt{row\_id} unik agar \textit{cache embedding} dapat disejajarkan kembali dengan label saat pelatihan algoritma klasifikasi.
 
-\subsection{Bobot Kelas}
+\subsection{Penanganan Ketidakseimbangan Kelas: Pembobotan, Bukan \textit{Resampling}}
+\label{sec:bobot-kelas}
 
 Karena distribusi kelas tidak seimbang, pelatihan algoritma CatBoost menggunakan \textit{class weights} berdasarkan formula yang juga dipakai oleh \citet{hanifPenugasanOtomatis2024}:
 
@@ -246,6 +253,14 @@ Karena distribusi kelas tidak seimbang, pelatihan algoritma CatBoost menggunakan
     \label{eq:classweight}
 \end{equation}
 dengan $N$ total sampel pelatihan, $C = 9$ jumlah kelas, dan $N_l$ jumlah sampel kelas ke-$l$. Bobot ini dipakai sebagai parameter bobot kelas pada CatBoost untuk mengompensasi kelas minoritas.
+
+Penelitian ini secara sengaja \textbf{tidak} menerapkan \textit{resampling} (baik \textit{oversampling} seperti SMOTE maupun \textit{undersampling}) untuk menyeimbangkan distribusi, melainkan memilih kompensasi berbasis biaya melalui bobot kelas pada Persamaan~\ref{eq:classweight}. Keputusan ini berlandaskan tiga pertimbangan yang didukung literatur mutakhir.
+
+Pertama, manfaat \textit{balancing} menurun drastis pada \textit{classifier} kuat. \citet{elorToSMOTE2022} mengevaluasi SMOTE beserta variannya pada 73 dataset dan menyimpulkan bahwa \textit{balancing} tidak meningkatkan kinerja prediksi untuk \textit{classifier} kuat seperti \textit{gradient-boosted trees}; manfaatnya hanya nyata pada \textit{learner} lemah dan cenderung lenyap setelah pemilihan metrik dan penyetelan \textit{hyperparameter} yang tepat. Karena \textit{classifier head} pada penelitian ini adalah CatBoost (\textit{boosted trees}) yang menyediakan bobot kelas secara \textit{native}, pembobotan biaya merupakan jalur yang lebih hemat dan tepat-sasaran dibandingkan sintesis sampel.
+
+Kedua, SMOTE bekerja buruk pada ruang fitur berdimensi tinggi. Masukan \textit{classifier} pada penelitian ini adalah vektor fusi berdimensi 2048 hasil konkatenasi \textit{embedding} DINOv3 dan multilingual-E5. \citet{maldonadoFWSMOTE2022} menunjukkan bahwa interpolasi SMOTE yang bergantung pada jarak Euclidean menjadi tidak bermakna pada dimensi tinggi karena jarak antar-instance cenderung konvergen ke nilai yang sama (\textit{curse of dimensionality}), sehingga sampel sintetis yang dihasilkan dapat menyimpang dari \textit{manifold} kelas minoritas dan justru menambah \textit{noise}. Menyintesis sampel pada ruang \textit{embedding} padat semacam ini berisiko menurunkan kualitas keputusan alih-alih memperbaikinya.
+
+Ketiga, konsistensi metodologis dengan baseline dan domain. Penelitian acuan \citet{hanifPenugasanOtomatis2024} yang diperluas pada studi ini juga memilih pembobotan kelas, dan karya sebidang pada laporan warga berbahasa Indonesia \citep{zahroFairerPublicComplaint2025} memilih pendekatan berbasis fungsi rugi (\textit{focal loss}) ketimbang \textit{resampling}. Dengan mengadopsi pembobotan kelas, hasil penelitian ini tetap sebanding secara metodologis sekaligus menghindari risiko kebocoran informasi (\textit{leakage}) yang dapat timbul bila sampel sintetis dari kelas minoritas bocor lintas partisi \textit{train}/\textit{validation}. Sebagai konsekuensi, distribusi sampel pada Tabel~\ref{tab:split} tetap timpang apa adanya; ketimpangan tersebut dikompensasi pada tingkat fungsi tujuan, bukan dihapus dari data, dan dampaknya dimitigasi lebih lanjut melalui pemilihan \textit{macro F1} sebagai metrik utama (Bagian~\ref{sec:skenario-pengujian}).
 
 % =====================================================================
 \section{Lingkungan Komputasi: Pelatihan di Cloud via RunPod}
@@ -271,7 +286,7 @@ Konfigurasi \textit{pod} yang digunakan dirangkum pada Tabel~\ref{tab:runpod}. P
 GPU & NVIDIA GeForce RTX 4090 (24 GB VRAM) \\
 CPU & vCPU 8 \textit{core} (AMD EPYC) \\
 RAM & 32 GB \\
-\textit{Container image} & \texttt{runpod/pytorch:2.1.0-py3.10-cuda12.1.1} \\
+\textit{Container image} & \texttt{runpod/\allowbreak{}pytorch:\allowbreak{}2.1.0-\allowbreak{}py3.10-\allowbreak{}cuda12.1.1} \\
 Penyimpanan & 50 GB \textit{persistent volume} \\
 Mode jaringan & SSH \textit{public key authentication} \\
 Port \textit{exposed} & 22 (SSH), 8888 (Jupyter) \\
@@ -290,7 +305,7 @@ Akses ke \textit{pod} dilakukan melalui kunci publik SSH yang didaftarkan pada a
 
 Tahap pemrosesan data multimodal, ekstraksi \textit{embedding}, dan fusi dini menyiapkan masukan tunggal berdimensi 2048 untuk \textit{classifier head} CatBoost. Pada sisi citra, setiap gambar dibaca dan diorientasikan ulang sesuai EXIF, kemudian di-\textit{resize} dengan \textit{square padding} ke 224x224 (atau 448x448 untuk EVA-02) mengikuti \textit{AutoImageProcessor} bawaan DINOv3, lalu dinormalisasi per kanal dengan rerata serta simpangan baku ImageNet sesuai Persamaan~\ref{eq:norm}. Augmentasi tidak diterapkan karena \textit{encoder} dibekukan. Pada sisi teks, narasi dipangkas spasinya dan dideduplikasi (penghapusan teks identik pada tahap pembersihan dataset), dipotong ke 256 token (mencakup sebagian besar laporan tanpa pemotongan), diberi prefiks instruksi untuk varian mE5-Instruct, ditokenisasi dengan tokenizer bawaan tiap \textit{encoder}, lalu \textit{embedding} keluarannya dinormalisasi L2.
 
-Ekstraksi \textit{embedding} dilakukan dengan empat kandidat \textit{encoder} citra (DINOv2-L, DINOv3-ViT-L, Hiera-L, EVA-02-L) dan empat kandidat \textit{encoder} teks (mE5-Large-Instruct, BGE-M3, IndoBERT-Large-p2, Cendol-mT5-Large), seluruhnya menghasilkan vektor berdimensi 1024. Inferensi dilakukan secara \textit{batch} dengan presisi campuran FP16 dan hasilnya disimpan pada \textit{cache} terkompresi sehingga eksperimen ablasi pasangan \textit{encoder} dapat dilakukan tanpa menjalankan ulang \textit{encoder}.
+Ekstraksi \textit{embedding} dilakukan dengan empat kandidat \textit{encoder} citra (DINOv2-L, DINOv3-ViT-L, Hiera-L, EVA-02-L) dan empat kandidat \textit{encoder} teks (mE5-Large-Instruct \texttt{intfloat/multilingual-e5-large-instruct}, BGE-M3, IndoBERT-Large-p2, Cendol-mT5-Large), seluruhnya menghasilkan vektor berdimensi 1024. \textit{Encoder} teks yang dipakai pada konfigurasi terbaik adalah varian \textbf{\textit{instruct}} dari \textit{multilingual-E5 large} (selanjutnya disingkat mE5), yang diberi prefiks instruksi pada setiap masukan. Inferensi dilakukan secara \textit{batch} dengan presisi campuran FP16 dan hasilnya disimpan pada \textit{cache} terkompresi sehingga eksperimen ablasi pasangan \textit{encoder} dapat dilakukan tanpa menjalankan ulang \textit{encoder}.
 
 Skema fusi yang digunakan adalah konkatenasi langsung dua vektor \textit{embedding} yang sudah dinormalisasi L2 per modalitas, mengikuti pendekatan \citet{hanifPenugasanOtomatis2024}, menghasilkan vektor fusi berdimensi 2048 yang menjadi masukan tunggal CatBoost. Reduksi dimensi (PCA) tidak diterapkan karena CatBoost berbasis pohon \textit{oblivious} mampu menangani fitur padat berdimensi tinggi serta untuk menghindari hilangnya informasi diskriminatif. Rincian lengkap berupa urutan langkah pemrosesan, tabel kandidat \textit{encoder}, formula normalisasi L2, dan persamaan vektor fusi disajikan pada Lampiran~\ref{app:preprocessing-embedding}.
 
@@ -446,7 +461,7 @@ Keseluruhan alur inferensi yang menghasilkan metrik-metrik di atas, mulai dari c
 
 \subsection{Ekspor CatBoost}
 
-Wight CatBoost diekspor menggunakan metode \textit{native} \texttt{model.save\_model("classifier.onnx", format="onnx")} yang menulis \textit{operator domain} \texttt{ai.catboost}. Inferensi pada saat produksi dijalankan dengan \texttt{Execution Provider} CPU karena \textit{operator} CatBoost belum memiliki kernel CUDA pada \textit{ONNX Runtime}.
+Bobot CatBoost diekspor menggunakan metode \textit{native} \texttt{model.save\_model(\allowbreak{}"classifier.onnx",\allowbreak{} format="onnx")} yang menulis \textit{operator domain} \texttt{ai.catboost}. Inferensi pada saat produksi dijalankan dengan \texttt{Execution Provider} CPU karena \textit{operator} CatBoost belum memiliki kernel CUDA pada \textit{ONNX Runtime}.
 
 \subsection{Prosedur Validasi Paritas Numerik}
 
@@ -470,13 +485,13 @@ Laporan numerik hasil validasi paritas akan disajikan pada Bab Hasil dan Pembaha
 
 \subsection{Arsitektur Server}
 
-Server inferensi membungkus tiga sesi \textit{ONNX Runtime} (\textit{encoder} citra, \textit{encoder} teks, algoritma CatBoost) yang dimuat sekali pada saat \textit{startup}, kemudian menyediakan metode prediksi yang menjalankan \textit{pipeline} fusi awal pada masukan gabungan citra dan teks. Aplikasi Android SmartCityApps berperan sebagai \textit{client} untuk mengirimkan laporan, foto, serta koordinat latitude dan longitude. Proses inferensi model dilakukan pada sisi server melalui backend FastAPI, bukan pada perangkat Android. Diagram komponen server ditunjukkan pada Gambar~\ref{fig:server-arch}.
+Server inferensi membungkus tiga sesi \textit{ONNX Runtime} (\textit{encoder} citra, \textit{encoder} teks, algoritma CatBoost) yang dimuat sekali pada saat \textit{startup}, kemudian menyediakan metode prediksi yang menjalankan \textit{pipeline} fusi awal pada masukan gabungan citra dan teks. Aplikasi Android SmartCityApps berperan sebagai \textit{client} untuk mengirimkan laporan, foto, serta koordinat latitude dan longitude. Proses inferensi model dilakukan pada sisi server melalui backend FastAPI, bukan pada perangkat Android. Diagram komponen dan \textit{deployment} server ditunjukkan pada Gambar~\ref{fig:server-arch}. Diagram tersebut mengikuti notasi \textit{component} dan \textit{deployment diagram} UML \citep{boochUML2005} yang dipadukan dengan pendekatan kontainer berlapis ala \textit{C4 model} \citep{brownC42018}, yaitu sebuah \textit{node} lingkungan eksekusi (Docker Container) yang memuat modul dan komponen di dalamnya (notasi kotak di dalam kotak).
 
 Model yang digunakan dapat disimpan sebagai artefak pada server atau pada \textit{model registry} seperti HuggingFace. Namun, HuggingFace pada rancangan ini diperlakukan sebagai penyimpanan atau registri artefak model, bukan sebagai layanan yang menjalankan inferensi. Dengan pemisahan ini, pembaruan model dapat dilakukan pada sisi server tanpa mewajibkan pengguna memperbarui aplikasi Android.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.99\textwidth, height=0.55\textheight, keepaspectratio]{bab_3/deployment_server_side_inference.png}
+    \includegraphics[width=0.99\textwidth, height=0.55\textheight, keepaspectratio]{bab_3/deployment_component_drawio.png}
     \caption{Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side, HuggingFace sebagai model registry/storage, dan Supabase.}
     \label{fig:server-arch}
 \end{figure}
@@ -550,7 +565,7 @@ Diagram \textit{use case} memetakan interaksi antara aktor utama (Warga Pelapor 
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.92\textwidth, height=0.88\textheight, keepaspectratio]{bab_3/brian_usecase.png}
+    \includegraphics[width=0.92\textwidth, height=0.88\textheight, keepaspectratio]{bab_3/use_case_smartcityapps.png}
     \caption{\textit{Use case diagram} SmartCityApps dengan prediksi server-side, confidence level, routing instansi terdekat, dan bukti penyelesaian.}
     \label{fig:usecase-flutter}
 \end{figure}
@@ -592,12 +607,12 @@ Melihat Riwayat/Peta & Warga Pelapor & Lihat daftar dan lokasi laporan tersimpan
 
 \subsection{Class Diagram}
 
-\textit{Class diagram} memetakan kelas-kelas domain utama beserta atribut dan relasinya. Diagram ditunjukkan pada Gambar~\ref{fig:class-diagram}.
+\textit{Class diagram} memetakan kelas-kelas utama pada aplikasi Flutter dan disusun mengikuti praktik desain produksi, bukan sekadar daftar kelas. Tiga keputusan desain ditonjolkan. Pertama, \textit{interface segregation}: kelas \texttt{ReportsRepository} merealisasikan dua antarmuka terpisah, yaitu \texttt{ReportsReader} (operasi baca berbasis \textit{stream} untuk warga dan admin) dan \texttt{ReportAdminActions} (operasi mutasi untuk moderator dan \textit{super-admin}), sehingga layar yang hanya membaca tidak terekspos pada operasi yang mengubah keadaan. Kedua, \textit{strategy pattern} pada hierarki \texttt{ReportsScope} yang bersifat \textit{sealed} (\texttt{CitizenScope}, \texttt{AgencyScope}, \texttt{GlobalScope}) untuk menentukan cakupan laporan yang terlihat berdasarkan peran pengguna yang juga dimodelkan sebagai hierarki \textit{sealed} \texttt{UserRole}. Ketiga, pemisahan tegas antara \textit{service} klasifikasi awan (\texttt{CloudClassificationService} beserta \textit{data transfer object} \texttt{CloudPrediction}) dan model domain (\texttt{CityReport}, \texttt{AiPrediction}, \texttt{ReportAssignment}) yang dipetakan satu-ke-satu ke tabel Supabase. Abstraksi \texttt{AiClassificationService} memiliki dua implementasi, yaitu \texttt{CloudAiClassificationService} (jalur produksi) dan \texttt{DemoAiClassificationService} (\textit{stub} deterministik untuk mode pengujian). Diagram ditunjukkan pada Gambar~\ref{fig:class-diagram}.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
     \centering
-    \includegraphics[width=0.95\textwidth, height=0.85\textheight, keepaspectratio]{bab_3/class_diagram_flutter.png}
-    \caption{\textit{Class diagram} lapisan service dan repositori aplikasi Flutter.}
+    \includegraphics[angle=90, height=0.92\textheight, width=\textwidth, keepaspectratio]{bab_3/class_diagram_flutter.png}
+    \caption{\textit{Class diagram} aplikasi Flutter SmartCityApps yang menonjolkan pola desain produksi: antarmuka tersegregasi \texttt{ReportsReader}/\texttt{ReportAdminActions}, hierarki \textit{sealed} \texttt{UserRole} dan \texttt{ReportsScope} (\textit{strategy}), \textit{service} klasifikasi awan beserta DTO, serta model domain dan enum sembilan kelas instansi target. Gambar dirotasi 90\textdegree{} agar seluruh kelas dan relasi tetap terbaca.}
     \label{fig:class-diagram}
 \end{figure}
 

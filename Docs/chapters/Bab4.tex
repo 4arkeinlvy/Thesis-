@@ -50,6 +50,7 @@ Setelah pemetaan 487 nama SKPD mentah ke sembilan kategori target dan pembagian 
 \centering
 \caption{Distribusi sampel per instansi (dinas) pada set train.}
 \label{tab:class-distribution}
+\small\setlength{\tabcolsep}{4pt}
 \begin{tabular}{c l r r}
 \toprule
 \textbf{ID} & \textbf{Kategori} & \textbf{Jumlah Sampel} & \textbf{Proporsi (\%)} \\
@@ -69,7 +70,7 @@ Setelah pemetaan 487 nama SKPD mentah ke sembilan kategori target dan pembagian 
 \end{tabular}
 \end{table}
 
-Distribusi yang ditampilkan menunjukkan bahwa ketidakseimbangan kelas masih ada walaupun sudah dilakukan penyeimbangan. Empat kelas teratas (Dinas Bina Marga, Kelurahan, Dinas Perhubungan, dan Satpol PP) mencakup lebih dari 73 persen total sampel, sedangkan tiga kelas terkecil (Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, serta Dinas Sumber Daya Air) hanya mencakup sekitar 9 persen. Ketidakseimbangan ini menjadi pertimbangan saat pemilihan metrik utama, yaitu \textit{macro F1 score} yang memberikan bobot sama pada setiap kelas, sebagaimana diuraikan pada Bagian~\ref{sec:skenario-pengujian}.
+Distribusi yang ditampilkan adalah distribusi apa adanya pada set \textit{train} tanpa \textit{resampling}; ketidakseimbangan sengaja tidak dihapus dari data, melainkan dikompensasi melalui pembobotan kelas saat pelatihan sebagaimana diuraikan pada Bagian~\ref{sec:bobot-kelas}. Empat kelas teratas (Dinas Bina Marga, Kelurahan, Dinas Perhubungan, dan Satpol PP) mencakup lebih dari 73 persen total sampel, sedangkan tiga kelas terkecil (Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, serta Dinas Sumber Daya Air) hanya mencakup sekitar 9 persen. Ketidakseimbangan ini menjadi pertimbangan saat pemilihan metrik utama, yaitu \textit{macro F1 score} yang memberikan bobot sama pada setiap kelas, sebagaimana diuraikan pada Bagian~\ref{sec:skenario-pengujian}.
 
 % =====================================================================
 \section{Hasil Eksperimen Utama}
@@ -93,7 +94,7 @@ $\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
 \end{tabular}
 \end{table}
 
-Konfigurasi terbaik mencapai \textit{balanced accuracy} 0,8074 dan \textit{macro F1} 0,7747 pada set uji 9.266 sampel, dengan akurasi keseluruhan 0,8073 dan \textit{macro ROC-AUC} (\textit{one-vs-rest}) sebesar 0,9667. Capaian ini di atas baseline yang dilaporkan oleh \citet{hanifPenugasanOtomatis2024} sebesar akurasi 80,5 persen pada delapan kelas, mengingat penelitian ini bekerja pada sembilan kelas yang lebih luas dan menggantikan DINOv2 dengan DINOv3 \textit{large}. Rerata waktu pelatihan satu konfigurasi CatBoost adalah 308 detik tanpa PGS dan 602 detik dengan PGS, yang membuktikan bahwa biaya komputasi pelatihan masih dapat ditoleransi pada satu sesi eksperimen.
+Konfigurasi terbaik mencapai \textit{balanced accuracy} 0,8074 dan \textit{macro F1} 0,7747 pada set uji 9.266 sampel, dengan akurasi keseluruhan 0,8073 dan \textit{macro ROC-AUC} (\textit{one-vs-rest}) sebesar 0,9667. Capaian ini kompetitif terhadap baseline yang dilaporkan oleh \citet{hanifPenugasanOtomatis2024} sebesar akurasi 80,5 persen pada delapan kelas. Perbandingan ini perlu dibaca secara hati-hati dan bukan sebagai unggul-langsung pada kondisi eksperimen yang identik, karena metrik dan jumlah kelas berbeda: penelitian ini melaporkan \textit{balanced accuracy} dan \textit{macro F1} pada sembilan kelas (termasuk kelas \textit{catch-all} Instansi Lain yang lebih sulit), sedangkan baseline melaporkan akurasi pada delapan kelas. Dengan kondisi tugas yang lebih luas tersebut, penggantian DINOv2 dengan DINOv3 \textit{large} tetap mempertahankan kinerja pada tingkat yang setara atau sedikit lebih tinggi. Rerata waktu pelatihan satu konfigurasi CatBoost adalah 308 detik tanpa PGS dan 602 detik dengan PGS, yang membuktikan bahwa biaya komputasi pelatihan masih dapat ditoleransi pada satu sesi eksperimen.
 
 \subsection{Metrik Per-Kelas}
 \label{sec:metrik-per-kelas}
@@ -104,6 +105,7 @@ Untuk mengamati kinerja model pada masing-masing instansi, Tabel~\ref{tab:per-cl
 \centering
 \caption{Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}
 \label{tab:per-class}
+\small\setlength{\tabcolsep}{4pt}
 \begin{tabular}{l c c c r}
 \toprule
 \textbf{Kategori (Dinas)} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Support} \\
@@ -188,6 +190,23 @@ $\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
 
 PGS memberikan peningkatan \textit{balanced accuracy} sebesar 0,78 \textit{percentage point} dan \textit{macro F1} sebesar 0,63 \textit{percentage point} terhadap baseline tanpa PGS. Selain memberikan peningkatan akurasi, PGS juga menghasilkan ukuran ketidakpastian (\textit{mean uncertainty}) sebesar 0,00339 yang dapat ditampilkan pada antarmuka aplikasi sebagai sinyal kepercayaan kepada warga pelapor. Sinyal ini menjadi penting saat warga harus memutuskan apakah hasil klasifikasi otomatis perlu dikoreksi secara manual sebelum laporan dikirim.
 
+\subsection{Mengapa Peningkatan PGS Tergolong Marginal}
+\label{sec:pgs-marginal}
+
+Peningkatan dari PGS tergolong kecil ($+0{,}63$ pp \textit{macro F1}) dan hal ini konsisten dengan sifat metode serta karakteristik data, bukan indikasi kegagalan implementasi. Empat penjelasan dapat dikemukakan.
+
+Pertama, PGS pada hakikatnya merupakan estimator \textit{posterior mean} di atas ensembel virtual CatBoost \citep{ustimenkoCatBoostUncertainty2023}; nilai harapan posterior tersebut sangat dekat dengan prediksi titik model tunggal, sehingga label \textit{argmax} hanya berubah pada sampel yang berada tepat di sekitar batas keputusan. Karena mayoritas sampel uji diklasifikasikan dengan \textit{margin} lebar, tercermin dari \textit{macro ROC-AUC} 0,9667, jumlah sampel yang berpindah label akibat PGS sedikit, sehingga selisih akurasi pun kecil.
+
+Kedua, sumber ketidakpastian dominan pada dataset ini bersifat \textit{aleatoric} (melekat pada data), bukan \textit{epistemic} (akibat keterbatasan model). PGS dirancang untuk merefinasi komponen \textit{epistemic} melalui rerata ensembel, sedangkan ambiguitas dominan di sini berasal dari pemetaan \textit{many-to-one} 487 nama SKPD ke sembilan kelas, narasi laporan yang sangat singkat, dan laporan yang secara historis sah dirutekan ke lebih dari satu instansi. Ketidakpastian \textit{aleatoric} bersifat irreducibel sehingga tidak dapat dikurangi oleh penambahan anggota ensembel \citep{kendallGal2017,huellermeierWaegeman2021}. Hal ini sekaligus menjelaskan mengapa \textit{mean epistemic uncertainty} yang terukur sangat kecil, yaitu 0,00339.
+
+Ketiga, ensembel virtual PGS berbagi parameter dari satu model CatBoost yang sama, bukan model independen seperti pada \textit{deep ensembles} \citep{lakshminarayananDeepEnsembles2017}. Korelasi antar-anggota yang tinggi membuat sebaran \textit{epistemic} yang dilaporkan cenderung bias rendah, sehingga ruang perbaikan dari agregasi posterior memang sempit. Konsisten dengan ini, ablasi modalitas menunjukkan PGS justru sedikit menurunkan F1 pada modalitas citra-saja ($-0{,}43$ pp), yaitu kondisi ketika probabilitas dasar kurang terkalibrasi sehingga rerata ensembel memperkuat bias alih-alih memperbaikinya.
+
+Pengamatan ini juga sejalan dengan perbandingan terhadap penelitian acuan. \citet{hanifPenugasanOtomatis2024} melaporkan lonjakan akurasi yang jauh lebih besar akibat PGS (dari 0,7571 menjadi 0,8055) ketika \textit{encoder} citra yang dipakai adalah DINOv2 yang relatif lebih lemah. Pada penelitian ini, penggantian ke DINOv3 \textit{large} menghasilkan \textit{base learner} yang sudah lebih kuat dan lebih terkalibrasi, sehingga ruang perbaikan \textit{epistemic} yang tersisa bagi PGS menyempit secara signifikan. Dengan kata lain, semakin baik representasi dasar, semakin kecil manfaat marjinal dari kalibrasi ensembel virtual, persis seperti yang diprediksi oleh argumen aleatoric-epistemic di atas.
+
+Dengan demikian, kontribusi utama PGS pada penelitian ini bukan terletak pada lonjakan akurasi, melainkan pada penyediaan sinyal ketidakpastian berbiaya inferensi nyaris nol yang dapat ditampilkan pada antarmuka sebagai dasar koreksi manual. Untuk memperoleh keandalan \textit{end-to-end} yang lebih kuat, arah lanjutan yang lebih tepat adalah lapisan \textit{selective prediction} berjaminan cakupan atau keluaran himpunan-bernilai melalui \textit{conformal prediction}, ketimbang sekadar menambah anggota ensembel virtual.
+
+Penilaian signifikansi statistik memperkuat kesimpulan ini. Dengan \textit{bootstrap} sebanyak 2.000 kali pengambilan ulang (\textit{resampling}) pada 9.266 sampel uji, \textit{macro F1} konfigurasi CatBoost+PGS sebesar 0,7747 memiliki selang kepercayaan 95\% sebesar $[0{,}764;\ 0{,}784]$. Karena \textit{macro F1} baseline tanpa PGS (0,7684) berada di dalam selang tersebut, peningkatan $+0{,}63$ pp tidak dapat diklaim signifikan secara statistik pada taraf 95\%. Temuan ini konsisten dengan posisi bahwa nilai tambah PGS terletak pada penyediaan estimasi ketidakpastian, bukan pada peningkatan akurasi yang dapat dibedakan dari ragam pengambilan sampel.
+
 % =====================================================================
 \section{Hasil Ablasi Pasangan Encoder}
 \label{sec:ablasi-encoder}
@@ -252,6 +271,37 @@ Selisih probabilitas absolut maksimum di bawah ambang $10^{-5}$ pada seluruh kom
 % =====================================================================
 
 Aplikasi SmartCityApps berhasil diimplementasikan menggunakan Flutter dengan arsitektur berbasis fitur, manajemen \textit{state} Riverpod, navigasi GoRouter, dan \textit{backend} Supabase. Aplikasi mendukung tiga peran pengguna, yaitu Warga Pelapor, Operator Instansi, dan Moderator atau \textit{SuperAdmin}, dengan akses yang dibatasi melalui Row Level Security pada tabel \texttt{profiles}, \texttt{reports}, dan \texttt{report\_history}.
+
+\subsection{Tangkapan Layar Antarmuka Pengguna}
+\label{sec:ui-screenshots}
+
+Alur inti pelaporan ditampilkan pada Gambar~\ref{fig:ui-pelaporan}, sedangkan galeri lengkap seluruh layar (onboarding, autentikasi, profil, pengaturan, detail laporan, dan dasbor instansi) disajikan pada Lampiran~\ref{app:ui-mockup}. Seluruh tangkapan layar dirender langsung dari \textit{widget} Flutter yang sebenarnya melalui \textit{golden screenshot test} (pengujian render deterministik) dengan data contoh yang representatif, sehingga tampilan konsisten dan dapat direproduksi tanpa bergantung pada koneksi jaringan.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_create_report.png}
+        \caption{Buat laporan}
+        \label{fig:ui-create}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_ai_review.png}
+        \caption{Tinjauan hasil AI}
+        \label{fig:ui-aireview}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_my_reports.png}
+        \caption{Riwayat laporan}
+        \label{fig:ui-myreports}
+    \end{subfigure}
+    \caption{Alur inti pelaporan: pengambilan foto, narasi, dan lokasi (a); layar tinjauan AI yang menampilkan instansi prediksi, \textit{confidence}, peringkat prediksi teratas, instansi tujuan terdekat, dan opsi koreksi kategori manual (b); serta daftar riwayat laporan beserta status (c). Galeri lengkap seluruh layar disajikan pada Lampiran~\ref{app:ui-mockup}.}
+    \label{fig:ui-pelaporan}
+\end{figure}
 
 \subsection{Skema Basis Data Supabase}
 
@@ -325,3 +375,27 @@ Selain ketidakseimbangan kelas, dataset Jakarta CRM memiliki keterbatasan lain, 
 \subsection{Diskusi Keputusan Engineering}
 
 Tiga keputusan \textit{engineering} utama pada penelitian ini menerima konfirmasi empiris dari hasil eksperimen. Pertama, keputusan untuk membekukan kedua \textit{encoder} terbukti efisien karena memungkinkan ablasi pasangan \textit{encoder} dijalankan dalam satu sesi eksperimen tanpa biaya pelatihan ulang \textit{encoder}. Kedua, keputusan memilih CatBoost sebagai \textit{classifier head} terbukti tepat karena seluruh delapan properti yang dijabarkan pada Bagian~\ref{sec:justifikasi-catboost} terealisasi pada hasil eksperimen, mulai dari biaya pelatihan rendah, kalibrasi probabilitas yang dapat diaudit, hingga paritas numerik yang terjaga pada ekspor ONNX. Inferensi \textit{classifier head} CatBoost+PGS dengan 30 ensembel virtual pada seluruh 9.266 sampel uji hanya memerlukan sekitar 0,05 ms per sampel, sehingga latensi \textit{end-to-end} server didominasi oleh tahap ekstraksi \textit{embedding} kedua \textit{encoder}, bukan oleh \textit{classifier head}. Ketiga, keputusan memilih jalur inferensi \textit{on-server} terbukti praktis karena ukuran \textit{artifact} ONNX \textit{image encoder} sebesar 1,15 GB tidak dapat dibundel ke paket aplikasi Android, sebagaimana diuraikan pada Bagian~\ref{sec:on-device-vs-on-server}.
+
+\subsection{Latensi Inferensi dan \textit{Footprint} Sumber Daya Perangkat}
+\label{sec:latensi-footprint}
+
+Untuk menjawab konsekuensi latensi secara empiris, ketiga komponen \textit{pipeline} ONNX diukur per tahap pada satu sampel di lingkungan pengembangan berbasis CPU (rerata 20 iterasi setelah \textit{warm-up}). Hasil pada Tabel~\ref{tab:latensi} menunjukkan latensi \textit{end-to-end} sekitar 1,08 detik per sampel, dengan lebih dari 99 persen waktu dihabiskan pada kedua \textit{encoder} (\textit{image} 437 ms dan \textit{text} 639 ms) sedangkan \textit{classifier head} hanya 0,3 ms. Angka ini mengonfirmasi secara kuantitatif bahwa latensi didominasi oleh tahap ekstraksi \textit{embedding}, bukan oleh \textit{classifier}. Pada \textit{deployment} dengan akselerasi GPU, misalnya kelas RTX 4090 yang dipakai pada tahap pelatihan (Tabel~\ref{tab:runpod}), latensi kedua \textit{encoder} turun ke orde puluhan milidetik karena \textit{provider} CUDA aktif pada \texttt{serve\_model.py}. Dari sisi ketersediaan, server berfungsi sebagai titik inferensi tunggal sehingga keandalan layanan bergantung pada \textit{uptime} server; mitigasi berupa replikasi dan \textit{retry policy} diuraikan sebagai saran pada Bab~\ref{ch:simpulan}. Dari sisi biaya operasional, karena \textit{classifier head} nyaris tanpa biaya komputasi, \textit{throughput} dibatasi oleh kapasitas \textit{encoder} sehingga satu \textit{pod} GPU tunggal sudah memadai untuk beban prototipe.
+
+\begin{table}[htbp]
+\centering
+\caption{Latensi inferensi per tahap pada satu sampel (diukur pada CPU lingkungan pengembangan, rerata 20 iterasi setelah \textit{warm-up}).}
+\label{tab:latensi}
+\begin{tabular}{l r}
+\toprule
+\textbf{Tahap \textit{pipeline}} & \textbf{Latensi (ms)} \\
+\midrule
+\textit{Image encoder} (DINOv3 \textit{large}, ONNX) & 437 \\
+\textit{Text encoder} (mE5, ONNX) & 639 \\
+\textit{Classifier head} (CatBoost+PGS, ONNX) & 0,3 \\
+\midrule
+\textbf{\textit{End-to-end}} & \textbf{1.076} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Pemilihan jalur \textit{on-server} juga menjaga \textit{footprint} sumber daya pada perangkat pengguna tetap minimum, sesuai tuntutan rumusan masalah pertama. Paket aplikasi Android tidak memuat model apa pun (direktori \texttt{assets/models} kosong); berkas APK \textit{debug} berukuran 216 MB (versi rilis lebih kecil setelah \textit{tree-shaking} dan \textit{split-per-ABI}), jauh di bawah tambahan 1,19 GB artefak ONNX yang harus disertakan apabila inferensi dilakukan sepenuhnya \textit{on-device}. Pada saat operasi, perangkat hanya mengirim satu permintaan \textit{multipart} berisi citra terkompresi berukuran ratusan kilobyte beserta narasi teks singkat, kemudian menerima respons JSON ringan; tidak ada komputasi model di sisi perangkat sehingga konsumsi memori, penyimpanan, dan daya pada perangkat pengguna tetap rendah.

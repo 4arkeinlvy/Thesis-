@@ -1,0 +1,19 @@
+@startuml kerangka_berpikir
+!include _thesis_style.puml
+
+start
+:**1. Identifikasi Masalah**
+Triase manual laporan warga lambat dan rentan kesalahan.
+Volume laporan meningkat dan kategori dinas semakin beragam.;
+:**2. Pengembangan Model**
+Akuisisi dan pembersihan dataset CRM Jakarta menjadi 9 instansi target.
+Ekstraksi fitur citra dan teks, lalu pelatihan classifier multimodal CatBoost + PGS.;
+:**3. Implementasi Sistem**
+Backend FastAPI menjalankan inferensi server-side dan routing instansi terdekat.
+Aplikasi Android SmartCityApps berperan sebagai klien pengirim laporan.;
+:**4. Pengujian dan Evaluasi**
+Pengujian metrik klasifikasi pada partisi uji dan validasi end-to-end sistem.
+Analisis dampak fusi multimodal dan PGS terhadap akurasi serta confidence.;
+stop
+
+@enduml

@@ -3,37 +3,38 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Diagram alir kerangka berpikir penelitian secara keseluruhan.}}{52}{figure.caption.13}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagram alir tahap akuisisi data dari \textit {web scraping} portal CRM Jakarta sampai pembagian data stratifikasi.}}{54}{figure.caption.14}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Fase persiapan pelatihan: setup pod RunPod, instalasi dependensi, dan ekstraksi \textit {embedding} citra dan teks ke berkas \textit {cache}.}}{55}{figure.caption.15}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Fase eksperimen: pelatihan \textit {classifier head} CatBoost+PGS untuk 16 pasangan \textit {encoder}, pemilihan model terbaik, dan ekspor ONNX dengan validasi paritas numerik.}}{56}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Diagram alir tahap akuisisi data dari \textit {web scraping} portal CRM Jakarta sampai pembagian data stratifikasi.}}{53}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Fase persiapan pelatihan: setup pod RunPod, instalasi dependensi, dan ekstraksi \textit {embedding} citra dan teks ke berkas \textit {cache}.}}{54}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Fase eksperimen: pelatihan \textit {classifier head} CatBoost+PGS untuk 16 pasangan \textit {encoder}, pemilihan model terbaik, dan ekspor ONNX dengan validasi paritas numerik.}}{55}{figure.caption.16}%
 \contentsline {figure}{\numberline {3.5}{\ignorespaces Diagram aktivitas tahap \textit {deployment} mencakup ekspor ONNX, server FastAPI untuk inferensi server-side, aplikasi Android SmartCityApps sebagai klien, perutean instansi terdekat, dan pengujian sistem.}}{57}{figure.caption.17}%
 \contentsline {figure}{\numberline {3.6}{\ignorespaces Contoh struktur data multimodal: foto ojek parkir di area halte bus, narasi singkat warga, dan label \textit {Dinas Perhubungan}. Tiga kolom yang ditampilkan adalah kolom \textit {Gambar}, kolom \textit {Laporan}, dan kolom \textit {Label}.}}{60}{figure.caption.20}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Alur inferensi multimodal server-side dari citra dan teks ke prediksi 9 instansi, confidence, dan routing instansi terdekat berdasarkan koordinat.}}{73}{figure.caption.26}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side, HuggingFace sebagai model registry/storage, dan Supabase.}}{76}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Skema basis data Supabase untuk laporan, prediksi, penugasan instansi, dan bukti penyelesaian.}}{79}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces \textit {Use case diagram} SmartCityApps dengan prediksi server-side, confidence level, routing instansi terdekat, dan bukti penyelesaian.}}{80}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces \textit {Activity diagram} siklus laporan SmartCityApps dari pelaporan, inferensi server-side, routing instansi terdekat, sampai bukti penyelesaian.}}{82}{figure.caption.32}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces \textit {Class diagram} lapisan service dan repositori aplikasi Flutter.}}{83}{figure.caption.33}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces \textit {Sequence diagram} pengiriman laporan, inferensi server-side, penyimpanan assignment, dan bukti penyelesaian.}}{83}{figure.caption.34}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Alur inferensi multimodal server-side dari citra dan teks ke prediksi 9 instansi, confidence, dan routing instansi terdekat berdasarkan koordinat.}}{75}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side, HuggingFace sebagai model registry/storage, dan Supabase.}}{78}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Skema basis data Supabase untuk laporan, prediksi, penugasan instansi, dan bukti penyelesaian.}}{80}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces \textit {Use case diagram} SmartCityApps dengan prediksi server-side, confidence level, routing instansi terdekat, dan bukti penyelesaian.}}{83}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces \textit {Activity diagram} siklus laporan SmartCityApps dari pelaporan, inferensi server-side, routing instansi terdekat, sampai bukti penyelesaian.}}{84}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces \textit {Class diagram} aplikasi Flutter SmartCityApps yang menonjolkan pola desain produksi: antarmuka tersegregasi \texttt {ReportsReader}/\texttt {ReportAdminActions}, hierarki \textit {sealed} \texttt {UserRole} dan \texttt {ReportsScope} (\textit {strategy}), \textit {service} klasifikasi awan beserta DTO, serta model domain dan enum sembilan kelas instansi target. Gambar dirotasi 90\textdegree {} agar seluruh kelas dan relasi tetap terbaca.}}{86}{figure.caption.33}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces \textit {Sequence diagram} pengiriman laporan, inferensi server-side, penyimpanan assignment, dan bukti penyelesaian.}}{87}{figure.caption.34}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Distribusi sembilan instansi (dinas) pada set train.}}{92}{figure.caption.37}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Ablasi modalitas pada CatBoost dan CatBoost+PGS.}}{96}{figure.caption.42}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Perbandingan balanced accuracy dan macro F1 dengan dan tanpa PGS.}}{97}{figure.caption.44}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Heatmap macro F1 pada matrix grid pasangan encoder.}}{98}{figure.caption.46}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces ERD basis data Supabase untuk laporan, prediksi, assignment instansi terdekat, bukti penyelesaian, dan kebijakan per peran.}}{101}{figure.caption.48}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces \textit {Confusion matrix} ternormalisasi (per baris) pada set uji untuk konfigurasi terbaik DINOv3 large + mE5 large + CatBoost+PGS.}}{103}{figure.caption.50}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Distribusi sembilan instansi (dinas) pada set train.}}{96}{figure.caption.37}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Ablasi modalitas pada CatBoost dan CatBoost+PGS.}}{100}{figure.caption.42}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Perbandingan balanced accuracy dan macro F1 dengan dan tanpa PGS.}}{101}{figure.caption.44}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Heatmap macro F1 pada matrix grid pasangan encoder.}}{104}{figure.caption.46}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Alur inti pelaporan: pengambilan foto, narasi, dan lokasi (a); layar tinjauan AI yang menampilkan instansi prediksi, \textit {confidence}, peringkat prediksi teratas, instansi tujuan terdekat, dan opsi koreksi kategori manual (b); serta daftar riwayat laporan beserta status (c). Galeri lengkap seluruh layar disajikan pada Lampiran~\ref {app:ui-mockup}.}}{106}{figure.caption.48}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces ERD basis data Supabase untuk laporan, prediksi, assignment instansi terdekat, bukti penyelesaian, dan kebijakan per peran.}}{107}{figure.caption.49}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces \textit {Confusion matrix} ternormalisasi (per baris) pada set uji untuk konfigurasi terbaik DINOv3 large + mE5 large + CatBoost+PGS.}}{110}{figure.caption.51}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {A.1}{\ignorespaces Mockup layar \textit {splash} dan \textit {onboarding}.}}{120}{figure.caption.53}%
-\contentsline {figure}{\numberline {A.2}{\ignorespaces Mockup layar buat laporan.}}{121}{figure.caption.54}%
-\contentsline {figure}{\numberline {A.3}{\ignorespaces Mockup layar tinjauan hasil AI.}}{121}{figure.caption.55}%
-\contentsline {figure}{\numberline {A.4}{\ignorespaces Mockup layar rekomendasi instansi.}}{122}{figure.caption.56}%
-\contentsline {figure}{\numberline {A.5}{\ignorespaces Mockup layar riwayat laporan.}}{122}{figure.caption.57}%
-\contentsline {figure}{\numberline {A.6}{\ignorespaces Mockup layar peta laporan.}}{123}{figure.caption.58}%
-\contentsline {figure}{\numberline {A.7}{\ignorespaces Mockup layar profil dan pengaturan.}}{123}{figure.caption.59}%
+\contentsline {figure}{\numberline {A.1}{\ignorespaces Layar onboarding tiga halaman serta layar masuk dan registrasi akun terverifikasi.}}{130}{figure.caption.55}%
+\contentsline {figure}{\numberline {A.2}{\ignorespaces Beranda warga dengan ringkasan status laporan dan peta laporan terdekat, serta layar buat laporan (ambil foto, narasi, dan lokasi).}}{130}{figure.caption.56}%
+\contentsline {figure}{\numberline {A.3}{\ignorespaces Layar tinjauan hasil AI (instansi prediksi, \textit {confidence}, tiga prediksi teratas, instansi tujuan terdekat, dan koreksi kategori manual); daftar riwayat laporan beserta filter status; serta detail laporan dengan \textit {timeline} status dari \textit {submitted} hingga \textit {resolved}.}}{131}{figure.caption.57}%
+\contentsline {figure}{\numberline {A.4}{\ignorespaces Layar peta laporan dengan pin lokasi laporan dan filter status di atas ubin peta OpenStreetMap, layar profil pengguna, dan pengaturan aplikasi.}}{132}{figure.caption.58}%
+\contentsline {figure}{\numberline {A.5}{\ignorespaces Layar pemulihan kata sandi melalui surel.}}{132}{figure.caption.59}%
+\contentsline {figure}{\numberline {A.6}{\ignorespaces Dasbor antrean operator instansi yang hanya menampilkan laporan ter-\textit {routing} sesuai peran melalui \textit {Row Level Security}, serta profil operator yang memuat lingkup instansi yang ditugaskan.}}{133}{figure.caption.60}%
+\contentsline {figure}{\numberline {A.7}{\ignorespaces Alur penanganan laporan oleh operator instansi: bilah aksi pembaruan status (\textit {verify}, \textit {reject}, \textit {in progress}, \textit {resolved}) saat operator membuka laporan instansinya (a); \textit {sheet} unggah bukti penyelesaian yang wajib diisi sebelum laporan dapat ditandai selesai (b); dan tampilan laporan yang telah selesai dengan \textit {timeline} status lengkap beserta bukti penyelesaian yang tersimpan (c).}}{134}{figure.caption.61}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {B.1}{\ignorespaces Contoh 2 struktur data multimodal: foto saluran air mampet dengan narasi panjang yang menjelaskan dampak banjir terhadap warga sekitar, dipetakan ke label \textit {Kelurahan}. Narasi yang panjang menyediakan konteks tekstual kuat, sedangkan citra memvalidasi kondisi fisik saluran.}}{124}{figure.caption.60}%
-\contentsline {figure}{\numberline {B.2}{\ignorespaces Contoh 3 struktur data multimodal: foto pembatas jalan dengan cat yang sudah pudar, narasi permohonan pengecatan ulang oleh warga, dipetakan ke label \textit {Dinas Perhubungan}. Kondisi visual pudar pada citra menjadi sinyal utama, sedangkan narasi menegaskan jenis tindakan yang diharapkan.}}{124}{figure.caption.61}%
+\contentsline {figure}{\numberline {B.1}{\ignorespaces Contoh 2 struktur data multimodal: foto saluran air mampet dengan narasi panjang yang menjelaskan dampak banjir terhadap warga sekitar, dipetakan ke label \textit {Kelurahan}. Narasi yang panjang menyediakan konteks tekstual kuat, sedangkan citra memvalidasi kondisi fisik saluran.}}{135}{figure.caption.62}%
+\contentsline {figure}{\numberline {B.2}{\ignorespaces Contoh 3 struktur data multimodal: foto pembatas jalan dengan cat yang sudah pudar, narasi permohonan pengecatan ulang oleh warga, dipetakan ke label \textit {Dinas Perhubungan}. Kondisi visual pudar pada citra menjadi sinyal utama, sedangkan narasi menegaskan jenis tindakan yang diharapkan.}}{135}{figure.caption.63}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

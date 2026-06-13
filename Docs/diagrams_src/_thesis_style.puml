@@ -10,7 +10,10 @@ skinparam defaultFontSize 12
 skinparam roundCorner 12
 skinparam ArrowColor #5D6D7E
 skinparam ArrowThickness 1.1
+skinparam classAttributeIconSize 0
 skinparam componentStyle uml2
+skinparam linetype ortho
+hide circle
 
 skinparam activity {
     BackgroundColor #EAF2F8
@@ -35,11 +38,13 @@ skinparam partition {
 skinparam class {
     BackgroundColor #FFFFFF
     BorderColor #2E4053
-    HeaderBackgroundColor #2E4053
-    HeaderFontColor #FFFFFF
+    HeaderBackgroundColor #EAF2F8
+    HeaderFontColor #1B2631
     AttributeFontColor #1B2631
     FontColor #1B2631
 }
+skinparam classFontColor #1B2631
+skinparam classFontStyle bold
 skinparam component {
     BackgroundColor #EAF2F8
     BorderColor #2E4053

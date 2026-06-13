@@ -8,6 +8,7 @@
 \usepackage[english, indonesian]{babel}
 \usepackage{mathptmx} % Font Times New Roman
 \usepackage{times}
+\usepackage[protrusion=true,expansion=true]{microtype} % Rapikan spasi, kurangi teks keluar margin
 
 % --- 3. Pengaturan Spasi dan Indentasi ---
 \usepackage{setspace}
@@ -33,6 +34,7 @@
 \usepackage[authoryear, round]{natbib}
 
 % --- 7. Hyperref (Navigasi PDF) ---
+\PassOptionsToPackage{hyphens}{url} % Izinkan URL panjang patah di tanda hubung
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
@@ -149,6 +151,22 @@
 }
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
+
+%================================================================================
+% OVERFLOW / LINE-BREAKING (rapikan teks yang keluar dari margin)
+%================================================================================
+% Izinkan TeX sedikit melonggarkan baris agar token panjang pindah baris
+\setlength{\emergencystretch}{3em}
+% Buat URL/teks typewriter panjang dapat dipatah di hampir semua karakter
+\makeatletter
+\g@addto@macro\UrlBreaks{%
+  \do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m%
+  \do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z%
+  \do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M%
+  \do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X\do\Y\do\Z%
+  \do\0\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9}
+\makeatother
+\Urlmuskip=0mu plus 1mu\relax
 %================================================================================
 % DOCUMENT START
 %================================================================================
