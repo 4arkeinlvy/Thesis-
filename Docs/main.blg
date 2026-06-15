@@ -11,45 +11,45 @@ Database file #1: references/references.bib
 Warning--there's a number but no volume in audebertMultimodalDoc2019
 Warning--there's a number but no volume in ofliMultimodalDisaster2020
 Warning--there's a number but no volume in wangCognitiveEdgeComputing2025
-You've used 74 entries,
+You've used 78 entries,
             1935 wiz_defined-function locations,
-            962 strings with 26211 characters,
-and the built_in function-call counts, 33151 in all, are:
-= -- 3249
-> -- 1793
-< -- 57
-+ -- 645
-- -- 634
-* -- 2774
-:= -- 5798
-add.period$ -- 257
-call.type$ -- 74
-change.case$ -- 681
-chr.to.int$ -- 69
-cite$ -- 77
-duplicate$ -- 1185
-empty$ -- 1951
-format.name$ -- 732
-if$ -- 6481
+            995 strings with 27459 characters,
+and the built_in function-call counts, 35157 in all, are:
+= -- 3457
+> -- 1868
+< -- 61
++ -- 673
+- -- 658
+* -- 2935
+:= -- 6122
+add.period$ -- 274
+call.type$ -- 78
+change.case$ -- 711
+chr.to.int$ -- 73
+cite$ -- 81
+duplicate$ -- 1267
+empty$ -- 2096
+format.name$ -- 762
+if$ -- 6898
 int.to.chr$ -- 6
 int.to.str$ -- 0
-missing$ -- 53
-newline$ -- 391
-num.names$ -- 226
-pop$ -- 611
+missing$ -- 57
+newline$ -- 414
+num.names$ -- 240
+pop$ -- 637
 preamble$ -- 1
-purify$ -- 684
+purify$ -- 714
 quote$ -- 0
-skip$ -- 933
+skip$ -- 997
 stack$ -- 0
-substring$ -- 1869
-swap$ -- 235
-text.length$ -- 24
+substring$ -- 2029
+swap$ -- 257
+text.length$ -- 26
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 430
+type$ -- 454
 warning$ -- 3
-while$ -- 229
+while$ -- 248
 width$ -- 0
-write$ -- 999
+write$ -- 1060
 (There were 3 warnings)
