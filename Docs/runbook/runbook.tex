@@ -1,0 +1,374 @@
+% =====================================================================
+% Runbook Reproduksi & Operasional SmartCityApps
+% Standalone document — compile with: latexmk -pdf runbook.tex
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks,colorlinks=true,linkcolor=black!75,urlcolor=blue!55!black]{hyperref}
+
+% ---------- colours ----------
+\definecolor{accent}{HTML}{2E4053}
+\definecolor{codebg}{HTML}{F4F6F7}
+\definecolor{codeframe}{HTML}{D5DBDB}
+\definecolor{kw}{HTML}{1E5AA8}
+\definecolor{cmt}{HTML}{7B7D7D}
+\definecolor{stagebg}{HTML}{EAF2F8}
+
+% ---------- headings ----------
+\titleformat{\section}{\Large\bfseries\color{accent}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{accent!90}}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+
+% ---------- header / footer ----------
+\pagestyle{fancy}\fancyhf{}
+\setlength{\headheight}{14pt}
+\lhead{\small\color{accent}\textbf{Runbook SmartCityApps}}
+\rhead{\small\color{accent}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- code style ----------
+\lstdefinestyle{sh}{
+  language=bash,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single, rulecolor=\color{codeframe},
+  framesep=6pt, xleftmargin=8pt, xrightmargin=4pt,
+  breaklines=true, breakatwhitespace=false,
+  postbreak=\mbox{\textcolor{cmt}{$\hookrightarrow$}\space},
+  showstringspaces=false,
+  keywordstyle=\color{kw}\bfseries,
+  commentstyle=\color{cmt}\itshape,
+  morecomment=[l]{\#},
+  morekeywords={python,python3,pip,uvicorn,curl,docker,ngrok,flutter,adb,cd,source,jupyter,latexmk,bibtex},
+  aboveskip=8pt, belowskip=8pt,
+}
+\lstset{style=sh}
+
+% command shown inline
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% stage banner
+\newcommand{\stage}[2]{%
+  \par\medskip\noindent\colorbox{stagebg}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+  \textbf{\color{accent}#1}\;\;#2}}\par\smallskip}
+
+\begin{document}
+
+% =====================================================================
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+{\Huge\bfseries\color{accent} Runbook Reproduksi \&\\[0.25em] Operasional SmartCityApps\par}
+\vspace{0.8cm}
+{\large Dari Proses Analisis Data hingga Inferensi Server dan Aplikasi Mobile\par}
+\vspace{0.4cm}
+{\large\itshape Pipeline Klasifikasi Multimodal CRM Jakarta\\(DINOv3-large + multilingual-E5-large + CatBoost+PGS)\par}
+\vfill
+\begin{tabular}{rl}
+\textbf{Repositori} & \code{smartCityReport/}\\
+\textbf{Server inferensi} & FastAPI \code{serve\_model.py} (\code{/health}, \code{/predict})\\
+\textbf{Klien} & Flutter Android \code{smart\_city\_reporter\_app/}\\
+\textbf{Backend data} & Supabase (PostgreSQL, Storage, Auth)\\
+\textbf{Publikasi} & ngrok tunnel\\
+\end{tabular}
+\vspace{1.2cm}
+
+{\small Dokumen ini bersifat operasional (\emph{runbook}); jalankan tahap secara berurutan.}
+\vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Ikhtisar Alur}
+% =====================================================================
+Runbook ini menjalankan keseluruhan sistem secara berurutan, mulai dari analisis
+data mentah sampai aplikasi mobile mengonsumsi hasil prediksi. Sembilan tahap
+utama dirangkum pada Tabel~\ref{tab:overview}.
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clp{8.4cm}@{}}
+\toprule
+\textbf{Tahap} & \textbf{Nama} & \textbf{Keluaran} \\
+\midrule
+A & Analisis \& Persiapan Data & \code{train/val/test.csv}, statistik kelas \\
+B & Ekstraksi \emph{Embedding} & \emph{cache} fitur citra \& teks (1024-d) \\
+C & Pelatihan Fusi CatBoost+PGS & \code{.cbm} model + metrik validasi \\
+D & Ekspor ONNX \& Paritas & artefak \code{artifacts/export/} \\
+E & Server Inferensi FastAPI & layanan \code{:8000} (\code{/predict}) \\
+F & Kontainerisasi Docker & image \code{crm-multimodal:latest} \\
+G & Publikasi ngrok & URL HTTPS publik \\
+H & Aplikasi Flutter & APK / sesi \code{flutter run} \\
+I & Verifikasi End-to-End & laporan tersimpan di Supabase \\
+\bottomrule
+\end{tabular}
+\caption{Sembilan tahap runbook dari analisis hingga konsumsi aplikasi.}
+\label{tab:overview}
+\end{table}
+
+% =====================================================================
+\section{Prasyarat \& Lingkungan}
+% =====================================================================
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item \textbf{Python} 3.11 (server \& notebook).
+  \item \textbf{Flutter} SDK (channel stabil) + Android SDK / perangkat Android.
+  \item \textbf{ngrok} (akun gratis cukup) untuk publikasi server.
+  \item \textbf{Docker} (opsional, untuk jalur kontainer/GPU).
+  \item \textbf{GPU} (opsional): pelatihan \& ekstraksi \emph{embedding} dijalankan di RunPod; inferensi dapat berjalan di CPU (mis. macOS / Apple Silicon).
+\end{itemize}
+
+\stage{Catatan platform.}{Pelatihan dan ekspor (Tahap A--D) dilakukan pada pod RunPod ber-GPU. Penyajian (Tahap E--I) dapat berjalan penuh di CPU lokal menggunakan subset dependensi \code{requirements-serve.txt}.}
+
+\subsection{Menyiapkan virtualenv (penyajian, CPU)}
+\begin{lstlisting}
+cd smartCityReport
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -r requirements-serve.txt    # fastapi, uvicorn, onnxruntime (CPU),
+                                          # transformers, catboost, pillow, numpy
+\end{lstlisting}
+
+\subsection{Menyiapkan dependensi pelatihan (GPU / RunPod)}
+\begin{lstlisting}
+# Pada pod RunPod (CUDA):
+pip install -r requirements.txt              # torch (CUDA), timm, dsb.
+pip install -r notebooks/requirements_runpod.txt
+\end{lstlisting}
+
+% =====================================================================
+\section{Tahap A — Analisis \& Persiapan Data}
+% =====================================================================
+Dataset CRM Jakarta (citra + narasi + label SKPD) dianalisis, dibersihkan, dan
+dibagi secara stratifikasi. Jalankan notebook dari dalam folder \code{notebooks/}
+agar \code{sys.path} relatif (\code{../src/}) ter-resolve.
+
+\begin{lstlisting}
+cd smartCityReport/notebooks
+jupyter notebook        # atau: jupyter lab
+\end{lstlisting}
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
+  \item \textbf{\code{01\_dataset\_exploration.ipynb}} — distribusi 9 kelas,
+        contoh citra, analisis ukuran gambar, distribusi 487 SKPD mentah.
+        \emph{Output:} \code{class\_distribution.png}, \code{skpd\_distribution.png}.
+  \item \textbf{\code{02\_preprocessing.ipynb}} — normalisasi unicode,
+        \emph{whitespace collapsing}, pembersihan label, pemetaan 487 SKPD
+        $\rightarrow$ 9 instansi target.
+  \item \textbf{\code{03\_split.ipynb}} — \emph{stratified split} berdasarkan
+        \code{label\_id}. \emph{Output:} \code{train.csv} (43.241),
+        \code{val.csv} (9.266), \code{test.csv} (9.266).
+\end{enumerate}
+
+\stage{Validasi tahap.}{Pastikan proporsi label tiap kelas konsisten lintas partisi \code{train}/\code{val}/\code{test}, dan \emph{class weights} (inverse frequency) tersimpan untuk dipakai CatBoost.}
+
+% =====================================================================
+\section{Tahap B — Ekstraksi \emph{Embedding} dengan \emph{Encoder} Beku}
+% =====================================================================
+Setiap citra dan narasi dilewatkan melalui \emph{encoder} beku untuk menghasilkan
+vektor 1024-dimensi; tidak ada gradien yang mengalir ke \emph{encoder}.
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
+  \item \textbf{\code{04\_extract\_image\_embeddings.ipynb}} — DINOv3-large
+        ($resize \rightarrow center\ crop \rightarrow$ normalisasi ImageNet
+        $\rightarrow$ NCHW). \emph{Output:} \emph{cache} \code{image\_emb.npy}.
+  \item \textbf{\code{05\_extract\_text\_embeddings.ipynb}} — multilingual-E5-large
+        (\emph{tokenize} $\rightarrow$ \emph{mean pooling} $\rightarrow$ L2-normalize).
+        \emph{Output:} \emph{cache} \code{text\_emb.npy}.
+\end{enumerate}
+
+\stage{Tujuan caching.}{Karena \emph{encoder} beku, \emph{embedding} dihitung sekali lalu dipakai ulang oleh seluruh eksperimen pelatihan CatBoost, sehingga eksperimen menjadi cepat dan reproducible.}
+
+% =====================================================================
+\section{Tahap C — Pelatihan Kepala CatBoost + PGS}
+% =====================================================================
+\emph{Embedding} citra dan teks dikonkatenasi (\emph{early fusion}) menjadi vektor
+2048-d, lalu CatBoost dilatih untuk meminimalkan \emph{multiclass logloss}.
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
+  \item \textbf{\code{06\_fusion\_catboost\_pgs.ipynb}} — pelatihan CatBoost +
+        kalibrasi \emph{Posterior Gaussian Sampling}; pemilihan model terbaik
+        berbasis \emph{macro F1} pada set validasi.
+        \emph{Output:} \code{artifacts/models/best\_catboost\_dinov3\_large\_mE5\_large.cbm}.
+  \item \textbf{\code{07\_error\_analysis.ipynb}} / \code{07\_standalone\_fusion\_analysis.ipynb}
+        — \emph{confusion matrix}, analisis kesalahan, \emph{threshold trade-off}.
+  \item \textbf{\code{08\_add\_dinov3\_ablation.ipynb}}, \code{09\_advanced\_classifiers.ipynb}
+        — ablasi modalitas dan pasangan \emph{encoder} ($4\times4\times2$).
+\end{enumerate}
+
+\stage{Hasil rujukan.}{Konfigurasi terbaik mencapai \emph{balanced accuracy} 0{,}8074 dan \emph{macro F1} 0{,}7747 pada 9.266 sampel uji.}
+
+% =====================================================================
+\section{Tahap D — Ekspor ONNX \& Validasi Paritas}
+% =====================================================================
+\begin{enumerate}[leftmargin=1.6em,itemsep=3pt]
+  \item \textbf{\code{08\_export\_onnx.ipynb}} — ekspor \emph{image encoder},
+        \emph{text encoder}, dan \emph{classifier head} ke ONNX.
+\end{enumerate}
+
+Artefak final yang harus tersedia sebelum penyajian:
+\begin{lstlisting}
+artifacts/export/
+  image_encoder_dinov3_large.onnx            # 1.15 GB
+  image_encoder_dinov3_large/preprocessor_config.json
+  text_encoder_mE5_large/model.onnx (+ model.onnx_data ~6.4 GB)
+  tokenizer/
+  classifier_dinov3_large_mE5_large.onnx     # CatBoost-as-ONNX
+\end{lstlisting}
+
+\stage{Validasi paritas.}{Bandingkan probabilitas keluaran PyTorch vs ONNX pada sampel uji; selisih absolut maksimum harus di bawah ambang $10^{-5}$ agar prediksi top-1 identik.}
+
+% =====================================================================
+\section{Tahap E — Menjalankan Server Inferensi FastAPI}
+% =====================================================================
+Server memuat ketiga artefak ONNX sekali saat startup (\(\approx\) 7{,}6 GB di RAM),
+lalu menyediakan \code{/health} dan \code{/predict}.
+
+\begin{lstlisting}
+cd smartCityReport
+source .venv/bin/activate
+uvicorn serve_model:app --host 0.0.0.0 --port 8000 --workers 1
+\end{lstlisting}
+
+\stage{Penting.}{Gunakan \code{-{}-workers 1}: setiap worker memuat penuh \(\approx\)7{,}6 GB. \emph{Cold start} lambat (memuat \emph{text encoder} 6{,}4 GB) — lakukan satu \code{/health} dan satu \code{/predict} pemanasan sebelum demo.}
+
+\subsection{Uji \emph{health}}
+\begin{lstlisting}
+curl -s http://127.0.0.1:8000/health | python3 -m json.tool
+# -> {"status":"ok", "image_encoder":"dinov3_large",
+#     "text_encoder":"mE5_large", "classes":[...9...], "gpu_available":false}
+\end{lstlisting}
+
+\subsection{Uji \emph{predict} (multipart)}
+\begin{lstlisting}
+curl -s -X POST http://127.0.0.1:8000/predict \
+  -F "image=@/path/to/photo.jpg" \
+  -F "laporan=ada lubang besar di Jalan Sudirman" \
+  -F "latitude=-6.2088" -F "longitude=106.8456" | python3 -m json.tool
+# -> predicted_dinas, confidence, all_probabilities,
+#    review_required, assignment{agency_name, distance_meters, ...}
+\end{lstlisting}
+
+% =====================================================================
+\section{Tahap F — Kontainerisasi Docker (opsional, GPU)}
+% =====================================================================
+Jalur ini memakai \code{Dockerfile} berbasis CUDA 12.1 + \code{onnxruntime-gpu};
+membutuhkan host ber-GPU NVIDIA (mis. pod RunPod), bukan macOS.
+
+\begin{lstlisting}
+cd smartCityReport
+docker compose up --build          # build image + mount artifacts/export (read-only)
+# image: crm-multimodal:latest, port 8000, GPU direservasi via compose.yaml
+\end{lstlisting}
+
+\stage{Catatan artefak.}{\code{compose.yaml} me-mount \code{artifacts/export} sebagai volume \emph{read-only} sehingga artefak 7{,}6 GB tidak perlu di-\emph{bake} ke dalam image.}
+
+% =====================================================================
+\section{Tahap G — Publikasi Server via ngrok}
+% =====================================================================
+Agar perangkat Android dapat menjangkau server melalui internet:
+
+\begin{lstlisting}
+brew install ngrok                       # atau unduh dari ngrok.com
+ngrok config add-authtoken <TOKEN>       # sekali saja (akun gratis)
+ngrok http 8000
+# -> Forwarding  https://abc123.ngrok-free.app -> http://localhost:8000
+\end{lstlisting}
+
+Verifikasi dari luar jaringan:
+\begin{lstlisting}
+curl -s https://abc123.ngrok-free.app/health
+\end{lstlisting}
+
+\stage{Peringatan.}{URL ngrok gratis berubah setiap restart. Catat URL terbaru dan teruskan ke aplikasi (Tahap H) sebelum demo.}
+
+% =====================================================================
+\section{Tahap H — Menjalankan Aplikasi Flutter}
+% =====================================================================
+Aplikasi membaca alamat server dari \emph{dart-define} \code{CRM\_API\_URL}
+(default \code{http://10.0.2.2:8000} untuk emulator Android).
+
+\begin{lstlisting}
+cd smartCityReport/smart_city_reporter_app
+flutter pub get
+flutter run \
+  --dart-define=CRM_API_URL=https://abc123.ngrok-free.app \
+  --dart-define=SUPABASE_URL=<supabase_url> \
+  --dart-define=SUPABASE_ANON_KEY=<anon_key>
+\end{lstlisting}
+
+\subsection{Alternatif tanpa ngrok}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+  \item \textbf{Emulator:} biarkan default \code{http://10.0.2.2:8000} (alias localhost host).
+  \item \textbf{HP via USB:} \code{adb reverse tcp:8000 tcp:8000}, lalu
+        \code{CRM\_API\_URL=http://localhost:8000}.
+\end{itemize}
+
+% =====================================================================
+\section{Tahap I — Verifikasi End-to-End}
+% =====================================================================
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
+  \item Di aplikasi: ambil foto $\rightarrow$ tulis narasi $\rightarrow$ izinkan lokasi $\rightarrow$ kirim.
+  \item Layar tinjauan AI menampilkan \textbf{instansi prediksi, confidence, top-3, instansi terdekat} (hasil nyata dari server).
+  \item Koreksi kategori bila perlu $\rightarrow$ simpan.
+  \item Laporan tersimpan di Supabase (tabel \code{reports}) + foto di \emph{bucket} \code{report-images}.
+  \item Operator Instansi memverifikasi; status \code{resolved} mewajibkan foto bukti penyelesaian.
+\end{enumerate}
+
+% =====================================================================
+\section{Troubleshooting}
+% =====================================================================
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}p{5.2cm}p{9.0cm}@{}}
+\toprule
+\textbf{Gejala} & \textbf{Penyebab / Solusi} \\
+\midrule
+Server OOM / lambat saat start & RAM kurang untuk 7{,}6 GB; gunakan \code{-{}-workers 1}, tutup aplikasi lain. \\
+\code{Invalid image} pada \code{/predict} & Berkas bukan gambar valid; kirim JPG/PNG via \code{-F "image=@..."}. \\
+Aplikasi tak terhubung & URL ngrok kedaluwarsa; perbarui \code{CRM\_API\_URL} dan \code{flutter run} ulang. \\
+Emulator gagal \code{localhost} & Gunakan \code{10.0.2.2} (emulator) atau \code{adb reverse} (HP fisik). \\
+Paritas ONNX gagal ($>10^{-5}$) & Periksa opset / operator ekspor pada \code{08\_export\_onnx.ipynb}. \\
+Email verifikasi tidak masuk & SMTP bawaan Supabase ber-\emph{rate limit}; gunakan SMTP khusus untuk volume lebih besar. \\
+\bottomrule
+\end{tabular}
+\caption{Masalah umum dan penanganannya.}
+\end{table}
+
+% =====================================================================
+\section{Lampiran — Peta Berkas Penting}
+% =====================================================================
+\begin{lstlisting}
+smartCityReport/
+  serve_model.py               # FastAPI: /health, /predict, routing Haversine
+  Dockerfile, compose.yaml     # jalur kontainer GPU
+  requirements-serve.txt       # subset penyajian (CPU)
+  requirements.txt             # pelatihan (CUDA)
+  notebooks/01..09_*.ipynb     # analisis -> pelatihan -> ekspor
+  src/crm/encoders/{image,text}.py  # pembungkus encoder ONNX
+  src/crm/fusion.py, pgs.py    # early fusion + kalibrasi PGS
+  artifacts/export/            # artefak ONNX yang dilayani
+  smart_city_reporter_app/     # aplikasi Flutter (klien)
+    lib/core/config/app_config.dart   # CRM_API_URL, SUPABASE_URL, ANON_KEY
+\end{lstlisting}
+
+\vfill
+\begin{center}\small\color{cmt}
+Runbook ini melengkapi Bab 3 (Metode Penelitian) dan Bab 4 (Hasil) skripsi.
+\end{center}
+
+\end{document}

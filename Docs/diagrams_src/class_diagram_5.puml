@@ -1,0 +1,56 @@
+@startuml class_diagram_5
+!include _thesis_style.puml
+hide empty members
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 18
+skinparam ranksep 40
+
+' Bagian 5/5: modul administrasi registri instansi (Option C).
+' Super admin mengelola tabel agencies (system of record), lalu memuat ulang
+' cache server inferensi melalui endpoint /reload-agencies.
+
+package "features.admin" <<Modul Administrasi>> {
+    class AgencyRegistryScreen <<ConsumerWidget>> {
+        +build(context, ref) : Widget
+        -openEditor(a: Agency?) : Future<void>
+        -reload() : Future<void>
+    }
+    class AgencyRegistryRepository {
+        -client: SupabaseClient
+        -crmApiUrl: String
+        +fetchAll() : Future<List<Agency>>
+        +save(a: Agency) : Future<void>
+        +setActive(id, isActive) : Future<void>
+        +delete(id) : Future<void>
+        +reloadInferenceServer() : Future<AgencyReloadResult>
+    }
+    class Agency <<model>> {
+        +id: String
+        +name: String
+        +category: IssueCategory
+        +latitude: double?
+        +longitude: double?
+        +isActive: bool
+        +{static} fromMap(map) : Agency
+        +toMap() : Map
+    }
+    class AgencyReloadResult <<model>> {
+        +source: String
+        +count: int
+    }
+}
+
+AgencyRegistryScreen --> AgencyRegistryRepository
+AgencyRegistryRepository ..> Agency
+AgencyRegistryRepository ..> AgencyReloadResult
+Agency --> IssueCategory
+
+note as N5
+  Penulisan ke tabel agencies dibatasi kebijakan RLS
+  agencies_write_super_admin (hanya super admin).
+  reloadInferenceServer() memanggil POST /reload-agencies
+  agar cache routing server sinkron tanpa restart.
+  IssueCategory (9 kelas) dirinci pada diagram model domain.
+end note
+@enduml

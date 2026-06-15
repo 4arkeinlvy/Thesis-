@@ -7,6 +7,7 @@ skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam defaultFontName "Helvetica"
 skinparam defaultFontSize 12
+skinparam dpi 200
 skinparam roundCorner 12
 skinparam ArrowColor #5D6D7E
 skinparam ArrowThickness 1.1

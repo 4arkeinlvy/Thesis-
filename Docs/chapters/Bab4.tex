@@ -305,14 +305,14 @@ Alur inti pelaporan ditampilkan pada Gambar~\ref{fig:ui-pelaporan}, sedangkan ga
 
 \subsection{Skema Basis Data Supabase}
 
-Tabel utama yang menopang aplikasi adalah \texttt{profiles} (data pengguna dan peran), \texttt{reports} (laporan dengan instansi prediksi, confidence, probabilitas multiclass, assignment instansi terdekat, lokasi, status, tautan gambar, dan bukti penyelesaian), dan \texttt{report\_history} (audit perubahan status laporan). Berkas gambar disimpan pada \textit{bucket} \texttt{report-images} di Supabase Storage. Komunikasi realtime dengan klien Flutter difasilitasi oleh Supabase Postgres Realtime sehingga perubahan status pada laporan langsung tercermin di antarmuka pengguna tanpa perlu \textit{polling}. Skema lengkap dirangkum pada Gambar~\ref{fig:erd-supabase}.
+Aplikasi ditopang skema ternormalisasi dengan \texttt{reports} sebagai akar agregat (laporan dengan instansi prediksi, confidence, probabilitas multiclass, lokasi, status, visibilitas, dan penanda duplikat) yang dilengkapi tabel anak \texttt{report\_evidence} (bukti foto, banyak per laporan), \texttt{report\_assignments} (riwayat penugasan dan penugasan-ulang instansi), \texttt{report\_history} (audit status), dan \texttt{report\_sla} (tenggat layanan); tabel \texttt{agencies} menjadi registri instansi tujuan dan \texttt{profiles} menyimpan data pengguna serta peran. Berkas disimpan pada \textit{bucket} privat Supabase Storage sebagai pasangan \textit{bucket} dan \texttt{object\_path}, lalu diakses melalui \textit{signed URL} berumur singkat. Agar klien Flutter tetap membaca satu tabel melalui Supabase Postgres Realtime, kolom datar pada \texttt{reports} dipertahankan sebagai \textit{proyeksi-baca} yang disinkronkan \textit{trigger} dari tabel anak, sehingga perubahan status langsung tercermin di antarmuka tanpa \textit{polling}. Skema yang benar-benar ter-deploy pada Supabase ditunjukkan pada Gambar~\ref{fig:erd-supabase}, sedangkan rancangan konseptualnya pada Gambar~\ref{fig:db-schema}.
 
-\begin{figure}[htbp]
+\begin{sidewaysfigure}
     \centering
-    \includegraphics[width=0.85\textwidth]{bab_3/erd_supabase.png}
-    \caption{ERD basis data Supabase untuk laporan, prediksi, assignment instansi terdekat, bukti penyelesaian, dan kebijakan per peran.}
+    \includegraphics[width=0.95\textheight]{supabase/public_schema_deployed.png}
+    \caption{Skema basis data yang ter-deploy pada Supabase (hasil visualisasi Supabase Studio): tabel publik aplikasi setelah normalisasi, yaitu akar agregat \texttt{reports} dengan tabel anak \texttt{report\_evidence}, \texttt{report\_assignments}, \texttt{report\_history}, \texttt{report\_sla}, dan registri \texttt{agencies}. Rancangan konseptualnya beserta mekanisme proyeksi-baca disajikan pada Gambar~\ref{fig:db-schema}.}
     \label{fig:erd-supabase}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsection{Alur Pelaporan oleh Warga}
 
@@ -345,6 +345,132 @@ Foto pohon tumbang dengan narasi ``pohon roboh karena hujan deras kemarin'' & Di
 \bottomrule
 \end{tabular}
 \end{table}
+
+% =====================================================================
+\section{Evaluasi Usabilitas Aplikasi}
+\label{sec:evaluasi-usabilitas}
+% =====================================================================
+
+Selain pengujian fungsional alur pelaporan pada Bagian~\ref{sec:hasil-flutter}, aplikasi SmartCityApps dievaluasi dari sisi pengalaman pengguna untuk mengukur sejauh mana warga dapat mengoperasikan aplikasi dengan mudah, efektif, dan memuaskan. Evaluasi usabilitas penting karena nilai klasifikasi multimodal yang tinggi hanya bermanfaat apabila warga benar-benar mampu menyelesaikan alur pelaporan dari pengambilan foto hingga pengiriman laporan tanpa hambatan berarti.
+
+\subsection{Metode Evaluasi Usabilitas}
+\label{sec:metode-usabilitas}
+
+Usabilitas diukur menggunakan \textit{System Usability Scale} (SUS), instrumen baku yang dikembangkan oleh \citet{brookeSUSQuick1996} sebagai alat ukur usabilitas yang cepat, andal, dan dapat dibandingkan antar sistem. SUS dipilih karena tiga alasan: instrumen ini telah menjadi standar de facto pada bidang interaksi manusia--komputer, menghasilkan satu skor tunggal pada rentang 0--100 yang mudah diinterpretasikan dan di-\textit{benchmark}, serta singkat untuk diisi sehingga tidak membebani responden. SUS terdiri atas sepuluh pernyataan dengan skala Likert lima poin (1 = sangat tidak setuju hingga 5 = sangat setuju), dengan lima pernyataan bernada positif (nomor ganjil) dan lima pernyataan bernada negatif (nomor genap) yang disusun berselang-seling untuk mengurangi bias respons. Agar instrumen valid bagi responden berbahasa Indonesia, kesepuluh pernyataan menggunakan terjemahan Bahasa Indonesia yang telah diadaptasi dan divalidasi oleh \citet{sharfinaIndonesianAdaptationSystem2016}.
+
+Pengujian dilakukan terhadap 15 responden yang memenuhi profil pengguna sasaran, yaitu Warga Pelapor yang terbiasa menggunakan \textit{smartphone} Android. Jumlah ini sejalan dengan praktik evaluasi usabilitas dan memadai untuk memperoleh estimasi skor SUS yang stabil. Setiap responden terlebih dahulu menjalankan serangkaian skenario tugas yang merepresentasikan alur inti pelaporan (Tabel~\ref{tab:skenario-usabilitas}) pada perangkat Android fisik, kemudian mengisi formulir evaluasi yang memuat profil responden, pakta integritas, kesepuluh pernyataan SUS, serta sejumlah pertanyaan umpan balik kualitatif. Formulir lengkap yang dibagikan kepada responden disajikan pada Lampiran~\ref{app:kuesioner-sus}.
+
+Skor SUS dihitung mengikuti metodologi baku. Untuk pernyataan bernomor ganjil, kontribusi skor diperoleh dengan mengurangi 1 dari respons; untuk pernyataan bernomor genap, kontribusi skor diperoleh dengan mengurangi respons dari 5. Jumlah seluruh kontribusi kemudian dikalikan 2,5 sehingga menghasilkan skor akhir pada rentang 0--100, sebagaimana dinyatakan pada Persamaan~\ref{eq:sus}, dengan $R_i$ adalah respons untuk pernyataan ke-$i$.
+
+\begin{equation}
+\label{eq:sus}
+\text{Skor SUS} = \left( \sum_{i \in \{1,3,5,7,9\}} (R_i - 1) \; + \sum_{j \in \{2,4,6,8,10\}} (5 - R_j) \right) \times 2{,}5
+\end{equation}
+
+Interpretasi skor mengacu pada \textit{benchmark} \citet{bangorDeterminingWhatIndividual2009}: skor rata-rata produk berada di sekitar 68, sehingga skor di atas 68 tergolong di atas rata-rata, skor 68--80 menunjukkan usabilitas baik, skor 80--90 sangat baik, dan skor di atas 90 luar biasa, sedangkan skor di bawah 68 mengindikasikan perlunya perbaikan usabilitas. Selain skor SUS, keberhasilan responden menyelesaikan setiap skenario tugas dicatat sebagai indikator efektivitas, dan jawaban kualitatif dirangkum untuk melengkapi temuan kuantitatif.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Skenario tugas usabilitas yang dijalankan setiap responden sebelum mengisi kuesioner SUS. Kolom status keberhasilan diisi berdasarkan hasil pengamatan saat pengujian.}
+\label{tab:skenario-usabilitas}
+\begin{tabular}{p{1.4cm} p{7.2cm} p{2.6cm}}
+\toprule
+\textbf{Kode} & \textbf{Skenario Tugas} & \textbf{Status Keberhasilan} \\
+\midrule
+T-01 & Responden mendaftar akun baru atau masuk ke akun yang sudah ada. & \\
+T-02 & Responden membuka layar buat laporan dan mengambil foto kejadian menggunakan kamera. & \\
+T-03 & Responden memilih foto kejadian dari galeri perangkat. & \\
+T-04 & Responden mengisi narasi atau deskripsi laporan. & \\
+T-05 & Responden menetapkan lokasi laporan melalui GPS atau memilih titik secara manual di peta. & \\
+T-06 & Responden menjalankan klasifikasi AI dan meninjau hasil prediksi instansi, \textit{confidence}, serta instansi tujuan terdekat. & \\
+T-07 & Responden mengoreksi kategori instansi secara manual pada layar tinjauan AI. & \\
+T-08 & Responden mengirim laporan lalu memeriksa kemunculannya beserta status pada riwayat laporan. & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Hasil Evaluasi Usabilitas}
+\label{sec:hasil-usabilitas}
+
+% CATATAN: Nilai pada tabel-tabel berikut sengaja dikosongkan dan diisi
+% setelah pengujian terhadap responden dilakukan. Lihat Lampiran kuesioner.
+
+Profil 15 responden yang berpartisipasi dirangkum pada Tabel~\ref{tab:profil-responden}. Profil ini memastikan responden mewakili pengguna sasaran aplikasi, yaitu warga pengguna \textit{smartphone} Android dengan beragam latar pengalaman terhadap aplikasi pelaporan publik.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Profil responden evaluasi usabilitas ($n = 15$).}
+\label{tab:profil-responden}
+\begin{tabular}{p{4.5cm} p{4.5cm} r r}
+\toprule
+\textbf{Karakteristik} & \textbf{Kategori} & \textbf{Jumlah} & \textbf{Persentase} \\
+\midrule
+Jenis kelamin & Laki-laki & & \\
+              & Perempuan & & \\
+\addlinespace
+Rentang usia & Di bawah 20 tahun & & \\
+             & 20--30 tahun & & \\
+             & Di atas 30 tahun & & \\
+\addlinespace
+Pengalaman aplikasi & Pernah (mis. LAPOR!/JAKI) & & \\
+pelaporan publik    & Belum pernah & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Skor SUS untuk setiap responden beserta rata-rata keseluruhan ditampilkan pada Tabel~\ref{tab:skor-sus}. Skor per responden dihitung dengan Persamaan~\ref{eq:sus} dari kesepuluh respons Likert, sedangkan baris rata-rata merepresentasikan skor usabilitas akhir aplikasi.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Skor SUS per responden dan rata-rata keseluruhan. Kolom skor diisi setelah rekapitulasi jawaban kuesioner.}
+\label{tab:skor-sus}
+\begin{tabular}{c c c c}
+\toprule
+\textbf{Responden} & \textbf{Skor SUS} & \textbf{Responden} & \textbf{Skor SUS} \\
+\midrule
+R-01 & & R-09 & \\
+R-02 & & R-10 & \\
+R-03 & & R-11 & \\
+R-04 & & R-12 & \\
+R-05 & & R-13 & \\
+R-06 & & R-14 & \\
+R-07 & & R-15 & \\
+R-08 & & \textbf{Rata-rata} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Untuk analisis yang lebih rinci, Tabel~\ref{tab:rekap-item-sus} merangkum rata-rata kontribusi skor (rentang 0--4 setelah normalisasi arah pernyataan) untuk masing-masing dari kesepuluh pernyataan SUS. Rekapitulasi per pernyataan membantu mengidentifikasi aspek usabilitas yang paling kuat maupun yang paling perlu diperbaiki, misalnya kemudahan penggunaan, konsistensi antarmuka, atau kepercayaan diri pengguna.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Rekapitulasi rata-rata kontribusi skor per pernyataan SUS (rentang 0--4). Kolom nilai diisi setelah rekapitulasi jawaban kuesioner.}
+\label{tab:rekap-item-sus}
+\begin{tabular}{c p{9cm} c}
+\toprule
+\textbf{No.} & \textbf{Pernyataan} & \textbf{Rata-rata} \\
+\midrule
+P1 & Keinginan menggunakan aplikasi kembali. & \\
+P2 & Aplikasi dirasa rumit untuk digunakan. & \\
+P3 & Aplikasi dirasa mudah digunakan. & \\
+P4 & Kebutuhan bantuan orang lain atau teknisi. & \\
+P5 & Fitur-fitur aplikasi berjalan semestinya. & \\
+P6 & Terdapat ketidakkonsistenan pada aplikasi. & \\
+P7 & Aplikasi cepat dipahami orang lain. & \\
+P8 & Aplikasi dirasa membingungkan. & \\
+P9 & Tidak ada hambatan saat menggunakan aplikasi. & \\
+P10 & Perlu membiasakan diri sebelum menggunakan aplikasi. & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Berdasarkan Tabel~\ref{tab:skor-sus}, aplikasi SmartCityApps memperoleh skor SUS rata-rata sebesar \rule{1.2cm}{0.4pt}. Mengacu pada \textit{benchmark} \citet{bangorDeterminingWhatIndividual2009}, skor tersebut berada pada kategori \rule{2.5cm}{0.4pt}, yang menunjukkan bahwa aplikasi \rule{4cm}{0.4pt}. Seluruh skenario tugas pada Tabel~\ref{tab:skenario-usabilitas} \rule{3cm}{0.4pt} oleh mayoritas responden, sehingga aplikasi dinilai efektif dalam mendukung alur pelaporan dari pengambilan foto hingga pengiriman laporan.
+
+Selain penilaian kuantitatif, responden memberikan umpan balik kualitatif melalui pertanyaan terbuka mengenai kelebihan utama aplikasi, bagian yang masih membingungkan atau perlu diperbaiki, serta kesediaan menggunakan aplikasi untuk melaporkan masalah lingkungan di sekitarnya. Rangkuman umpan balik ini \rule{4cm}{0.4pt} dan menjadi dasar usulan perbaikan antarmuka pada Bab~\ref{ch:simpulan}.
 
 % =====================================================================
 \section{Pembahasan dan Analisis Kesalahan}

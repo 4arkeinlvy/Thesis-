@@ -1,0 +1,39 @@
+@startuml activity_agency_registry
+!include _thesis_style.puml
+skinparam dpi 200
+
+title Pengelolaan Registri Instansi oleh Super Admin (Option C)
+
+|Super Admin|
+start
+:Buka "Kelola Registri Instansi";
+
+|Supabase|
+:Muat daftar dari tabel agencies;
+
+|Super Admin|
+:Tambah / ubah / nonaktifkan instansi;
+note right: Form: id, nama, kategori,\nlatitude, longitude, is_active
+
+|Supabase|
+if (Peran super_admin?\n(RLS agencies_write_super_admin)) then (ya)
+  :Tulis perubahan ke tabel agencies;
+else (tidak)
+  :Tolak penulisan;
+  |Super Admin|
+  stop
+endif
+
+|Super Admin|
+:Tekan "Terapkan ke server routing";
+
+|Server Inferensi|
+:Terima POST /reload-agencies;
+:Baca ulang tabel agencies ke cache memori;
+note right: Fallback ke agencies_seed.json\nbila basis data tidak terjangkau
+:Balas {source, count};
+
+|Super Admin|
+:Lihat konfirmasi jumlah instansi + sumber data;
+stop
+@enduml

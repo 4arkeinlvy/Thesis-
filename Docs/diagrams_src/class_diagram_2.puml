@@ -1,0 +1,59 @@
+@startuml class_diagram_2
+!include _thesis_style.puml
+hide empty members
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 24
+
+' Bagian 2/4: modul otentikasi dan hierarki peran (sealed).
+
+package "features.auth" <<Modul Otentikasi>> {
+    class AuthRepository {
+        -client: SupabaseClient
+        +signUp(...) : Future<SignUpResult>
+        +signIn(email, password) : Future<void>
+        +signOut() : Future<void>
+        +fetchCurrentUserProfile() : Future<UserProfile?>
+        +authStateChanges() : Stream<LocalAuthSession?>
+    }
+    class SignUpResult <<DTO>> {
+        +user: UserProfile?
+        +requiresEmailConfirmation: bool
+    }
+    class LocalAuthSession <<value>> {
+        +userId: String
+    }
+    class UserProfile <<model>> {
+        +id: String
+        +fullName: String
+        +email: String
+        +role: String
+        +assignedAgency: IssueCategory?
+    }
+    abstract class UserRole <<sealed>> {
+        +canSubmitReports: bool
+        +canModerateReports: bool
+        +canReassignAgency: bool
+        +{static} fromProfile(p: UserProfile) : UserRole
+    }
+    class Citizen <<role>>
+    class AgencyAdmin <<role>> {
+        +agency: IssueCategory
+    }
+    class SuperAdmin <<role>>
+}
+
+AuthRepository ..> UserProfile
+AuthRepository ..> SignUpResult
+AuthRepository ..> LocalAuthSession
+UserRole ..> UserProfile : fromProfile()
+UserRole <|-- Citizen
+UserRole <|-- AgencyAdmin
+UserRole <|-- SuperAdmin
+
+note bottom of AgencyAdmin
+  Enum IssueCategory dirinci pada
+  diagram model domain (Gambar 3.15).
+end note
+@enduml

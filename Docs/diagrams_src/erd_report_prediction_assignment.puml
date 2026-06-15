@@ -2,17 +2,21 @@
 !include _thesis_style.puml
 
 ' ============================================================
-' Production-grade ERD for the Supabase (PostgreSQL) backend.
+' Normalized ERD for the Supabase (PostgreSQL) backend.
 ' Grounded in smart_city_reporter_app/supabase/schema.sql.
-' Covers: laporan, prediksi multiclass, assignment instansi
-' terdekat, bukti penyelesaian, dan kebijakan RLS per peran.
+' reports = aggregate root; multi-valued/historical concerns live
+' in child tables; flat columns on reports are a read-projection
+' kept in sync by triggers (see note). Full column lists, enums,
+' and RLS are detailed in Lampiran D.
 ' ============================================================
 
-' --- local refinements (scoped to this diagram only) ---
 hide circle
-skinparam dpi 150
-skinparam nodesep 28
-skinparam ranksep 48
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 32
+skinparam ranksep 64
+skinparam roundCorner 6
+skinparam shadowing false
 skinparam note {
   BackgroundColor #FEF9E7
   BorderColor #B7950B
@@ -23,66 +27,68 @@ skinparam legendBorderColor #2E4053
 
 ' ===================== ENTITIES =====================
 
-entity "auth.users\n<<Supabase Auth>>" as Users #F4F6F7 {
+entity "auth.users" as Users #F4F6F7 {
   * id : uuid <<PK>>
   --
   email : text
-  created_at : timestamptz
 }
 
 entity "profiles" as Profiles #EBF5FB {
   * id : uuid <<PK, FK auth.users>>
   --
   * full_name : text
-  * email : text <<unique>>
-  * phone_number : text
-  profile_photo_url : text
-  * is_moderator : boolean = false
-  * role : user_role = citizen
+  * email : text
+  * role : user_role
   assigned_agency : issue_category
-  * created_at : timestamptz
-  * updated_at : timestamptz
-  --
-  CHECK: role = agency_admin => assigned_agency NOT NULL
+  profile_photo_url : text
 }
 
-entity "reports" as Reports {
+entity "reports  «aggregate root»" as Reports #FBFCFD {
   * id : uuid <<PK>>
-  .. Identitas & Lokasi ..
+  --
   * user_id : uuid <<FK profiles>>
-  * reporter_name : text
-  * reporter_email : text
-  * image_url : text
-  * description : text
-  * latitude : double precision
-  * longitude : double precision
-  * address : text
-  .. Klasifikasi & Prediksi AI ..
   * category : issue_category
   * ai_prediction : text
   * ai_confidence : numeric(5,4)
-  * ai_probabilities : jsonb
-  ai_model_name : text
-  ai_model_version : text
-  .. Assignment Instansi Terdekat ..
-  assigned_agency_id : text
-  assigned_agency_name : text
-  assigned_agency_category : issue_category
-  assigned_distance_meters : double precision
-  routing_method : text
-  .. Status & Verifikasi ..
-  * status : report_status = submitted
-  verified_by : uuid <<FK profiles>>
-  verified_at : timestamptz
-  rejection_reason : text
-  .. Bukti Penyelesaian ..
-  resolution_evidence_photo_url : text
-  resolution_note : text
-  resolved_by : uuid <<FK profiles>>
-  resolved_at : timestamptz
-  .. Audit Waktu ..
+  ai_probabilities : jsonb
+  * latitude : double precision
+  * longitude : double precision
+  * address : text
+  * visibility : report_visibility
+  duplicate_of : uuid <<FK reports>>
+  * status : report_status
   * created_at : timestamptz
-  * updated_at : timestamptz
+}
+
+entity "report_evidence" as Evidence #FEF5E7 {
+  * id : uuid <<PK>>
+  --
+  * report_id : uuid <<FK reports>>
+  * kind : evidence_kind
+  * bucket : text
+  * object_path : text
+  uploaded_by : uuid <<FK profiles>>
+}
+
+entity "report_assignments" as Assignments #FDF2E9 {
+  * id : uuid <<PK>>
+  --
+  * report_id : uuid <<FK reports>>
+  agency_id : text <<FK agencies>>
+  agency_category : issue_category
+  distance_meters : double precision
+  * status : assignment_status
+  assigned_by : uuid <<FK profiles>>
+}
+
+entity "agencies" as Agencies #EBF5FB {
+  * id : text <<PK>>
+  --
+  * name : text
+  * category : issue_category
+  latitude : double precision
+  longitude : double precision
+  is_active : boolean
 }
 
 entity "report_history" as History #F5EEF8 {
@@ -92,91 +98,46 @@ entity "report_history" as History #F5EEF8 {
   * status : report_status
   * note : text
   updated_by : uuid <<FK profiles>>
-  * created_at : timestamptz
 }
 
-entity "storage.objects\n<<bucket>> report-images (public)" as ReportImages #EAFAF1 {
-  * name : text <<path>>
+entity "report_sla" as Sla #EAFAF1 {
+  * report_id : uuid <<PK, FK reports>>
   --
-  path: {user_id}/<berkas>
-  image_url
-  resolution_evidence_photo_url
-}
-
-entity "storage.objects\n<<bucket>> profile-photos (public)" as ProfilePhotos #EAFAF1 {
-  * name : text <<path>>
-  --
-  path: {user_id}/<berkas>
-  profile_photo_url
+  first_response_due_at : timestamptz
+  resolution_due_at : timestamptz
+  breached_at : timestamptz
 }
 
 ' ===================== RELATIONSHIPS =====================
 
-Users ||--|| Profiles : "id (1:1)"
-note on link
-**trigger** handle_new_user()
-membuat baris profiles saat pendaftaran
-end note
+Users    ||--||  Profiles
+Profiles ||--o{  Reports     : "pelapor"
+Reports  ||--o{  Evidence
+Reports  ||--o{  Assignments
+Reports  ||--||  Sla
+Reports  ||--o{  History
+Reports  ||--o{  Reports     : "duplicate_of"
+Agencies ||--o{  Assignments
 
-Profiles ||--o{ Reports : "user_id  «pelapor»"
-Profiles ||--o{ Reports : "verified_by / resolved_by  «operator»"
-Profiles ||--o{ History  : "updated_by"
-Reports  ||--o{ History  : "report_id"
-Reports  ||..o{ ReportImages  : "URL (logis)"
-Profiles ||..o{ ProfilePhotos : "URL (logis)"
-
-' ===================== RLS / POLICY NOTES =====================
-
-note left of Profiles
-**RLS - profiles**
-**SELECT / UPDATE**: diri sendiri atau moderator
-**INSERT**: diri sendiri (auth.uid() = id)
-end note
-
-note right of Reports
-**RLS - reports : kebijakan per peran**
-**SELECT**: semua pengguna terautentikasi
-**INSERT**: pemilik (auth.uid() = user_id)
-**UPDATE** (reports_update_scoped):
-* Warga -> laporan miliknya
-* agency_admin -> category = assigned_agency
-* super_admin -> semua + reassign kategori
-end note
-
-note bottom of History
-**RLS - report_history**
-**SELECT**: semua terautentikasi
-**INSERT** (history_insert_scoped):
-updated_by = auth.uid() dan
-(admin atau pemilik laporan)
-end note
+' ===================== SINGLE PROJECTION NOTE =====================
 
 note bottom of Reports
-**RPC update_report_status()  -  security invoker**
-Memperbarui reports + menyisipkan report_history
-dalam satu transaksi. Menegakkan:
-* agency_admin hanya laporan instansinya
-* hanya super_admin boleh reassign kategori
-* status 'resolved' wajib foto bukti penyelesaian
-end note
-
-' ===================== ENUM CATALOG =====================
-
-note as N_enum #F8F9F9
-**Tipe enum PostgreSQL**
-**issue_category** (9): dinas_bina_marga, satpol_pp, dinas_perhubungan,
-kelurahan, dinas_pertamanan_hutan, dinas_sda, dinas_cipta_karya,
-badan_bumd, instansi_lain
-**report_status** (5): submitted -> verified -> in_progress -> resolved / rejected
-**user_role** (3): citizen, agency_admin, super_admin
+**Proyeksi-baca (sinkron trigger)**
+Kolom datar penugasan & bukti pada reports
+(image_url, assigned_*, resolution_*) adalah
+salinan baca yang disinkronkan trigger dari
+report_assignments & report_evidence, agar
+klien Realtime cukup membaca satu tabel.
+Berkas: bucket + object_path (privat),
+diakses via signed URL.
+Rincian kolom, enum, dan RLS: Lampiran D.
 end note
 
 legend right
 |= Notasi |= Arti |
-| * kolom | wajib (NOT NULL) |
-| PK / FK | primary / foreign key |
+| * | wajib (NOT NULL) |
+| PK / FK | kunci primer / asing |
 | crow's foot | relasi satu-ke-banyak |
-| garis putus-putus | tautan URL (bukan FK fisik) |
 endlegend
 
 @enduml

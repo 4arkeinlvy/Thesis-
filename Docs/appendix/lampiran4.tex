@@ -55,24 +55,105 @@ ai\_prediction & text & Kategori dinas yang diprediksi AI. \\
 ai\_confidence & numeric & Tingkat keyakinan model (0..1). \\
 ai\_probabilities & jsonb & Skor probabilitas untuk setiap dari sembilan instansi target. \\
 ai\_model\_* & text & Metadata model server-side, mencakup nama dan versi model. \\
-assigned\_* & text/float8 & Hasil routing instansi terdekat, mencakup identitas, nama, kategori, jarak, dan metode routing. \\
-image\_url & text & URL gambar pada Supabase Storage. \\
+assigned\_* & text/float8 & \textit{Proyeksi-baca} penugasan instansi terkini (sumber: \texttt{report\_assignments}). \\
+image\_url & text & \textit{Proyeksi-baca} referensi foto awal (sumber: \texttt{report\_evidence}). \\
 description & text & Narasi laporan dalam Bahasa Indonesia. \\
 latitude & float8 & Koordinat lintang lokasi kejadian. \\
 longitude & float8 & Koordinat bujur lokasi kejadian. \\
 address & text & Alamat hasil \textit{reverse geocoding}. \\
+visibility & report\_visibility & \textit{Enum} visibilitas (\textit{public}/\textit{private}). \\
+duplicate\_of & uuid (FK) & Menunjuk laporan asal bila laporan ini duplikat. \\
 status & report\_status & \textit{Enum} status (\textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}). \\
 verified\_by & uuid (FK) & Operator yang memverifikasi laporan. \\
 verified\_at & timestamptz & Waktu verifikasi. \\
 rejection\_reason & text & Alasan penolakan bila status \textit{rejected}. \\
-resolution\_* & text/\allowbreak{}uuid/\allowbreak{}timestamptz & Bukti dan metadata penyelesaian, mencakup foto bukti, catatan, petugas, dan waktu selesai. \\
+resolution\_* & text/\allowbreak{}uuid/\allowbreak{}timestamptz & \textit{Proyeksi-baca} bukti/metadata penyelesaian (sumber: \texttt{report\_evidence}). \\
 created\_at & timestamptz & Waktu laporan dikirim. \\
 updated\_at & timestamptz & Waktu perubahan terakhir. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section*{D.3 Tabel \texttt{report\_history}}
+Kolom \texttt{assigned\_*}, \texttt{image\_url}, dan \texttt{resolution\_*} pada tabel \texttt{reports} merupakan \textit{proyeksi-baca}: nilainya disinkronkan otomatis oleh \textit{trigger} \texttt{SECURITY DEFINER} dari tabel anak \texttt{report\_assignments} dan \texttt{report\_evidence} yang menjadi sumber kebenaran. Proyeksi ini dipertahankan agar klien Flutter yang membaca melalui Supabase \textit{Realtime} (\textit{stream} satu tabel) tetap menerima satu baris datar.
+
+\section*{D.3 Tabel \texttt{report\_evidence}}
+
+Tabel \texttt{report\_evidence} menyimpan banyak berkas bukti per laporan (foto awal, foto penyelesaian, atau bukti tambahan). Referensi penyimpanan dicatat sebagai pasangan \textit{bucket} dan \texttt{object\_path}, bukan URL final, sehingga URL akses dapat dibuat sebagai \textit{signed URL} berumur singkat saat dibutuhkan. Atribut utama dirangkum pada Tabel~\ref{tab:report-evidence}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_evidence}.}
+\label{tab:report-evidence}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik berkas bukti. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+kind & evidence\_kind & Jenis bukti (\textit{initial}, \textit{resolution}, \textit{additional}). \\
+bucket & text & Nama \textit{bucket} Supabase Storage. \\
+object\_path & text & Lintasan objek di dalam \textit{bucket}. \\
+content\_type & text & Tipe MIME berkas. \\
+uploaded\_by & uuid (FK) & Pengguna yang mengunggah. \\
+created\_at & timestamptz & Waktu unggah. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.4 Tabel \texttt{report\_assignments}}
+
+Tabel \texttt{report\_assignments} merekam riwayat penugasan instansi untuk tiap laporan, sehingga penugasan-ulang (\textit{reassignment}) dan eskalasi dapat ditelusuri. Hanya satu baris berstatus \textit{active} yang berlaku per laporan (dijamin indeks unik parsial). Atribut utama dirangkum pada Tabel~\ref{tab:report-assignments}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_assignments}.}
+\label{tab:report-assignments}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik penugasan. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+agency\_id & text & Referensi logis ke \texttt{agencies.id}. \\
+agency\_name & text & Nama instansi tujuan. \\
+agency\_category & issue\_category & Kategori instansi tujuan. \\
+distance\_meters & float8 & Jarak instansi dari koordinat laporan. \\
+routing\_method & text & Metode penentuan instansi terdekat. \\
+status & assignment\_status & \textit{Enum} status (\textit{active}, \textit{reassigned}, \textit{escalated}, \textit{superseded}). \\
+reason & text & Alasan penugasan/eskalasi. \\
+assigned\_by & uuid (FK) & Aktor penugasan (kosong bila otomatis). \\
+created\_at & timestamptz & Waktu penugasan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.5 Tabel \texttt{agencies}}
+
+Tabel \texttt{agencies} adalah registri instansi tujuan yang dirujuk oleh \texttt{report\_assignments}, menggantikan medan teks instansi yang sebelumnya tersimpan datar pada \texttt{reports}. Atribut utama dirangkum pada Tabel~\ref{tab:agencies}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{agencies}.}
+\label{tab:agencies}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & text (PK) & Identitas unit instansi. \\
+name & text & Nama instansi. \\
+category & issue\_category & Kategori dinas instansi. \\
+latitude & float8 & Koordinat lintang unit (opsional). \\
+longitude & float8 & Koordinat bujur unit (opsional). \\
+is\_active & bool & Penanda instansi aktif. \\
+created\_at / updated\_at & timestamptz & Waktu pembuatan dan perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.6 Tabel \texttt{report\_history}}
 
 Tabel \texttt{report\_history} mencatat setiap perubahan status pada laporan agar jejak audit (\textit{audit trail}) dapat ditelusuri dari awal pengiriman hingga penyelesaian. Atribut utama dirangkum pada Tabel~\ref{tab:report-history}.
 
@@ -95,23 +176,59 @@ created\_at & timestamptz & Waktu perubahan. \\
 \end{tabular}
 \end{table}
 
-\section*{D.4 \textit{Enum} Pendukung}
+\section*{D.7 Tabel \texttt{report\_sla}}
 
-Skema mendefinisikan tiga \textit{enum} kustom PostgreSQL yang dipakai bersama oleh tabel-tabel di atas, yaitu:
+Tabel \texttt{report\_sla} menyimpan tenggat layanan per laporan untuk memantau pemenuhan SLA; kebijakan SLA tingkat instansi diserahkan sebagai pengembangan lanjutan. Atribut utama dirangkum pada Tabel~\ref{tab:report-sla}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_sla}.}
+\label{tab:report-sla}
+\small
+\begin{tabular}{p{3.8cm} p{2.4cm} p{6.3cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+report\_id & uuid (PK, FK) & Mengacu ke \texttt{reports.id}. \\
+first\_response\_due\_at & timestamptz & Tenggat respons pertama. \\
+resolution\_due\_at & timestamptz & Tenggat penyelesaian. \\
+first\_response\_at & timestamptz & Waktu respons pertama tercapai. \\
+breached\_at & timestamptz & Waktu SLA terlanggar. \\
+created\_at / updated\_at & timestamptz & Waktu pembuatan dan perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{D.8 \textit{Enum} Pendukung}
+
+Skema mendefinisikan enam \textit{enum} kustom PostgreSQL yang dipakai bersama oleh tabel-tabel di atas, yaitu:
 
 \begin{itemize}
     \item \texttt{issue\_category}: kategori dinas dengan nilai sesuai sembilan kategori target pada Tabel~\ref{tab:kategori-target}.
     \item \texttt{report\_status}: status siklus hidup laporan, yaitu \textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}.
     \item \texttt{user\_role}: peran pengguna, yaitu \textit{citizen}, \textit{agency\_admin}, \textit{super\_admin}.
+    \item \texttt{evidence\_kind}: jenis bukti, yaitu \textit{initial}, \textit{resolution}, \textit{additional}.
+    \item \texttt{assignment\_status}: status penugasan, yaitu \textit{active}, \textit{reassigned}, \textit{escalated}, \textit{superseded}.
+    \item \texttt{report\_visibility}: visibilitas laporan, yaitu \textit{public}, \textit{private}.
 \end{itemize}
 
-\section*{D.5 \textit{Row Level Security}}
+\section*{D.9 \textit{Row Level Security} dan Penyimpanan}
 
-Kebijakan \textit{Row Level Security} (RLS) diaktifkan pada ketiga tabel agar akses data terkontrol pada level baris. Beberapa kebijakan utama yang dirancang adalah:
+Kebijakan \textit{Row Level Security} (RLS) diaktifkan pada seluruh tabel agar akses data terkontrol pada level baris. Beberapa kebijakan utama yang dirancang adalah:
 
 \begin{itemize}
     \item Setiap pelapor hanya dapat membaca dan memperbarui baris \texttt{reports} miliknya sendiri (\(\texttt{auth.uid()} = \texttt{user\_id}\)).
     \item Petugas dengan \texttt{role = 'agency\_admin'} dapat membaca dan memperbarui laporan pada \texttt{assigned\_agency} yang sesuai dengan \texttt{category}.
-    \item Admin dengan \texttt{role = 'super\_admin'} memiliki akses lintas instansi, termasuk koreksi penugasan.
-    \item Tabel \texttt{report\_history} hanya dapat ditulis melalui pemicu (\textit{trigger}) basis data saat status \texttt{reports} berubah.
+    \item Admin dengan \texttt{role = 'super\_admin'} memiliki akses lintas instansi, termasuk koreksi penugasan; penulisan tabel \texttt{agencies} dibatasi pada peran ini.
+    \item Tabel anak \texttt{report\_evidence} dan \texttt{report\_assignments} hanya dapat dibaca oleh pengguna terautentikasi; penulisannya dilakukan eksklusif melalui \textit{trigger} \texttt{SECURITY DEFINER} sehingga tidak ada kebijakan \texttt{INSERT} langsung.
+    \item Tabel \texttt{report\_history} hanya ditulis melalui RPC/pemicu basis data saat status \texttt{reports} berubah.
 \end{itemize}
+
+Berkas disimpan pada \textit{bucket} privat \texttt{report-images} dan \texttt{profile-photos}. Kebijakan unggah membatasi penulisan objek ke prefiks \texttt{\{user\_id\}/} milik pengguna, sedangkan pembacaan dilakukan melalui \textit{signed URL} berumur singkat yang dibuat atas dasar kebijakan \texttt{SELECT} untuk pengguna terautentikasi; basis data menyimpan \textit{bucket} dan \texttt{object\_path}, bukan URL final. Skema \texttt{storage} bawaan Supabase ditunjukkan pada Gambar~\ref{fig:storage-schema}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{supabase/storage_schema.png}
+    \caption{Skema \texttt{storage} yang dikelola Supabase. Aplikasi hanya merujuk secara logis tabel \texttt{objects} (melalui \texttt{bucket\_id} serta \texttt{name}/\texttt{object\_path}) dan \texttt{buckets}; tabel lain seperti \texttt{s3\_multipart\_uploads} dan \texttt{vector\_indexes} merupakan internal Supabase Storage dan tidak digunakan aplikasi.}
+    \label{fig:storage-schema}
+\end{figure}

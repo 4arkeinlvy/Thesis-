@@ -1,0 +1,71 @@
+@startuml class_diagram_4
+!include _thesis_style.puml
+hide empty members
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 24
+
+' Bagian 4/4: model domain dan enum kategori instansi target.
+
+package "model domain" <<Model Domain>> {
+    class CityReport <<model>> {
+        +id: String
+        +category: IssueCategory
+        +aiConfidence: double
+        +aiProbabilities: Map
+        +status: ReportStatus
+        +assignment: ReportAssignment?
+        +{static} fromMap(map) : CityReport
+    }
+    class ReportHistoryEntry <<model>> {
+        +reportId: String
+        +status: ReportStatus
+        +note: String
+    }
+    class AiPrediction <<model>> {
+        +category: IssueCategory
+        +confidence: double
+        +assignment: ReportAssignment?
+        +topPredictions(n) : List
+    }
+    class ReportAssignment <<model>> {
+        +agencyId: String
+        +agencyCategory: IssueCategory
+        +distanceMeters: double
+    }
+    class ReportLocationData <<model>> {
+        +latitude: double
+        +longitude: double
+        +address: String
+    }
+    enum IssueCategory <<9 kelas target>> {
+        dinasBinaMarga
+        satpolPP
+        dinasPerhubungan
+        kelurahan
+        dinasPertamananHutan
+        dinasSDA
+        dinasCiptaKarya
+        badanBUMD
+        instansiLain
+        --
+        +dbValue / cloudId / label
+    }
+    enum ReportStatus {
+        submitted
+        verified
+        inProgress
+        resolved
+        rejected
+    }
+}
+
+AiPrediction --> IssueCategory
+AiPrediction o-- "0..1" ReportAssignment
+ReportAssignment --> IssueCategory
+CityReport *-- IssueCategory
+CityReport *-- ReportStatus
+CityReport o-- "0..1" ReportAssignment
+ReportHistoryEntry --> ReportStatus
+@enduml

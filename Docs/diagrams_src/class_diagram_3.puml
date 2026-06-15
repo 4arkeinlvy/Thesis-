@@ -1,0 +1,65 @@
+@startuml class_diagram_3
+!include _thesis_style.puml
+hide empty members
+skinparam dpi 200
+skinparam linetype polyline
+skinparam nodesep 30
+skinparam ranksep 55
+
+' Bagian 3/4: controller pembuatan laporan, repositori dengan
+' antarmuka tersegregasi, dan strategi cakupan per peran.
+
+package "features.reports" <<Modul Laporan>> {
+    class CreateReportController <<Notifier>> {
+        -aiService: AiClassificationService
+        -reportsRepository: ReportsRepository
+        +classifyImage() : Future<void>
+        +updateCategory(c: IssueCategory) : void
+        +submit() : Future<void>
+    }
+    class CreateReportState <<state>> {
+        +prediction: AiPrediction?
+        +selectedCategory: IssueCategory?
+        +location: ReportLocationData?
+        +canSubmit: bool
+    }
+    interface ReportsReader <<interface>> {
+        +watchByUser(userId) : Stream<List<CityReport>>
+        +watchByCategory(c) : Stream<List<CityReport>>
+        +watchAll() : Stream<List<CityReport>>
+        +watchHistory(id) : Stream<List<ReportHistoryEntry>>
+    }
+    interface ReportAdminActions <<interface>> {
+        +verify(id, note) : Future<CityReport>
+        +markResolved(id, photo, note) : Future<CityReport>
+        +reject(id, reason) : Future<CityReport>
+        +reassign(id, newAgency, note) : Future<CityReport>
+    }
+    class ReportsRepository {
+        -client: SupabaseClient
+        +submitReport(...) : Future<CityReport>
+    }
+    abstract class ReportsScope <<sealed>> {
+        +watch(r: ReportsReader) : Stream<List<CityReport>>
+        +{static} forRole(role, userId) : ReportsScope
+    }
+    class CitizenScope <<scope>>
+    class AgencyScope <<scope>>
+    class GlobalScope <<scope>>
+}
+
+CreateReportController *-- CreateReportState
+CreateReportController --> ReportsRepository
+ReportsRepository ..|> ReportsReader
+ReportsRepository ..|> ReportAdminActions
+ReportsScope <|-- CitizenScope
+ReportsScope <|-- AgencyScope
+ReportsScope <|-- GlobalScope
+
+note as N3
+  ReportsScope membaca data melalui ReportsReader
+  (lihat parameter watch(r: ReportsReader)).
+  AiClassificationService dirinci pada Gambar 3.12;
+  CityReport/AiPrediction pada Gambar 3.15.
+end note
+@enduml

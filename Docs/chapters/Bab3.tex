@@ -498,7 +498,7 @@ Model yang digunakan dapat disimpan sebagai artefak pada server atau pada \texti
 
 \subsection{Endpoint \texttt{/health} dan \texttt{/predict}}
 
-Server menyediakan dua \textit{endpoint} utama, yaitu \texttt{/health} (GET) sebagai \textit{health check} ringan dan \texttt{/predict} (POST \textit{multipart}) sebagai \textit{endpoint} klasifikasi. Endpoint \texttt{/predict} menerima foto laporan, teks laporan, latitude, dan longitude. Spesifikasi \textit{endpoint} dirangkum pada Tabel~\ref{tab:endpoints}.
+Server menyediakan tiga \textit{endpoint}, yaitu \texttt{/health} (GET) sebagai \textit{health check} ringan, \texttt{/predict} (POST \textit{multipart}) sebagai \textit{endpoint} klasifikasi, dan \texttt{/reload-agencies} (POST) untuk memuat ulang registri instansi dari basis data ke \textit{cache} tanpa me-restart server. Endpoint \texttt{/predict} menerima foto laporan, teks laporan, latitude, dan longitude. Spesifikasi \textit{endpoint} dirangkum pada Tabel~\ref{tab:endpoints}.
 
 \begin{table}[htbp]
 \centering
@@ -508,8 +508,9 @@ Server menyediakan dua \textit{endpoint} utama, yaitu \texttt{/health} (GET) seb
 \toprule
 \textbf{Path} & \textbf{Method} & \textbf{Masukan} & \textbf{Keluaran} \\
 \midrule
-\texttt{/health} & GET & (tidak ada) & JSON \texttt{\{status, encoders, gpu\}} \\
+\texttt{/health} & GET & (tidak ada) & JSON \texttt{\{status, encoders, gpu, agencies\_source, agencies\_count\}} \\
 \texttt{/predict} & POST & \textit{multipart}: \texttt{image} (file), \texttt{laporan} (string), \texttt{latitude}, \texttt{longitude} & JSON \texttt{PredictResponse} berisi prediksi, confidence, probabilitas per kelas, dan assignment instansi terdekat \\
+\texttt{/reload-agencies} & POST & (opsional) header \texttt{X-Reload-Token} & JSON \texttt{\{source, count\}}; memuat ulang registri instansi dari Supabase ke \textit{cache} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -524,6 +525,33 @@ Output proses inferensi terdiri atas kelas prediksi, nilai \textit{confidence}, 
 
 Nilai \textit{confidence} digunakan sebagai indikator pendukung pengambilan keputusan. Apabila nilai \textit{confidence} berada di atas ambang yang ditentukan, laporan dapat diarahkan otomatis ke instansi terdekat yang relevan dengan kelas prediksi. Apabila \textit{confidence} berada di bawah ambang, laporan tetap disimpan bersama skor probabilitasnya, tetapi ditandai untuk validasi manual oleh petugas agar risiko kesalahan klasifikasi tidak disembunyikan.
 
+\subsection{Registri Instansi, Perutean Lokasi, dan Strategi Sumber Data}
+\label{subsec:registri-instansi}
+
+Keluaran klasifikasi berupa satu dari sembilan kategori instansi, sedangkan penugasan operasional membutuhkan kantor fisik yang konkret beserta koordinatnya. Kedua hal ini berada pada tingkat granularitas yang berbeda: \emph{kategori} bersifat logis (sembilan kelas keluaran model sesuai \texttt{TARGET\_CLASSES}), sementara \emph{kantor} bersifat fisik dan dapat berjumlah lebih dari satu untuk tiap kategori. Sebagai contoh, kategori \textit{Dinas Bina Marga} dilayani oleh kantor dinas tingkat provinsi sekaligus suku dinas pada beberapa kota administrasi. Oleh karena itu sembilan kategori dipetakan ke 16 entri kantor pada registri instansi sebagai relasi satu-ke-banyak; angka 16 bukan perluasan ruang kelas model, melainkan pencacahan lokasi kantor tujuan yang menjadi kandidat perutean.
+
+Perutean berlangsung dua tahap. Tahap pertama, model memilih kategori \(\hat{y} = \arg\max_{k \in \{1,\dots,9\}} P(y = k \mid x)\). Tahap kedua, di antara seluruh kantor aktif yang berkategori \(\hat{y}\), sistem memilih kantor dengan jarak \textit{haversine} terkecil terhadap koordinat laporan \(\ell_{\text{lap}} = (\textit{lat}, \textit{lon})\):
+
+\begin{equation}
+    a^{\star} = \arg\min_{a \in \mathcal{A}_{\hat{y}}} d_{\text{haversine}}\!\left(\ell_{\text{lap}}, \ell_a\right),
+    \label{eq:nearest-agency}
+\end{equation}
+
+\noindent dengan \(\mathcal{A}_{\hat{y}}\) himpunan kantor aktif berkategori \(\hat{y}\) dan \(\ell_a\) koordinat kantor \(a\). Apabila \(\mathcal{A}_{\hat{y}} = \emptyset\), sistem jatuh ke kategori \textit{Instansi lain} sebagai unit peninjauan manual sehingga laporan tidak pernah gagal dirutekan.
+
+Pengelolaan data kantor memiliki tiga opsi rancangan: (A)~\textit{hardcode} pada kode server, (B)~berkas konfigurasi yang dimuat saat \textit{startup}, dan (C)~tabel basis data sebagai \textit{system of record}. Opsi A melanggar prinsip pemisahan data dari logika---mengubah koordinat menuntut \textit{deploy} ulang kode---dan menyulitkan penelusuran asal-usul data (\textit{provenance}). Opsi B memperbaiki kedua hal tersebut, namun belum memungkinkan pengelolaan oleh administrator non-pengembang saat \textit{runtime}. Penelitian ini mengadopsi Opsi C: tabel \texttt{agencies} pada Supabase menjadi \textit{system of record} ternormalisasi yang dirujuk \texttt{report\_assignments.agency\_id} melalui \textit{foreign key}, dengan hak tulis dibatasi peran super admin melalui kebijakan RLS \texttt{agencies\_write\_super\_admin}.
+
+Agar server inferensi tidak bergantung pada ketersediaan basis data pada setiap permintaan, registri dibaca \emph{satu kali} saat \textit{startup} lalu disimpan pada \textit{cache} memori; permintaan \texttt{/predict} berikutnya melakukan perutean murni dari \textit{cache} tanpa kueri basis data sehingga latensi prediksi tidak terdampak. Apabila basis data tidak terjangkau, server secara otomatis jatuh (\textit{graceful degradation}) ke berkas \texttt{agencies\_seed.json} yang dibundel bersama server sehingga perutean tetap berfungsi. Berkas yang sama berperan ganda: sebagai \textit{seed} awal tabel \texttt{agencies} dan sebagai jembatan pemetaan antara nilai \textit{enum} \texttt{issue\_category} (\textit{slug}) di basis data dengan label kategori yang dipakai algoritma perutean, sehingga kode Python, klien Flutter (enum \texttt{IssueCategory}), dan basis data merujuk pada satu definisi instansi yang konsisten (\textit{single source of truth}).
+
+Perubahan data oleh super admin dilakukan melalui antarmuka pengelolaan registri pada aplikasi Flutter, kemudian dipublikasikan ke mesin perutean melalui \textit{endpoint} \texttt{/reload-agencies} yang memuat ulang \textit{cache} server tanpa \textit{restart}; alur lengkap pengelolaannya ditunjukkan pada Gambar~\ref{fig:activity-agency-registry}. Dengan demikian rancangan ini menggabungkan keunggulan Opsi C (ternormalisasi, dapat dikelola administrator, ber-\textit{provenance}) dengan ketahanan operasional berkat \textit{fallback} berbasis berkas. Koordinat tiap kantor diperoleh melalui \textit{geocoding} alamat resmi (OpenStreetMap Nominatim): empat dinas tingkat provinsi (Bina Marga, Perhubungan, Sumber Daya Air, dan Cipta Karya) berkantor di Gedung Dinas Teknis Jl.\ Taman Jatibaru; Satuan Polisi Pamong Praja dan Badan Pembinaan BUMD di kompleks Balai Kota; sedangkan suku dinas tingkat kota administrasi diproksikan ke kompleks Kantor Walikota kotamadya tempatnya berkedudukan, dengan \textit{provenance} per kantor dicatat pada metadata \texttt{agencies\_seed.json}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth, height=0.5\textheight, keepaspectratio]{bab_3/activity_agency_registry.png}
+    \caption{\textit{Activity diagram} pengelolaan registri instansi oleh super admin: penyuntingan data dengan penegakan RLS \texttt{agencies\_write\_super\_admin}, lalu pemuatan ulang \textit{cache} server inferensi melalui \texttt{/reload-agencies} dengan \textit{fallback} ke \texttt{agencies\_seed.json} bila basis data tidak terjangkau.}
+    \label{fig:activity-agency-registry}
+\end{figure}
+
 \subsection{Dockerization}
 
 Server dikemas dalam kontainer Docker yang mengikuti pola \textit{multi-stage build}. \textit{Base image} berbasis CUDA 12.1 dengan \textit{cuDNN}, lapisan instalasi Python 3.11 dan dependensi inferensi (\texttt{onnxruntime-gpu}, \texttt{fastapi}, \texttt{uvicorn}, \texttt{python-multipart}), serta lapisan penyalinan kode dan \textit{artifact} ONNX. \textit{Entrypoint} menjalankan \texttt{uvicorn} pada \textit{host} \texttt{0.0.0.0} \textit{port} 8000 dengan satu \textit{worker}. Berkas Docker Compose mendefinisikan layanan \textit{server} dengan reservasi GPU dan \textit{volume read-only} untuk \textit{artifact} model.
@@ -533,18 +561,26 @@ Server dikemas dalam kontainer Docker yang mengikuti pola \textit{multi-stage bu
 \label{sec:db-schema}
 % =====================================================================
 
-Basis data \textit{cloud} aplikasi diimplementasikan pada Supabase yang berbasis PostgreSQL. Skema basis data dirancang untuk menyimpan profil pengguna (\texttt{profiles}), laporan warga (\texttt{reports}), riwayat perubahan status laporan (\texttt{report\_history}), metadata prediksi multiclass, hasil penugasan instansi terdekat, dan bukti penyelesaian laporan. Skema ER lengkap ditunjukkan pada Gambar~\ref{fig:db-schema}.
+Basis data \textit{cloud} aplikasi diimplementasikan pada Supabase yang berbasis PostgreSQL. Skema dirancang ternormalisasi dengan tabel \texttt{reports} sebagai akar agregat (\textit{aggregate root}) dan memindahkan konsep bernilai jamak serta historis ke tabel anak khusus, yaitu bukti penyelesaian (\texttt{report\_evidence}), riwayat penugasan instansi (\texttt{report\_assignments}), audit status (\texttt{report\_history}), dan tenggat layanan (\texttt{report\_sla}); registri instansi tujuan disimpan pada tabel \texttt{agencies}, sedangkan profil pengguna pada tabel \texttt{profiles}. Skema ER lengkap ditunjukkan pada Gambar~\ref{fig:db-schema}.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{bab_3/erd_report_prediction_assignment.png}
-    \caption{Skema basis data Supabase untuk laporan, prediksi, penugasan instansi, dan bukti penyelesaian.}
+    \caption{Skema basis data Supabase ternormalisasi: akar agregat \texttt{reports} dengan tabel anak bukti, penugasan, audit, dan SLA, serta proyeksi-baca yang disinkronkan \textit{trigger} untuk klien \textit{Realtime}.}
     \label{fig:db-schema}
 \end{figure}
 
 \subsection{Ringkasan Tabel dan Kontrol Akses}
 
-Skema basis data terdiri atas tiga tabel inti dan tiga \textit{enum} pendukung. Tabel \texttt{profiles} terhubung satu-ke-satu dengan \texttt{auth.users} milik Supabase Auth dan menyimpan nama, kontak, peran (\texttt{user\_role}), serta instansi penugasan operator. Tabel \texttt{reports} adalah tabel utama yang menampung laporan warga lengkap dengan keluaran model (\texttt{ai\_prediction}, \texttt{ai\_confidence}, \texttt{ai\_probabilities} dalam format \texttt{jsonb}, dan metadata model), hasil routing instansi terdekat (\texttt{assigned\_*}), koordinat lintang dan bujur, status siklus hidup (\texttt{report\_status}), serta bukti penyelesaian. Tabel \texttt{report\_history} mencatat setiap perubahan status sebagai jejak audit yang ditulis hanya melalui \textit{trigger} basis data. Kebijakan \textit{Row Level Security} (RLS) memastikan pelapor hanya melihat laporan miliknya, petugas hanya mengakses kategori sesuai \texttt{assigned\_agency}, dan administrator memiliki akses lintas instansi. Rincian kolom seluruh tabel, daftar lengkap nilai \textit{enum}, serta kebijakan RLS disajikan pada Lampiran~\ref{app:db-schema-detail}.
+Skema basis data terdiri atas tujuh tabel dan enam \textit{enum} pendukung. Tabel \texttt{profiles} terhubung satu-ke-satu dengan \texttt{auth.users} milik Supabase Auth dan menyimpan nama, kontak, peran (\texttt{user\_role}), serta instansi penugasan operator. Tabel \texttt{reports} adalah akar agregat yang menyimpan identitas pelapor, narasi, koordinat, keluaran model (\texttt{ai\_prediction}, \texttt{ai\_confidence}, \texttt{ai\_probabilities} dalam format \texttt{jsonb}, dan metadata model), status siklus hidup (\texttt{report\_status}), visibilitas (\texttt{report\_visibility}), serta penanda duplikasi (\texttt{duplicate\_of}). Konsep bernilai jamak dipindahkan ke tabel anak: \texttt{report\_evidence} menampung banyak berkas bukti per laporan (foto awal maupun foto penyelesaian), \texttt{report\_assignments} merekam riwayat penugasan dan penugasan-ulang instansi, \texttt{report\_history} mencatat audit perubahan status, dan \texttt{report\_sla} menyimpan tenggat layanan; tabel \texttt{agencies} menjadi registri instansi tujuan yang dirujuk oleh penugasan. Kebijakan \textit{Row Level Security} (RLS) memastikan pelapor hanya melihat laporan miliknya, petugas hanya mengakses kategori sesuai \texttt{assigned\_agency}, dan administrator memiliki akses lintas instansi. Rincian kolom seluruh tabel, daftar lengkap nilai \textit{enum}, serta kebijakan RLS disajikan pada Lampiran~\ref{app:db-schema-detail}.
+
+Tabel \texttt{agencies} berperan sebagai registri instansi tujuan perutean (\textit{system of record}) yang dirujuk oleh \texttt{report\_assignments.agency\_id} melalui \textit{foreign key}, dan hak tulisnya dibatasi pada peran super admin melalui kebijakan RLS \texttt{agencies\_write\_super\_admin}. Strategi sumber data registri, mekanisme pembacaannya oleh server inferensi (termasuk \textit{caching} dan \textit{fallback}), pemetaan kategori-ke-kantor, serta \textit{provenance} koordinat dibahas tersendiri pada Sub-bab~\ref{subsec:registri-instansi}.
+
+Pemisahan tabel anak ini menghindari rancangan yang menumpuk seluruh konsep pada satu tabel sehingga fitur produksi seperti bukti ganda, penugasan-ulang, eskalasi, penautan laporan duplikat, dan pemantauan SLA dapat ditambahkan tanpa membongkar skema. Agar klien Flutter yang membaca melalui Supabase \textit{Realtime} (\textit{stream} satu tabel \texttt{reports}) tetap bekerja, kolom datar pada \texttt{reports} dipertahankan sebagai \textit{proyeksi-baca} yang disinkronkan otomatis oleh \textit{trigger} \texttt{SECURITY DEFINER}: setiap tulisan pada \texttt{reports} diproyeksikan ke \texttt{report\_evidence} dan \texttt{report\_assignments}, sementara tabel anak menjadi sumber kebenaran historis. Pola \textit{Command Query Responsibility Segregation} ringan ini menyeimbangkan normalisasi dengan kebutuhan pembacaan \textit{realtime} berbasis tabel.
+
+Berkas bukti dan foto profil disimpan pada \textit{bucket} privat Supabase Storage. Mengikuti praktik produksi, basis data tidak menyimpan URL final melainkan pasangan \textit{bucket} dan \texttt{object\_path} pada \texttt{report\_evidence}; URL akses dibuat sebagai \textit{signed URL} berumur singkat saat berkas hendak ditampilkan. Pendekatan ini mencegah tautan yang dapat kedaluwarsa atau bocor mengekspos foto warga yang berpotensi memuat data pribadi, dan memisahkan referensi penyimpanan secara logis (bukan \textit{foreign key} fisik) dari basis data relasional.
+
+Otentikasi pengguna ditangani oleh Supabase Auth dengan metode surel dan kata sandi. Proses registrasi memicu verifikasi surel, yaitu tautan konfirmasi dikirim ke alamat pengguna dan sesi baru menjadi aktif setelah verifikasi, sedangkan pemulihan kata sandi dilakukan melalui tautan \textit{reset} yang juga dikirim melalui surel. Pengiriman seluruh surel transaksional tersebut difasilitasi oleh layanan SMTP yang terhubung dengan Supabase Auth. Pada prototipe ini digunakan SMTP bawaan Supabase yang memiliki batas laju pengiriman sehingga memadai untuk pengujian, dan dapat diganti dengan penyedia SMTP khusus (misalnya SendGrid atau Resend) pada penerapan produksi tanpa mengubah kode aplikasi.
 
 \subsection{Bukti Penyelesaian Laporan}
 
@@ -607,13 +643,41 @@ Melihat Riwayat/Peta & Warga Pelapor & Lihat daftar dan lokasi laporan tersimpan
 
 \subsection{Class Diagram}
 
-\textit{Class diagram} memetakan kelas-kelas utama pada aplikasi Flutter dan disusun mengikuti praktik desain produksi, bukan sekadar daftar kelas. Tiga keputusan desain ditonjolkan. Pertama, \textit{interface segregation}: kelas \texttt{ReportsRepository} merealisasikan dua antarmuka terpisah, yaitu \texttt{ReportsReader} (operasi baca berbasis \textit{stream} untuk warga dan admin) dan \texttt{ReportAdminActions} (operasi mutasi untuk moderator dan \textit{super-admin}), sehingga layar yang hanya membaca tidak terekspos pada operasi yang mengubah keadaan. Kedua, \textit{strategy pattern} pada hierarki \texttt{ReportsScope} yang bersifat \textit{sealed} (\texttt{CitizenScope}, \texttt{AgencyScope}, \texttt{GlobalScope}) untuk menentukan cakupan laporan yang terlihat berdasarkan peran pengguna yang juga dimodelkan sebagai hierarki \textit{sealed} \texttt{UserRole}. Ketiga, pemisahan tegas antara \textit{service} klasifikasi awan (\texttt{CloudClassificationService} beserta \textit{data transfer object} \texttt{CloudPrediction}) dan model domain (\texttt{CityReport}, \texttt{AiPrediction}, \texttt{ReportAssignment}) yang dipetakan satu-ke-satu ke tabel Supabase. Abstraksi \texttt{AiClassificationService} memiliki dua implementasi, yaitu \texttt{CloudAiClassificationService} (jalur produksi) dan \texttt{DemoAiClassificationService} (\textit{stub} deterministik untuk mode pengujian). Diagram ditunjukkan pada Gambar~\ref{fig:class-diagram}.
+\textit{Class diagram} memetakan kelas-kelas utama pada aplikasi Flutter dan disusun mengikuti praktik desain produksi, bukan sekadar daftar kelas. Tiga keputusan desain ditonjolkan. Pertama, \textit{interface segregation}: kelas \texttt{ReportsRepository} merealisasikan dua antarmuka terpisah, yaitu \texttt{ReportsReader} (operasi baca berbasis \textit{stream} untuk warga dan admin) dan \texttt{ReportAdminActions} (operasi mutasi untuk moderator dan \textit{super-admin}), sehingga layar yang hanya membaca tidak terekspos pada operasi yang mengubah keadaan. Kedua, \textit{strategy pattern} pada hierarki \texttt{ReportsScope} yang bersifat \textit{sealed} (\texttt{CitizenScope}, \texttt{AgencyScope}, \texttt{GlobalScope}) untuk menentukan cakupan laporan yang terlihat berdasarkan peran pengguna yang juga dimodelkan sebagai hierarki \textit{sealed} \texttt{UserRole}. Ketiga, pemisahan tegas antara \textit{service} klasifikasi awan (\texttt{CloudClassificationService} beserta \textit{data transfer object} \texttt{CloudPrediction}) dan model domain (\texttt{CityReport}, \texttt{AiPrediction}, \texttt{ReportAssignment}) yang dipetakan satu-ke-satu ke tabel Supabase. Abstraksi \texttt{AiClassificationService} memiliki dua implementasi, yaitu \texttt{CloudAiClassificationService} (jalur produksi) dan \texttt{DemoAiClassificationService} (\textit{stub} deterministik untuk mode pengujian). Karena cakupannya luas, \textit{class diagram} dipecah menjadi lima bagian fokus yang saling melengkapi agar setiap kelas tetap terbaca pada ukuran cetak: (1) lapisan layanan inti pada Gambar~\ref{fig:class-diagram}, (2) modul otentikasi dan peran pengguna pada Gambar~\ref{fig:class-diagram-auth}, (3) modul laporan dengan repositori dan strategi cakupan pada Gambar~\ref{fig:class-diagram-reports}, (4) model domain dan enum kategori instansi pada Gambar~\ref{fig:class-diagram-domain}, serta (5) modul administrasi registri instansi pada Gambar~\ref{fig:class-diagram-admin}. Enum \texttt{IssueCategory} (sembilan kelas instansi target) menjadi penghubung antarbagian dan dirinci penuh pada Gambar~\ref{fig:class-diagram-domain}.
 
-\begin{figure}[p]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[angle=90, height=0.92\textheight, width=\textwidth, keepaspectratio]{bab_3/class_diagram_flutter.png}
-    \caption{\textit{Class diagram} aplikasi Flutter SmartCityApps yang menonjolkan pola desain produksi: antarmuka tersegregasi \texttt{ReportsReader}/\texttt{ReportAdminActions}, hierarki \textit{sealed} \texttt{UserRole} dan \texttt{ReportsScope} (\textit{strategy}), \textit{service} klasifikasi awan beserta DTO, serta model domain dan enum sembilan kelas instansi target. Gambar dirotasi 90\textdegree{} agar seluruh kelas dan relasi tetap terbaca.}
+    \includegraphics[width=\textwidth, keepaspectratio]{bab_3/class_diagram_1.png}
+    \caption{\textit{Class diagram} bagian 1 dari 5, lapisan layanan inti: abstraksi \texttt{AiClassificationService} dengan implementasi \textit{cloud} dan \textit{demo}, klien \texttt{CloudClassificationService} beserta DTO \texttt{CloudPrediction}, serta layanan lokasi dan media.}
     \label{fig:class-diagram}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth, keepaspectratio]{bab_3/class_diagram_2.png}
+    \caption{\textit{Class diagram} bagian 2 dari 5, modul otentikasi: \texttt{AuthRepository} berbasis Supabase, model \texttt{UserProfile}, dan hierarki \textit{sealed} \texttt{UserRole} dengan tiga peran (\texttt{Citizen}, \texttt{AgencyAdmin}, \texttt{SuperAdmin}).}
+    \label{fig:class-diagram-auth}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth, keepaspectratio]{bab_3/class_diagram_3.png}
+    \caption{\textit{Class diagram} bagian 3 dari 5, modul laporan: \texttt{CreateReportController}, \texttt{ReportsRepository} dengan antarmuka tersegregasi \texttt{ReportsReader}/\texttt{ReportAdminActions}, dan strategi cakupan \textit{sealed} \texttt{ReportsScope} per peran pengguna.}
+    \label{fig:class-diagram-reports}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth, keepaspectratio]{bab_3/class_diagram_4.png}
+    \caption{\textit{Class diagram} bagian 4 dari 5, model domain: \texttt{CityReport}, \texttt{AiPrediction}, \texttt{ReportAssignment}, \texttt{ReportHistoryEntry}, \texttt{ReportLocationData}, serta enum \texttt{IssueCategory} (sembilan kelas) dan \texttt{ReportStatus}.}
+    \label{fig:class-diagram-domain}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth, keepaspectratio]{bab_3/class_diagram_5.png}
+    \caption{\textit{Class diagram} bagian 5 dari 5, modul administrasi registri instansi: \texttt{AgencyRegistryScreen} dan \texttt{AgencyRegistryRepository} (operasi CRUD ke tabel \texttt{agencies} serta pemuatan ulang \textit{cache} server melalui \texttt{/reload-agencies}), beserta model \texttt{Agency} dan \texttt{AgencyReloadResult}. Penulisan dibatasi peran super admin melalui RLS \texttt{agencies\_write\_super\_admin}.}
+    \label{fig:class-diagram-admin}
 \end{figure}
 
 \subsection{Sequence Diagram}
@@ -677,6 +741,8 @@ Perhitungan jarak menggunakan formula Haversine karena koordinat berada pada per
 \end{equation}
 
 dengan \(R\) adalah jari-jari bumi dan \(a\) dihitung dari selisih lintang serta bujur. Hasil routing yang dikembalikan backend meliputi \texttt{agency\_id}, \texttt{agency\_name}, \texttt{agency\_category}, \texttt{distance\_meters}, dan \texttt{routing\_method}.
+
+Perlu ditegaskan bahwa daftar instansi beserta koordinatnya pada prototipe ini merupakan data contoh representatif (\textit{seeded}) yang ditanamkan pada layanan, bukan registri resmi yang memuat seluruh unit instansi se-DKI Jakarta. Selain itu, perutean berbasis jarak Haversine merupakan penyederhanaan; pada praktik pemerintahan, penugasan laporan umumnya mengikuti batas wilayah administratif (kelurahan atau kecamatan) yang menaungi lokasi kejadian, bukan semata kantor yang terdekat secara garis lurus. Pada penerapan produksi, koordinat instansi idealnya diisi melalui registrasi lokasi mandiri oleh masing-masing Operator Instansi atau diambil dari registri resmi pemerintah; mekanisme tersebut dibahas sebagai arah pengembangan lanjutan pada Bab~\ref{ch:simpulan}.
 
 \subsection{Kasus Confidence Rendah dan Fallback}
 

@@ -1,5 +1,6 @@
 @startuml kerangka_deployment
 !theme plain
+skinparam dpi 200
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam defaultFontName "Helvetica"

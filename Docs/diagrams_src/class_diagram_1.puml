@@ -1,0 +1,61 @@
+@startuml class_diagram_1
+!include _thesis_style.puml
+hide empty members
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 14
+skinparam ranksep 24
+
+' Bagian 1/4: lapisan layanan inti (klasifikasi, lokasi, media).
+
+package "core.services" <<Layanan Inti>> {
+    interface AiClassificationService <<interface>> {
+        +classify(image, description, location) : Future<AiPrediction>
+    }
+    class CloudAiClassificationService {
+        -client: CloudClassificationService
+        +classify(...) : Future<AiPrediction>
+    }
+    class DemoAiClassificationService {
+        +classify(...) : Future<AiPrediction>
+    }
+    class CloudClassificationService {
+        +baseUrl: String
+        +classify(...) : Future<CloudPrediction>
+        +healthCheck() : Future<bool>
+    }
+    class CloudPrediction <<DTO>> {
+        +predictedDinasId: int
+        +confidence: double
+        +reviewRequired: bool
+        +assignment: ReportAssignment?
+    }
+    class LocationService {
+        +getCoordinates() : Future<Position>
+        +reverseGeocode(...) : Future<String>
+    }
+    class MediaService {
+        +pickFromCamera() : Future<XFile?>
+        +pickFromGallery() : Future<XFile?>
+    }
+    class StorageUrls <<utility>> {
+        +{static} isStorageRef(value) : bool
+        +{static} signed(stored) : Future<String>
+    }
+}
+
+AiClassificationService <|.. CloudAiClassificationService
+AiClassificationService <|.. DemoAiClassificationService
+CloudAiClassificationService --> CloudClassificationService
+CloudClassificationService ..> CloudPrediction : creates
+
+note bottom of CloudPrediction
+  AiPrediction & ReportAssignment dirinci
+  pada diagram model domain (Gambar 3.15).
+end note
+
+note bottom of StorageUrls
+  Bucket privat: menyimpan bucket/object_path,
+  membuat signed URL berumur singkat saat tampil.
+end note
+@enduml
