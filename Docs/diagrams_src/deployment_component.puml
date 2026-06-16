@@ -1,0 +1,43 @@
+@startuml
+!include _thesis_style.puml
+left to right direction
+
+node "Android Device" <<client>> as android {
+  component "SmartCityApps Flutter UI" as ui
+  component "Camera / Gallery / GPS" as cam
+}
+
+node "HuggingFace Space (Docker)" <<server>> as space {
+  component "FastAPI Backend" as api
+  rectangle "Server-Side Inference Module" as inf {
+    component "Image Preprocessing" as prep
+    component "DINOv3 Image Encoder (ONNX)" as img
+    component "mE5 Text Encoder (ONNX)" as txt
+    component "CatBoost+PGS Classifier (ONNX)" as cls
+    component "Confidence + PGS Uncertainty" as conf
+  }
+  component "Nearest-Agency Routing (haversine)" as routing
+  artifact "agencies_seed.json (fallback)" as seed
+}
+
+node "HuggingFace Hub (Model Registry)" <<external service>> as hub {
+  artifact "ONNX artifacts: image / text / classifier" as art
+}
+
+node "Supabase (Managed Backend)" <<external service>> as supa {
+  database "PostgreSQL: profiles, reports, report_history, agencies" as pg
+  component "Auth + RLS" as auth
+  component "Storage (report-images bucket)" as storage
+}
+
+ui --> api : HTTPS multipart (image+laporan+lat/lon) via *.hf.space
+api --> ui : predicted dinas + confidence + nearest agency
+api --> inf
+api --> routing
+art ..> inf : ONNX pulled at build (snapshot_download)
+space --> pg : agency registry (startup + /reload-agencies)
+space ..> seed : fallback bila DB tak terjangkau
+ui --> auth : sign in + role policy
+ui --> pg : save report, prediction, assignment, evidence
+ui --> storage : upload report / evidence photo
+@enduml

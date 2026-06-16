@@ -22,6 +22,11 @@ SupabaseCreds.txt
 credentials.json
 token.json
 
+# Privacy: raw questionnaire data/screenshots with respondent names (PII) — never commit
+Docs/Hasil Kuesioner /
+*kuesioner-nama*
+*Hasil-kuesioner-nama*
+
 # Scraper output (large)
 smartCityReport/artifacts/crm_jakarta/
 # Flutter dart-define JSON files (keep .example.json committed)

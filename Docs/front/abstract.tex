@@ -5,46 +5,45 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{ABSTRAK}
 \thispagestyle{plain}
-\vspace*{-1cm}
+\vspace*{-1.6cm}
 
 \begin{center}
 
 {\fontfamily{ptm}\selectfont\bfseries
-Universitas Bina Nusantara\\[0.1cm]
-\rule{\textwidth}{0.8pt}\\[0.2cm]
+UNIVERSITAS BINA NUSANTARA\\[0.05cm]
+\rule{\textwidth}{0.8pt}\\[0.05cm]
 
-Computer Science Program\\
 Computer Science Study Program\\
 School of Computer Science\\
-Skripsi Sarjana Teknik Informatika\\[0.5cm]
+Skripsi Sarjana Teknik Informatika\\[0.15cm]
 
 % --- TITLE ---
 DEVELOPMENT OF AN ENVIRONMENTAL PROBLEM REPORTING SYSTEM\\
-INTEGRATING IMAGE DATA TO SUPPORT SMART CITY INITIATIVES\\[0.8cm]
+INTEGRATING IMAGE AND TEXT DATA TO SUPPORT SMART CITY INITIATIVES\\[0.2cm]
 }
 
 % --- AUTHORS ---
 {\fontfamily{ptm}\selectfont\bfseries
 \begin{tabular}{p{7cm} l}
-Brian Theodore & 2602080030 \\[0.1cm]
-Moh. Khoirul Umam Al Amin & 2602198472 \\[0.1cm]
+Brian Theodore & 2602080030 \\[0.05cm]
+Moh. Khoirul Umam Al Amin & 2602198472 \\[0.05cm]
 Andrea Octaviani & 2602075895
 \end{tabular}
 }
 \end{center}
 
-\vspace{0.3cm}
+\vspace{0.15cm}
 
-% --- HEADING ABSTRACT ---
+% --- HEADING ABSTRACT --- (Times New Roman 16pt, kapital, bold, center)
 \begin{center}
-{\fontfamily{ptm}\selectfont\bfseries\itshape ABSTRACT}
+{\fontfamily{ptm}\fontsize{16pt}{18pt}\selectfont\bfseries ABSTRACT}
 \end{center}
 
-% --- ISI ABSTRACT ---
-{\fontfamily{ptm}\selectfont\itshape
-\noindent The slow manual triage process in urban environmental complaint systems, in which a single incoming report can take nearly two hours to be routed to the responsible government agency, represents a critical bottleneck in smart city governance. Existing reporting platforms also fail to exploit the complementary signals that citizens already provide: a photograph of the incident and a free-text description of what happened. This research proposes a multimodal classification system that fuses both modalities, combining a frozen DINOv3-large image encoder with a frozen multilingual-E5-large text encoder to produce dense embeddings that are concatenated through early fusion and classified by a CatBoost head into Jakarta CRM (\textit{Citizen Relationship Management}) agency categories (\textit{dinas}). The trained pipeline is exposed through a FastAPI inference server with a multipart \texttt{/predict} endpoint that consumes both an image file and a Bahasa Indonesia narrative (\textit{laporan}), and is consumed by a Flutter Android application that captures the photograph, GPS coordinates, and report text on the user device. The frozen pre-trained encoders are exported to ONNX (\textit{opset} 17) and reused as feature extractors so that the trainable surface is reduced to the CatBoost head, which keeps the training cost low and the embeddings semantically robust without domain-specific fine-tuning. A deterministic rule-based routing engine then combines the predicted dinas with the report's latitude-longitude coordinates to select the nearest active unit of the relevant agency, enabling near-instant report distribution without human intervention. The model retains its full nine-agency granularity; routing selects the nearest relevant office rather than collapsing the prediction into coarser clusters. Evaluation is reported in terms of macro F1-score, balanced accuracy, and a confusion matrix that traces the residual error patterns across visually similar categories. The resulting system demonstrates that early fusion of strong self-supervised image features with multilingual text embeddings is a practical recipe for low-resource public-service classification, and that the separation between a heavy server-side inference path and a light Flutter client preserves user experience while keeping the model upgradeable from a single deployment surface.
+% --- ISI ABSTRACT --- (1 spasi, italic untuk bahasa Inggris)
+{\fontfamily{ptm}\selectfont\itshape\setstretch{1}
+\noindent Manual triage in urban environmental complaint systems is a critical bottleneck in smart city governance: a single incoming report can take nearly two hours to reach the responsible agency, and existing platforms rarely exploit the two complementary signals citizens already provide---a photograph of the incident and a free-text description. This research proposes a multimodal classification system that fuses both. A frozen DINOv3-large image encoder and a frozen multilingual-E5-large text encoder produce dense embeddings that are concatenated through early fusion and classified by a CatBoost head calibrated with Posterior Gaussian Sampling (PGS) into Jakarta CRM (\textit{Citizen Relationship Management}) agency categories (\textit{dinas}). Both pre-trained encoders are exported to ONNX (\textit{opset} 17) and reused as feature extractors, so the only trainable surface is the CatBoost head; this keeps training cost low and the embeddings semantically robust without domain-specific fine-tuning. The pipeline is served by a FastAPI inference server whose multipart \texttt{/predict} endpoint consumes an image file and a Bahasa Indonesia narrative (\textit{laporan}), and is consumed by a Flutter Android application that captures the photograph, GPS coordinates, and report text on-device. A deterministic rule-based engine then combines the predicted dinas with the report's latitude-longitude to route it to the nearest active relevant unit, enabling near-instant distribution without human intervention while preserving the model's full nine-agency granularity. Performance is reported with macro F1-score, balanced accuracy, and a confusion matrix over visually similar categories. On a held-out test set of 9{,}266 Jakarta CRM reports, the deployed configuration attains a macro F1-score of 0.7747 (accuracy 0.8074, balanced accuracy 0.7916), while a usability evaluation with 30 citizen testers yields a System Usability Scale score of 71.6 (acceptable). The results show that early fusion of strong self-supervised image features with multilingual text embeddings is a practical recipe for low-resource public-service classification, and that separating a heavy server-side inference path from a light Flutter client preserves user experience while keeping the model upgradeable from a single deployment surface.
 
-\noindent\textbf{Keywords:} smart city, multimodal classification, early fusion, DINOv3, multilingual E5, CatBoost, FastAPI, Flutter, Jakarta CRM, ONNX Runtime.
+\noindent\textbf{Keywords:} smart city, multimodal classification, early fusion, CatBoost, Posterior Gaussian Sampling, Jakarta CRM.
 }
 
 % ==================================================================
@@ -52,45 +51,44 @@ Andrea Octaviani & 2602075895
 % ==================================================================
 \newpage
 \thispagestyle{plain}
-\vspace*{-1cm}
+\vspace*{-1.6cm}
 
 \begin{center}
 {\fontfamily{ptm}\selectfont\bfseries
-Universitas Bina Nusantara\\[0.1cm]
-\rule{\textwidth}{0.8pt}\\[0.2cm]
+UNIVERSITAS BINA NUSANTARA\\[0.05cm]
+\rule{\textwidth}{0.8pt}\\[0.05cm]
 
-Computer Science Program\\
 Computer Science Study Program\\
 School of Computer Science\\
-Skripsi Sarjana Teknik Informatika\\[0.5cm]
+Skripsi Sarjana Teknik Informatika\\[0.15cm]
 
 % --- TITLE---
 PENGEMBANGAN SISTEM PELAPORAN MASALAH LINGKUNGAN DENGAN\\
-INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}\\[0.8cm]
+INTEGRASI DATA GAMBAR DAN TEKS UNTUK MENDUKUNG \textit{SMART CITY}\\[0.2cm]
 }
 
 % --- AUTHORS ---
 {\fontfamily{ptm}\selectfont\bfseries
 \begin{tabular}{p{7cm} l}
-Brian Theodore & 2602080030 \\[0.1cm]
-Moh. Khoirul Umam Al Amin & 2602198472 \\[0.1cm]
+Brian Theodore & 2602080030 \\[0.05cm]
+Moh. Khoirul Umam Al Amin & 2602198472 \\[0.05cm]
 Andrea Octaviani & 2602075895
 \end{tabular}
 }
 \end{center}
 
-\vspace{0.3cm}
+\vspace{0.15cm}
 
-% --- HEADING ABSTRAK ---
+% --- HEADING ABSTRAK --- (Times New Roman 16pt, kapital, bold, center)
 \begin{center}
-{\fontfamily{ptm}\selectfont\bfseries ABSTRAK}
+{\fontfamily{ptm}\fontsize{16pt}{18pt}\selectfont\bfseries ABSTRAK}
 \end{center}
 
-% --- ISI ABSTRAK ---
-{\fontfamily{ptm}\selectfont
-\noindent Proses triase manual pada sistem pelaporan masalah lingkungan perkotaan, yaitu kondisi di mana satu laporan yang masuk dapat memerlukan waktu hampir dua jam untuk diteruskan ke instansi pemerintah yang bertanggung jawab, merupakan hambatan kritis dalam tata kelola \textit{smart city}. Selain itu, platform pelaporan yang ada belum memanfaatkan secara penuh dua sinyal komplementer yang telah disediakan warga, yaitu foto kejadian dan narasi laporan dalam Bahasa Indonesia. Penelitian ini mengusulkan sistem klasifikasi multimodal yang menggabungkan kedua modalitas tersebut. Sebuah \textit{encoder} citra DINOv3 \textit{large} yang dibekukan (\textit{frozen}) dan \textit{encoder} teks \textit{multilingual-E5 large} yang juga dibekukan menghasilkan vektor representasi (\textit{embedding}) padat. Kedua \textit{embedding} digabungkan melalui skema fusi awal (\textit{early fusion}) dengan operasi konkatenasi, kemudian diklasifikasikan oleh algoritma CatBoost ke dalam kategori dinas pada Jakarta CRM (\textit{Citizen Relationship Management}). \textit{Pipeline} pelatihan diekspos melalui server inferensi FastAPI dengan \textit{endpoint} \texttt{/predict} berbasis \textit{multipart} yang menerima berkas gambar dan narasi laporan, dan dikonsumsi oleh aplikasi Android berbasis Flutter yang menangkap foto, koordinat GPS, dan teks laporan langsung di perangkat pengguna. Kedua \textit{encoder} pra-latih diekspor ke format ONNX (\textit{opset} 17) dan dipakai sebagai \textit{feature extractor}, sehingga permukaan parameter yang dilatih hanya tersisa pada algoritma CatBoost. Pendekatan ini menekan biaya pelatihan sekaligus mempertahankan ketahanan semantik \textit{embedding} tanpa perlu \textit{fine-tuning} berskala besar pada domain perkotaan. Mesin perutean berbasis aturan secara deterministik menggabungkan prediksi dinas dengan koordinat latitude-longitude laporan untuk memilih unit instansi aktif terdekat yang relevan, sehingga laporan dapat didistribusikan hampir instan tanpa intervensi manusia. Model tetap mempertahankan granularitas penuh sembilan instansi; tahap perutean memilih kantor atau unit terdekat, bukan mengagregasi prediksi menjadi kluster yang lebih kasar. Evaluasi dilaporkan menggunakan \textit{macro F1-score}, \textit{balanced accuracy}, dan \textit{confusion matrix} untuk memetakan pola kesalahan antar kategori yang secara visual saling menyerupai. Hasil rancangan menunjukkan bahwa fusi awal antara fitur citra hasil pelatihan mandiri (\textit{self-supervised}) yang kuat dengan \textit{embedding} teks multibahasa merupakan resep praktis untuk klasifikasi layanan publik berdaya rendah, dan bahwa pemisahan antara jalur inferensi berat di sisi server dengan klien Flutter yang ringan menjaga pengalaman pengguna sekaligus memudahkan pembaruan model dari satu permukaan \textit{deployment}.
+% --- ISI ABSTRAK --- (1 spasi, italic sesuai panduan §2.3.1.f)
+{\fontfamily{ptm}\selectfont\itshape\setstretch{1}
+\noindent Triase manual pada sistem pelaporan masalah lingkungan perkotaan merupakan hambatan kritis dalam tata kelola \textit{smart city}: satu laporan dapat memerlukan hampir dua jam untuk sampai ke instansi yang tepat, dan platform yang ada jarang memanfaatkan dua sinyal yang telah disediakan warga---foto kejadian dan narasi laporan dalam Bahasa Indonesia. Penelitian ini mengusulkan sistem klasifikasi multimodal yang menggabungkan keduanya. \textit{Encoder} citra DINOv3-\textit{large} dan \textit{encoder} teks \textit{multilingual}-E5-\textit{large} yang dibekukan menghasilkan \textit{embedding} padat; keduanya digabungkan melalui fusi awal (\textit{early fusion}) dan diklasifikasikan oleh kepala CatBoost berkalibrasi \textit{Posterior Gaussian Sampling} (PGS) ke kategori dinas pada Jakarta CRM (\textit{Citizen Relationship Management}). Kedua \textit{encoder} diekspor ke ONNX (\textit{opset} 17) dan dipakai sebagai \textit{feature extractor}, sehingga hanya kepala CatBoost yang dilatih; pendekatan ini menekan biaya pelatihan dan menjaga ketahanan semantik \textit{embedding} tanpa \textit{fine-tuning} khusus domain. \textit{Pipeline} dilayani server FastAPI dengan \textit{endpoint} \texttt{/predict} berbasis \textit{multipart} yang menerima gambar dan narasi laporan, dan dikonsumsi aplikasi Android Flutter yang menangkap foto, koordinat GPS, dan teks laporan di perangkat. Mesin berbasis aturan kemudian menggabungkan prediksi dinas dengan koordinat \textit{latitude-longitude} untuk meneruskan laporan ke unit relevan terdekat yang aktif, memungkinkan distribusi hampir instan tanpa intervensi manusia dengan granularitas penuh sembilan instansi tetap dipertahankan. Kinerja dilaporkan dengan \textit{macro F1-score}, \textit{balanced accuracy}, dan \textit{confusion matrix} pada kategori yang visualnya menyerupai. Pada set uji 9.266 laporan Jakarta CRM, konfigurasi ter-\textit{deploy} mencapai \textit{macro F1-score} 0,7747 (akurasi 0,8074, \textit{balanced accuracy} 0,7916), sedangkan evaluasi usabilitas terhadap 30 responden warga menghasilkan skor \textit{System Usability Scale} 71,6 (dapat diterima). Hasilnya menunjukkan bahwa fusi awal fitur citra \textit{self-supervised} dengan \textit{embedding} teks multibahasa adalah resep praktis untuk klasifikasi layanan publik berdaya rendah, dan pemisahan inferensi berat di sisi server dari klien Flutter yang ringan menjaga pengalaman pengguna sekaligus memudahkan pembaruan model.
 
-\noindent\textbf{Kata Kunci:} \textit{smart city}, klasifikasi multimodal, \textit{early fusion}, DINOv3, \textit{multilingual} E5, CatBoost, FastAPI, Flutter, Jakarta CRM, \textit{ONNX Runtime}.
+\noindent\textbf{Kata Kunci:} \textit{smart city}, klasifikasi multimodal, \textit{early fusion}, CatBoost, \textit{Posterior Gaussian Sampling}, Jakarta CRM.
 }
 
 \newpage

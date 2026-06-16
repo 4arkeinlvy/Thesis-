@@ -1,0 +1,37 @@
+% =====================================================================
+% LAMPIRAN J: TAUTAN PENTING (REPRODUKSIBILITAS)
+% =====================================================================
+\chapter{Tautan Penting}
+\label{app:tautan}
+
+Lampiran ini memuat tautan ke kode sumber, model, serta data dan perhitungan
+evaluasi usabilitas, sebagai penunjang reproduksibilitas penelitian. Berkas data
+yang dibagikan telah dianonimkan (tanpa identitas responden) demi menjaga kerahasiaan
+responden.
+
+\begin{description}
+  \item[Repositori kode dan data.] Seluruh \textit{pipeline} multimodal (\texttt{src/crm}),
+  \textit{notebook} eksperimen, server inferensi FastAPI, serta data dan \textit{notebook}
+  analisis usabilitas tersedia pada: \\
+  \url{https://github.com/4arkeinlvy/Thesis-}
+
+  \item[\textit{Encoder} citra (beku).] DINOv3 ViT-L/16 yang dipakai sebagai
+  \textit{encoder} citra beku tersedia di HuggingFace Hub: \\
+  \url{https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m}
+
+  \item[\textit{Encoder} teks (beku).] \textit{Multilingual}-E5 \textit{large instruct} yang dipakai
+  sebagai \textit{encoder} teks beku tersedia di HuggingFace Hub: \\
+  \url{https://huggingface.co/intfloat/multilingual-e5-large-instruct}
+
+  \item[Klasifikator terlatih dan ekspor ONNX.] \textit{Classifier head} CatBoost hasil
+  pelatihan beserta ketiga \textit{artifact} ONNX (\textit{image encoder}, \textit{text
+  encoder}, \textit{classifier}) disimpan pada direktori \texttt{artifacts/} repositori;
+  model ini merupakan kontribusi penelitian dan tidak dipublikasikan terpisah di HuggingFace.
+
+  \item[Data dan perhitungan evaluasi usabilitas.] Rekapitulasi jawaban anonim dan
+  \textit{notebook} analisis berikut mendokumentasikan serta mereproduksi seluruh angka
+  SUS pada Bab~\ref{ch:hasil} (skor per responden, statistik deskriptif, interval
+  kepercayaan, \textit{Cronbach's alpha}, dan analisis sensitivitas): \\
+  \url{smartCityReport/notebooks/data/sus_responses_anon.csv} \\
+  \url{smartCityReport/notebooks/10_sus_usability_analysis.ipynb}
+\end{description}

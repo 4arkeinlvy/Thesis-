@@ -1,4 +1,4 @@
-\chapter{TINJAUAN PUSTAKA}
+\chapter{TINJAUAN REFERENSI}
 \label{ch:tinjauan}
 
 Bab ini memaparkan landasan teoretis yang menjadi pijakan rancangan sistem klasifikasi multimodal pada penelitian ini. Pemaparan disusun dari konsep yang paling umum, yaitu \textit{smart city} dan partisipasi publik, menuju konsep yang lebih spesifik, yaitu akuisisi data melalui \textit{web scraping}, kerangka kecerdasan buatan, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi, mekanisme \textit{attention}, arsitektur \textit{Transformer}, keluarga \textit{backbone} visual dan \textit{encoder} teks modern, fusi multimodal, ekosistem inferensi ONNX, permodelan UML, kontainerisasi Docker, hingga \textit{stack} aplikasi mobile dan \textit{web framework}. Setiap bagian berusaha menjelaskan tidak hanya definisi, melainkan juga motivasi, sejarah singkat, dan formulasi matematis bila diperlukan, sebagai dasar bagi keputusan metodologis yang dijelaskan pada Bab Metode Penelitian.
@@ -34,7 +34,13 @@ Hasil penelitian \citet{firgiaImplementasiSistemInformasi2022} menunjukkan bahwa
 
 \textit{Web scraping} adalah teknik otomatis untuk mengekstraksi data terstruktur dari halaman web yang awalnya dirancang untuk konsumsi manusia \citep{mitchellWebScraping2018}. Pada masa ketika antarmuka pemrograman aplikasi (\textit{Application Programming Interface}, API) yang resmi belum tersedia atau terbatas, \textit{web scraping} menjadi cara utama bagi peneliti, analis, dan pengembang untuk membangun korpus data dari kanal publik. Pada konteks penelitian sosial dan tata kelola kota, \textit{web scraping} sering digunakan untuk mengumpulkan data dari portal aduan, media sosial, situs berita, dan situs pemerintah, terutama saat data tersebut tidak tersedia dalam bentuk \textit{dataset} unduhan.
 
-Halaman target \textit{scraping} dibedakan menjadi halaman statis (konten sudah ada pada respons HTML server) dan halaman dinamis (konten dirender JavaScript di peramban). Alur umum \textit{web scraping} mengikuti lima tahap, yaitu identifikasi sumber, pengunduhan HTTP, penguraian (\textit{parsing}) HTML, pembersihan dan normalisasi, serta penyimpanan ke berkas terstruktur. Pada penelitian ini akuisisi data CRM Jakarta memakai \texttt{requests} untuk pengunduhan, \texttt{BeautifulSoup} dan \texttt{lxml} untuk penguraian, serta \texttt{Selenium} untuk halaman dinamis. Uraian rinci klasifikasi halaman, alur lima tahap, dan perbandingan pustaka \textit{scraping} disajikan pada Lampiran~\ref{app:webscraping-detail}.
+Halaman web yang menjadi target \textit{scraping} dibedakan menjadi dua kelompok berdasarkan cara konten dirender. \textbf{Halaman statis} adalah halaman yang seluruh kontennya sudah terbentuk pada respons HTML server, sehingga cukup memerlukan pengunduh HTTP dan pengurai HTML. \textbf{Halaman dinamis} adalah halaman yang kontennya dirender oleh JavaScript pada peramban (\textit{client-side rendering}), sehingga memerlukan eksekusi JavaScript melalui peramban tanpa kepala (\textit{headless browser}) atau pemanggilan API XHR yang ditemukan melalui inspeksi jaringan.
+
+\subsection{Alur dan Pustaka \textit{Web Scraping}}
+
+Alur umum \textit{web scraping} terdiri atas lima tahap, yaitu (1) identifikasi sumber (halaman daftar, halaman rincian, dan pola URL), (2) pengunduhan melalui permintaan HTTP GET dengan memperhatikan \textit{user-agent}, \textit{cookie}, dan pembatasan kecepatan, (3) penguraian (\textit{parsing}) elemen HTML yang relevan, (4) pembersihan dan normalisasi karakter, tanggal, serta pemetaan label bebas ke kategori standar, dan (5) penyimpanan data terstruktur (CSV, JSONL, Parquet) atau basis data relasional.
+
+Beberapa pustaka populer pada ekosistem Python untuk \textit{web scraping} antara lain \texttt{requests} (pustaka HTTP sederhana untuk halaman statis), \texttt{BeautifulSoup} (pengurai HTML yang fleksibel), \texttt{lxml} (pengurai cepat berbasis libxml2 dengan dukungan XPath), \texttt{Scrapy} (\textit{framework} berbasis \textit{spider} dan \textit{pipeline} untuk \textit{scraping} berskala besar), \texttt{Selenium} dan \texttt{Playwright} (otomatisasi peramban yang dapat mengeksekusi JavaScript pada halaman dinamis), serta \texttt{httpx} (alternatif modern \texttt{requests} dengan dukungan asinkron). Pada penelitian ini akuisisi data CRM Jakarta memakai \texttt{requests} untuk pengunduhan, \texttt{BeautifulSoup} dan \texttt{lxml} untuk penguraian, serta \texttt{Selenium} untuk halaman dinamis.
 
 % =====================================================================
 \section{Kecerdasan Buatan (\textit{Artificial Intelligence})}
@@ -111,11 +117,117 @@ Unit komputasi dasar pada jaringan saraf adalah \textit{perceptron}, yang menghi
 \textit{Foundation models} adalah model berskala besar yang dilatih pada data sangat banyak lalu dipakai ulang pada banyak tugas hilir, umumnya melalui \textit{self-supervised learning}. Dua paradigma utamanya pada visi adalah pembelajaran kontras (\textit{contrastive learning}: SimCLR, MoCo, DINO) dan \textit{Masked Image Modeling} (MIM: MAE \citep{heMAE2022}, BEiT, EVA \citep{fangEVA022023}). Paradigma inilah yang melahirkan \textit{encoder} DINOv3 yang dipakai pada penelitian ini.
 
 % =====================================================================
-\section{Pemrosesan Data Multimodal: Ringkasan}
+\section{Pemrosesan Data Multimodal}
 \label{sec:imgproc}
 % =====================================================================
 
-Pra-proses data multimodal pada penelitian ini terdiri atas dua jalur. Jalur citra didelegasikan ke \textit{AutoImageProcessor} HuggingFace (kelas \textit{DINOv3ViTImageProcessorFast}) yang melakukan \textit{resize} ke $224 \times 224$, \textit{square padding} untuk mempertahankan seluruh konten, normalisasi per kanal dengan rerata dan simpangan baku ImageNet (Persamaan~\ref{eq:norm}), serta konversi tensor ke format NCHW. Augmentasi data tidak diterapkan karena \textit{encoder} dibekukan dan hanya dipakai pada modus inferensi. Jalur teks meliputi normalisasi unicode NFC, pembersihan karakter kontrol, dan tokenisasi dengan \textit{SentencePiece} pada \textit{encoder} multilingual-E5 atau \textit{WordPiece} pada \textit{encoder} berbasis BERT. Empat algoritma subword utama yang berkaitan dengan studi ini (BPE, WordPiece, SentencePiece, Unigram LM) diringkas pada Tabel~\ref{tab:tokenizer}. Latar teoretis lengkap, mencakup formula normalisasi piksel, pertimbangan aspek rasio, kompresi JPEG, EXIF, serta perbandingan rinci algoritma tokenizer, disajikan pada Lampiran~\ref{app:teori-multimodal} bagian F.1 dan F.2.
+Pra-proses data multimodal pada penelitian ini terdiri atas dua jalur. Jalur citra didelegasikan ke \textit{AutoImageProcessor} HuggingFace (kelas \textit{DINOv3ViTImageProcessorFast}) yang melakukan \textit{resize} ke $224 \times 224$, \textit{square padding} untuk mempertahankan seluruh konten, normalisasi per kanal dengan rerata dan simpangan baku ImageNet (Persamaan~\ref{eq:norm}), serta konversi tensor ke format NCHW. Augmentasi data tidak diterapkan karena \textit{encoder} dibekukan dan hanya dipakai pada modus inferensi. Jalur teks meliputi penghapusan URL, perapian \textit{whitespace}, dan tokenisasi dengan \textit{SentencePiece} pada \textit{encoder} multilingual-E5 atau \textit{WordPiece} pada \textit{encoder} berbasis BERT. Empat algoritma subword utama yang berkaitan dengan studi ini (BPE, WordPiece, SentencePiece, Unigram LM) diringkas pada Tabel~\ref{tab:tokenizer}. Kedua jalur diuraikan secara teoretis pada subbagian berikut.
+
+\subsection{Pemrosesan Data Gambar}
+\label{sec:imgproc-detail}
+
+Bagian ini menguraikan kerangka teoretis pra-proses citra pada \textit{pipeline} klasifikasi multimodal. Pada penelitian ini seluruh pra-proses citra didelegasikan kepada \textit{AutoImageProcessor} dari pustaka HuggingFace, khususnya kelas \textit{DINOv3ViTImageProcessorFast}, yang dimuat sekali pada saat inisialisasi server FastAPI dan mengikuti spesifikasi resmi yang dipublikasikan bersama bobot DINOv3. Konfigurasi pra-proses tersimpan pada berkas \texttt{preprocessor\_config.json} dan menjadi sumber kebenaran (\textit{source of truth}) untuk seluruh tahap inferensi. Subbagian berikut memaparkan komponen-komponen yang aktif pada konfigurasi tersebut beserta latar teoretisnya.
+
+\subsubsection{Citra Digital sebagai Tensor}
+
+Citra digital adalah representasi visual objek yang diubah ke dalam format numerik melalui perangkat akuisisi data seperti kamera. Angka tersebut mencerminkan intensitas cahaya pada setiap elemen gambar (\textit{pixel}), yang memungkinkan analisis dan manipulasi melalui teknik pengolahan citra digital \citep{article}. Pada \textit{deep learning}, satu citra berwarna direpresentasikan sebagai tensor berukuran $H \times W \times C$, dengan $H$ tinggi, $W$ lebar, dan $C$ adalah jumlah kanal warna (umumnya 3 untuk RGB). Nilai piksel umumnya berada pada rentang bulat $[0, 255]$ untuk berkas mentah \texttt{uint8}, atau pada rentang \textit{floating point} $[0, 1]$ atau $[-1, 1]$ setelah normalisasi.
+
+\subsubsection{\textit{Resize} dan Interpolasi}
+
+Karena \textit{encoder} citra menerima masukan dengan ukuran tetap, setiap citra harus dilakukan \textit{resize} ke resolusi target. Tiga algoritma interpolasi yang paling umum adalah:
+
+\begin{itemize}
+    \item \textbf{Nearest Neighbor}: piksel keluaran mengambil nilai piksel terdekat dari masukan. Cepat namun menghasilkan tepi bergerigi.
+    \item \textbf{Bilinear}: rata-rata berbobot dari empat piksel tetangga. Halus dan menjadi standar pada banyak \textit{pipeline}.
+    \item \textbf{Bicubic}: rata-rata berbobot dari enam belas piksel tetangga dengan polinomial kubik. Lebih tajam namun lebih mahal.
+\end{itemize}
+
+\textit{AutoImageProcessor} pada DINOv3 melakukan \textit{resize} ke resolusi target $224 \times 224$ piksel mengikuti parameter \texttt{size} dan \texttt{interpolation} yang ditetapkan oleh kartu model resmi.
+
+\subsubsection{Aspek Rasio dan \textit{Square Padding}}
+
+Pada konfigurasi \textit{AutoImageProcessor} DINOv3 berlaku \texttt{default\_to\_square: true} dengan \texttt{do\_center\_crop} dinonaktifkan, sehingga citra dipaksa berbentuk persegi melalui kombinasi \textit{resize} dan \textit{padding} pada sisi yang lebih pendek. Strategi ini berbeda dengan \textit{center crop} klasik yang memotong tepi citra setelah \textit{resize} sisi pendek; \textit{square padding} mempertahankan seluruh konten citra namun menambahkan piksel netral pada sisi yang kekurangan ukuran. Pada konteks laporan warga, pendekatan ini menguntungkan karena objek penting (lubang jalan, pohon tumbang, sampah) sering kali tersebar tidak terpusat sehingga \textit{cropping} tepi berisiko membuang informasi diskriminatif.
+
+\subsubsection{Normalisasi Per-Kanal}
+
+Setelah \textit{resize}, citra dinormalisasi per kanal menggunakan rerata dan simpangan baku ImageNet:
+
+\begin{equation}
+    x'_c = \frac{x_c - \mu_c}{\sigma_c}, \quad
+    \mu = (0{,}485,\, 0{,}456,\, 0{,}406), \;
+    \sigma = (0{,}229,\, 0{,}224,\, 0{,}225),
+    \label{eq:norm}
+\end{equation}
+dengan $c$ adalah indeks kanal RGB. Nilai $\mu$ dan $\sigma$ ini termuat secara eksplisit pada \texttt{preprocessor\_config.json} (kunci \texttt{image\_mean} dan \texttt{image\_std}) dan wajib digunakan ketika \textit{encoder} DINOv3 pra-latih, agar distribusi masukan pada saat inferensi konsisten dengan distribusi yang dipakai pada saat pra-pelatihan.
+
+\subsubsection{\textit{Layout} Tensor dan Konversi Warna}
+
+Dua \textit{layout} tensor yang umum adalah NCHW (\textit{batch, channel, height, width}) yang dipakai PyTorch dan ONNX, serta NHWC yang dipakai TensorFlow. Selain itu, beberapa pustaka (contohnya OpenCV) menggunakan urutan kanal BGR sementara model \textit{deep learning} biasanya mengasumsikan RGB. \textit{AutoImageProcessor} pada penelitian ini diatur dengan \texttt{data\_format: channels\_first} sehingga keluaran tensor langsung berformat NCHW. Konversi kanal ke RGB dilakukan secara eksplisit melalui pemanggilan \texttt{Image.open(...).convert("RGB")} pada lapisan \textit{encoder} citra sehingga sumber gambar berformat lain (BGR, RGBA, atau \textit{grayscale}) tetap menghasilkan tensor masukan yang konsisten.
+
+\subsubsection{Kompresi JPEG dan EXIF}
+
+Berkas JPEG biasanya sudah dikompresi dengan kerugian (\textit{lossy}) dan dilengkapi metadata EXIF, termasuk orientasi sensor kamera. Pustaka PIL yang digunakan oleh \textit{AutoImageProcessor} membaca dan menerapkan tag orientasi EXIF secara otomatis melalui pemanggilan \texttt{Image.open()}, sehingga foto vertikal yang diambil dari kamera ponsel tidak dilewatkan ke model dalam orientasi miring. Kompresi JPEG yang berlebihan juga dapat menurunkan akurasi model, namun pada \textit{pipeline} produksi penelitian ini gambar yang diunggah pengguna disimpan langsung pada Supabase Storage sebagai berkas asli sehingga tidak terjadi kompresi tambahan setelah pengambilan citra.
+
+\subsubsection{Catatan tentang Augmentasi Data}
+
+Teknik augmentasi data seperti \textit{horizontal flip}, \textit{color jitter}, \textit{random erasing}, RandAugment \citep{cubukRandAugment2020}, dan MixUp \citep{zhangMixup2018} merupakan komponen standar pada pelatihan \textit{encoder} citra dari nol. Pada penelitian ini teknik tersebut tidak diterapkan karena \textit{encoder} DINOv3 dibekukan (\textit{frozen}) selama seluruh tahap eksperimen dan hanya dipakai pada modus inferensi (\texttt{is\_training=False}). \textit{Embedding} dihitung sekali per sampel dan disimpan pada berkas \textit{cache} sehingga ablasi pada \textit{classifier head} dapat dijalankan tanpa perlu menjalankan kembali \textit{encoder}. Augmentasi data tetap dibahas di sini sebagai latar teoretis karena merupakan teknik penting yang relevan ketika DINOv3 di masa depan akan dilatih ulang penuh atau di-\textit{fine-tune} pada domain spesifik laporan warga.
+
+\subsection{Pemrosesan Data Teks}
+\label{sec:textproc-detail}
+
+\subsubsection{Pembersihan dan Normalisasi}
+
+Sebelum dilewatkan ke \textit{encoder} teks, sebuah dokumen biasanya melalui beberapa langkah pembersihan, yaitu:
+
+\begin{itemize}
+    \item Normalisasi unicode ke bentuk NFC (\textit{Canonical Composition}) agar karakter ber-aksen direpresentasikan secara konsisten.
+    \item Konversi huruf ke \textit{lowercase} jika model toleran terhadap kasus, atau dipertahankan apabila model membedakan kasus.
+    \item Penghapusan karakter kontrol dan \textit{whitespace} berlebih (\textit{whitespace collapsing}).
+    \item Substitusi emoji yang sangat jarang dengan \textit{placeholder}, untuk menghindari pembengkakan kosakata.
+    \item Pemotongan teks menjadi panjang maksimum, biasanya 128 atau 512 token, sesuai batas \textit{encoder}.
+\end{itemize}
+
+\subsubsection{Tokenisasi}
+
+Tokenisasi adalah proses memecah teks menjadi unit diskrit yang dapat dipetakan ke indeks. Tiga keluarga utama tokenizer adalah:
+
+\begin{enumerate}
+    \item \textbf{Word-level}: setiap kata adalah satu token. Sederhana namun rentan terhadap kosakata yang membengkak dan kata di luar kosakata (\textit{out-of-vocabulary}).
+    \item \textbf{Character-level}: setiap karakter adalah satu token. Tahan terhadap \textit{out-of-vocabulary}, namun barisan menjadi sangat panjang.
+    \item \textbf{Subword}: kompromi antara dua pendekatan di atas, yaitu memecah kata menjadi unit subkata yang sering muncul. Ini adalah pilihan dominan pada \textit{Transformer} modern.
+\end{enumerate}
+
+Empat algoritma subword yang paling umum:
+
+\begin{itemize}
+    \item \textbf{Byte Pair Encoding} (BPE) \citep{sennrichBPE2016}: mulai dari karakter sebagai unit, secara iteratif menggabungkan pasangan unit yang paling sering bersamaan menjadi satu unit baru hingga ukuran kosakata target tercapai.
+    \item \textbf{WordPiece}: varian BPE yang dipakai oleh BERT \citep{devlinBERT2019}, dengan kriteria \textit{merge} berbasis \textit{likelihood} alih-alih frekuensi.
+    \item \textbf{SentencePiece} \citep{kudoSentencePiece2018}: \textit{wrapper} BPE atau Unigram yang bekerja pada level byte sehingga tidak memerlukan pra-proses spesifik bahasa, cocok untuk tokenizer multibahasa.
+    \item \textbf{Unigram Language Model}: memodelkan distribusi token dengan probabilitas independen, kemudian memilih segmentasi yang memaksimalkan \textit{likelihood}.
+\end{itemize}
+
+Tabel berikut merangkum perbandingan singkat keempatnya.
+
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan algoritma tokenizer subword.}
+\label{tab:tokenizer}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.4cm} p{3.7cm} p{3.6cm} p{2.6cm}}
+\toprule
+\textbf{Algoritma} & \textbf{Kriteria \textit{merge}} & \textbf{Implementasi populer} & \textbf{Catatan} \\
+\midrule
+BPE & Frekuensi pasangan & GPT-2, RoBERTa & Sederhana, deterministik \\
+WordPiece & \textit{Likelihood} pasangan & BERT, mBERT, IndoBERT & Memakai prefiks \texttt{\#\#} \\
+SentencePiece & BPE atau Unigram di level byte & T5, mT5, XLM-R, E5 & Tidak butuh pra-tokenisasi spasi \\
+Unigram LM & Probabilitas token & SentencePiece (mode Unigram) & Sampling segmentasi mungkin \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{\textit{Embedding}: \textit{Lookup Matrix} dan Dimensi}
+
+Setelah token diubah menjadi indeks bilangan bulat, indeks tersebut dipetakan ke vektor berdimensi $d$ melalui matriks \textit{lookup} berukuran $|V| \times d$, dengan $|V|$ ukuran kosakata. Vektor inilah yang menjadi masukan ke lapisan \textit{Transformer} berikutnya.
 
 \section{Ekstraksi Fitur (\textit{Feature Extraction})}
 \label{sec:featureextract}
@@ -151,11 +263,48 @@ Pada \textit{deep learning}, fitur dipelajari secara otomatis dari data, sehingg
 \end{equation}
 yang umum dipakai pada model \textit{contrastive} seperti CLIP dan E5. Ruang ini dapat divisualisasikan dengan teknik reduksi dimensi seperti t-SNE atau UMAP untuk inspeksi kualitatif.
 % =====================================================================
-\section{Reduksi Dimensi: Ringkasan}
+\section{Reduksi Dimensi}
 \label{sec:pca}
 % =====================================================================
 
-Vektor representasi yang dihasilkan oleh \textit{encoder} citra dan teks pada penelitian ini berdimensi 1024, sehingga vektor fusi awal berdimensi 2048. Reduksi dimensi seperti \textit{Principal Component Analysis} (PCA) merupakan teknik klasik untuk mereduksi dimensi linear dengan menjaga varians maksimum, namun pada penelitian ini PCA \textbf{tidak diterapkan} karena dua alasan. Pertama, \textit{classifier head} CatBoost berbasis pohon keputusan \textit{oblivious} yang melakukan pemilihan dimensi secara implisit melalui \textit{split} sehingga tidak terpengaruh \textit{curse of dimensionality} secara signifikan. Kedua, reduksi linear berpotensi menghilangkan informasi diskriminatif yang dibutuhkan untuk membedakan kelas dinas yang dekat secara semantik. Pembahasan rinci mengenai formulasi PCA, prosedur \textit{Singular Value Decomposition}, kriteria \textit{explained variance ratio}, serta alternatif non-linear seperti \textit{Kernel PCA}, \textit{Autoencoder}, t-SNE, UMAP, dan LDA disajikan pada Lampiran~\ref{app:teori-multimodal} bagian F.3.
+Vektor representasi yang dihasilkan oleh \textit{encoder} citra dan teks pada penelitian ini berdimensi 1024, sehingga vektor fusi awal berdimensi 2048. Reduksi dimensi seperti \textit{Principal Component Analysis} (PCA) merupakan teknik klasik untuk mereduksi dimensi linear dengan menjaga varians maksimum, namun pada penelitian ini PCA \textbf{tidak diterapkan} karena dua alasan. Pertama, \textit{classifier head} CatBoost berbasis pohon keputusan \textit{oblivious} yang melakukan pemilihan dimensi secara implisit melalui \textit{split} sehingga tidak terpengaruh \textit{curse of dimensionality} secara signifikan. Kedua, reduksi linear berpotensi menghilangkan informasi diskriminatif yang dibutuhkan untuk membedakan kelas dinas yang dekat secara semantik. Subbagian berikut memaparkan landasan teoretis reduksi dimensi dan PCA sebagai dasar keputusan tersebut.
+
+\subsection{Motivasi}
+\label{sec:pca-motivasi}
+
+Vektor representasi (\textit{embedding}) yang dihasilkan oleh \textit{encoder} modern umumnya berdimensi sangat tinggi, contohnya 768, 1024, atau bahkan 4096 untuk model besar. Pada banyak skenario, dimensi tinggi dapat menjadi masalah karena tiga alasan, yaitu (1) biaya memori dan komputasi pada model klasifikasi hilir, (2) \textit{curse of dimensionality} pada metode berbasis jarak (k-Nearest Neighbors, klastering jarak Euclidean), dan (3) sulitnya visualisasi serta interpretasi. Reduksi dimensi adalah keluarga teknik yang memetakan vektor berdimensi tinggi ke ruang berdimensi lebih rendah dengan menjaga sebanyak mungkin informasi yang relevan.
+
+\subsection{\textit{Principal Component Analysis} (PCA)}
+
+PCA \citep{joliffePCA2002} adalah metode reduksi dimensi linear yang menemukan basis ortogonal baru sehingga proyeksi data ke basis tersebut memaksimalkan varians yang dipertahankan. Diberikan matriks data $\mathbf{X} \in \mathbb{R}^{n \times d}$ yang sudah dipusatkan (\textit{mean-centered}) sehingga setiap kolom memiliki rerata nol, matriks kovarians sampel dihitung sebagai:
+
+\begin{equation}
+    \mathbf{C} = \frac{1}{n-1} \mathbf{X}^\top \mathbf{X}.
+    \label{eq:pca_cov}
+\end{equation}
+
+Vektor eigen $\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_d$ dari $\mathbf{C}$ yang diurutkan berdasarkan nilai eigen $\lambda_1 \geq \lambda_2 \geq \dots \geq \lambda_d$ disebut \textit{principal components}. Komponen pertama menjelaskan varians terbesar; komponen kedua menjelaskan varians terbesar berikutnya pada arah yang ortogonal terhadap komponen pertama, dan seterusnya. Reduksi ke $k$ dimensi dilakukan dengan memilih $k$ vektor eigen pertama yang dikumpulkan ke matriks $\mathbf{V}_k \in \mathbb{R}^{d \times k}$, kemudian memproyeksikan data:
+
+\begin{equation}
+    \mathbf{Z} = \mathbf{X} \mathbf{V}_k, \quad \mathbf{Z} \in \mathbb{R}^{n \times k}.
+    \label{eq:pca_proj}
+\end{equation}
+
+Implementasi praktis sering menggunakan \textit{Singular Value Decomposition} (SVD) pada $\mathbf{X}$, yaitu $\mathbf{X} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^\top$, sehingga vektor eigen kovarians sama dengan kolom $\mathbf{V}$ dan nilai eigen sama dengan kuadrat nilai singular dibagi $n-1$. Pemilihan jumlah komponen $k$ umumnya dipandu oleh \textit{explained variance ratio}, yaitu rasio kumulatif $\sum_{i=1}^{k} \lambda_i / \sum_{i=1}^{d} \lambda_i$, dengan ambang umum 0,90 hingga 0,99.
+
+\subsection{Penggunaan dalam \textit{Pipeline Embedding}}
+
+Pada \textit{pipeline} klasifikasi berbasis \textit{embedding}, PCA dapat dipakai untuk tiga tujuan:
+
+\begin{itemize}
+    \item \textbf{Pra-proses fitur}: mengurangi dimensi \textit{embedding} sebelum dilewatkan ke algoritma klasifikasi yang sensitif terhadap dimensi tinggi (contohnya regresi logistik dengan regularisasi atau k-NN).
+    \item \textbf{Whitening}: PCA dengan normalisasi $1 / \sqrt{\lambda_i}$ pada setiap komponen menghasilkan ruang yang fitur-fiturnya tidak berkorelasi dan memiliki skala seragam.
+    \item \textbf{Visualisasi}: memproyeksikan \textit{embedding} ke 2 atau 3 dimensi pertama untuk inspeksi klaster kualitatif, walaupun untuk visualisasi non-linear teknik t-SNE atau UMAP umumnya lebih informatif.
+\end{itemize}
+
+\subsection{Keterbatasan dan Alternatif}
+
+PCA bersifat linear, sehingga tidak dapat menangkap struktur non-linear yang sering muncul pada \textit{embedding} jaringan saraf dalam. Alternatif non-linear yang umum digunakan adalah \textit{Kernel PCA}, \textit{Autoencoder}, t-SNE, dan UMAP. Selain itu, PCA tidak memperhatikan label kelas; bila reduksi dimensi yang \textit{discriminative} terhadap kelas dibutuhkan, \textit{Linear Discriminant Analysis} (LDA) menjadi pilihan yang lebih tepat. Pada konteks pohon keputusan seperti CatBoost atau XGBoost, reduksi dimensi melalui PCA sering kali tidak memberi keuntungan karena pohon keputusan memilih dimensi yang relevan secara implisit melalui pemilihan \textit{split} pada setiap simpul.
 
 % =====================================================================
 \section{Mekanisme \textit{Attention}}
@@ -179,7 +328,31 @@ Hasil \textit{softmax} adalah matriks berbobot yang menjumlahkan \textit{value} 
 
 \subsection{\textit{Multi-Head Attention}}
 
-\textit{Multi-head attention} adalah perluasan \textit{single-head attention} yang menjalankan beberapa proyeksi linear paralel dari \textit{query}, \textit{key}, dan \textit{value}, kemudian mengkonkatenasi keluaran setiap \textit{head} dan memproyeksikannya kembali ke dimensi $d_{\text{model}}$. Motivasinya adalah bahwa satu \textit{head} terbatas pada satu pola hubungan antar token, sementara teks dan citra memuat banyak pola hubungan secara simultan. Setiap \textit{head} bekerja pada subruang berdimensi $d_k = d_{\text{model}}/h$ sehingga total komputasi tetap sebanding dengan \textit{single-head attention}. Formulasi matematis lengkap \textit{multi-head attention} beserta matriks proyeksi per \textit{head} disajikan pada Lampiran~\ref{app:mha-detail}.
+\textit{Multi-head attention} adalah perluasan \textit{single-head attention} yang menjalankan beberapa proyeksi linear paralel dari \textit{query}, \textit{key}, dan \textit{value}, kemudian mengkonkatenasi keluaran setiap \textit{head} dan memproyeksikannya kembali ke dimensi $d_{\text{model}}$. Motivasinya adalah bahwa satu \textit{head} terbatas pada satu pola hubungan antar token, sementara teks dan citra memuat banyak pola hubungan secara simultan. Setiap \textit{head} bekerja pada subruang berdimensi $d_k = d_{\text{model}}/h$ sehingga total komputasi tetap sebanding dengan \textit{single-head attention}.
+
+Secara formal, untuk setiap \textit{head} $i \in \{1, \dots, h\}$ didefinisikan tiga matriks proyeksi yang dapat dilatih:
+
+\begin{equation}
+    \mathbf{Q}_i = \mathbf{Q} \mathbf{W}_i^Q, \quad
+    \mathbf{K}_i = \mathbf{K} \mathbf{W}_i^K, \quad
+    \mathbf{V}_i = \mathbf{V} \mathbf{W}_i^V,
+    \label{eq:mha_proj}
+\end{equation}
+dengan $\mathbf{W}_i^Q, \mathbf{W}_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$ dan $\mathbf{W}_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$. Setiap \textit{head} menjalankan \textit{scaled dot-product attention} secara independen:
+
+\begin{equation}
+    \text{head}_i = \text{softmax}\!\left( \frac{\mathbf{Q}_i \mathbf{K}_i^\top}{\sqrt{d_k}} \right) \mathbf{V}_i.
+    \label{eq:mha_head}
+\end{equation}
+
+Keluaran $h$ \textit{head} dikonkatenasi sepanjang dimensi terakhir, kemudian diproyeksikan kembali ke ruang berdimensi $d_{\text{model}}$ melalui matriks proyeksi keluaran $\mathbf{W}^O \in \mathbb{R}^{h d_v \times d_{\text{model}}}$:
+
+\begin{equation}
+    \text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{Concat}(\text{head}_1, \dots, \text{head}_h) \, \mathbf{W}^O.
+    \label{eq:multihead}
+\end{equation}
+
+Dimensi $d_k$ pada setiap \textit{head} biasanya jauh lebih kecil daripada $d_{\text{model}}$, contohnya $d_{\text{model}} = 768$ dengan $h = 12$ menghasilkan $d_k = 64$. Pada model bahasa modern jumlah \textit{head} umumnya berkisar antara 8 dan 32, dan penambahan \textit{head} melampaui jumlah optimal sering kali tidak meningkatkan performa serta membuat sebagian \textit{head} menjadi redundan.
 
 \subsection{\textit{Self-Attention} versus \textit{Cross-Attention}}
 
@@ -267,7 +440,19 @@ Pada skala model dan data yang besar, DINO dan turunannya menunjukkan beberapa s
     \item \textbf{Transfer ke domain baru}: performa yang kuat ketika digunakan sebagai \textit{frozen encoder} pada domain hilir, termasuk medis, satelit, dan urban.
 \end{itemize}
 
-Selain DINOv3, penelitian ini juga mengevaluasi dua \textit{backbone} visual modern sebagai pembanding pada eksperimen ablasi. \textbf{EVA-02} \citep{fangEVA022023} menggabungkan \textit{Masked Image Modeling} (MIM) dengan penyelarasan fitur CLIP sebagai target supervisi, serta memperbaiki ViT melalui Sub-LN, SwiGLU FFN, dan 2D RoPE. \textbf{Hiera} \citep{ryaliHiera2023} menyederhanakan ViT dengan menghapus \textit{positional embedding} eksplisit dan memakai \textit{pooling attention} hierarkis yang dilatih dengan resep MAE \citep{heMAE2022}, sehingga lebih ringan dan cepat. Uraian rinci kedua arsitektur ini, termasuk inovasi dan paradigma pra-latih MAE, disajikan pada Lampiran~\ref{app:backbone-detail}. Hasil eksperimen (Bab~\ref{ch:hasil}) menunjukkan DINOv3 dan EVA-02 unggul, sementara Hiera konsisten paling lemah pada domain laporan publik.
+Selain DINOv3, penelitian ini juga mengevaluasi dua \textit{backbone} visual modern sebagai pembanding pada eksperimen ablasi, yaitu EVA-02 dan Hiera, yang diuraikan pada dua subbagian berikut.
+
+\subsection{EVA-02}
+\label{sec:eva02}
+
+EVA-02 \citep{fangEVA022023} adalah \textit{vision foundation model} generasi kedua dari seri EVA yang menggabungkan \textit{Masked Image Modeling} (MIM) dan penyelarasan dengan representasi CLIP. Inovasi utamanya adalah penggunaan fitur CLIP terlatih sebagai target sinyal supervisi dalam proses MIM, alih-alih piksel. Pada sisi arsitektur, EVA-02 memperbaiki ViT melalui Sub-LN (penambahan \textit{layer normalization} di dalam blok \textit{attention} dan FFN), SwiGLU FFN (varian \textit{gated} pengganti FFN GELU), dan 2D RoPE (\textit{rotary position embedding} dua dimensi). EVA-02 dilatih pada dataset Merged-2B dengan target fitur dari EVA-CLIP, dan menempati posisi kompetitif terhadap \textit{state-of-the-art} pada \textit{benchmark} ImageNet, COCO, dan ADE20K.
+
+\subsection{Hiera}
+\label{sec:hiera}
+
+Hiera (\textit{Hierarchical Vision Transformer without the Bells and Whistles}) \citep{ryaliHiera2023} menyederhanakan ViT dengan menghapus komponen yang dianggap tidak diperlukan, berlandaskan hipotesis bahwa banyak komponen pada \textit{hierarchical Transformer} sebelumnya (Swin, MViT) menjadi tidak perlu apabila pelatihan dilakukan dengan paradigma MAE. Inovasi utamanya adalah penghapusan \textit{positional embedding} eksplisit dan penggunaan \textit{pooling attention} hierarkis yang terinspirasi MAE \citep{heMAE2022}, sehingga menghasilkan representasi hierarkis menyerupai piramida fitur CNN namun tetap dalam kerangka \textit{Transformer} murni. \textit{Masked Autoencoder} (MAE) sendiri menutup sekitar 75\% \textit{patch} citra dan meminta model merekonstruksi piksel pada \textit{patch} yang ditutup; asimetri antara \textit{encoder} (melihat \textit{patch} terlihat) dan \textit{decoder} (merekonstruksi semua \textit{patch}) memberikan efisiensi komputasi yang signifikan.
+
+Hasil eksperimen (Bab~\ref{ch:hasil}) menunjukkan DINOv3 dan EVA-02 unggul, sementara Hiera konsisten paling lemah pada domain laporan publik.
 
 % =====================================================================
 \section{Model \textit{Encoder} Teks}
@@ -276,7 +461,26 @@ Selain DINOv3, penelitian ini juga mengevaluasi dua \textit{backbone} visual mod
 
 Bagian ini memaparkan model \textit{encoder} teks yang relevan dengan klasifikasi dokumen Bahasa Indonesia, yaitu BERT, mBERT, IndoBERT, Cendol-mT5, BGE-M3, dan keluarga E5 multibahasa.
 
-Sebagai pembanding pada eksperimen ablasi, penelitian ini juga mengevaluasi empat \textit{encoder} teks lain. \textbf{BERT} \citep{devlinBERT2019} dan varian multibahasanya \textbf{mBERT} (104 bahasa) menjadi tonggak \textit{Transformer encoder} dua arah berbasis MLM. \textbf{IndoBERT} \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga BERT yang dilatih khusus pada korpus Bahasa Indonesia sehingga lebih kaya pada idiom dan istilah lokal. \textbf{Cendol-mT5} \citep{cahyawijayaCendol2024} memanfaatkan \textit{encoder} mT5 \citep{xueMT52021} yang dilanjutkan pra-latih dan \textit{instruction tuning} pada Bahasa Indonesia dan bahasa daerah. \textbf{BGE-M3} \citep{chenBGEM32024} adalah \textit{embedding model} multibahasa multifungsi (\textit{dense}, \textit{sparse}, \textit{multi-vector}) berbasis XLM-RoBERTa \textit{large} dengan \textit{embedding} 1024-d. Uraian rinci keempat \textit{encoder} pembanding ini disajikan pada Lampiran~\ref{app:textencoder-detail}; bagian berikut memfokuskan pembahasan pada keluarga E5 yang menjadi \textit{encoder} teks terpilih pada \textit{pipeline} akhir.
+\subsection{\textit{Encoder} Teks Pembanding}
+\label{sec:textencoder-pembanding}
+
+Sebagai pembanding pada eksperimen ablasi, penelitian ini juga mengevaluasi empat \textit{encoder} teks lain, yaitu BERT/mBERT, IndoBERT, Cendol-mT5, dan BGE-M3, sebelum keluarga E5 dipilih pada \textit{pipeline} akhir.
+
+\subsubsection{BERT dan mBERT}
+
+BERT \citep{devlinBERT2019} adalah \textit{Transformer encoder} dua arah yang dilatih dengan \textit{Masked Language Modeling} (MLM) dan \textit{Next Sentence Prediction} (NSP), menggunakan tokenizer WordPiece dengan kosakata sekitar 30 ribu pada varian Inggris. \textit{Multilingual BERT} (mBERT) adalah varian yang dilatih pada Wikipedia 104 bahasa secara serentak dengan kosakata WordPiece bersama berukuran sekitar 110 ribu, sehingga memperoleh kemampuan transfer lintas bahasa \textit{zero-shot}.
+
+\subsubsection{IndoBERT}
+
+IndoBERT \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga \textit{Transformer encoder} yang dilatih khusus pada korpus Bahasa Indonesia melalui dua jalur publikasi, yaitu IndoLEM/IndoBERT \citep{kotoIndoLEM2020} dan IndoNLU/IndoBERT \citep{wilieIndoNLU2020}. Arsitekturnya identik dengan BERT, namun dengan tokenizer dan korpus pra-latih spesifik Bahasa Indonesia, sehingga menghasilkan representasi yang lebih kaya pada idiom, ejaan, dan istilah lokal dibanding mBERT.
+
+\subsubsection{Cendol-mT5}
+
+Cendol \citep{cahyawijayaCendol2024} adalah keluarga model bahasa berbasis instruksi yang dirilis oleh IndoNLP untuk Bahasa Indonesia dan bahasa daerah Nusantara. Sub-keluarga Cendol-mT5 dibangun di atas arsitektur mT5 (\textit{encoder-decoder}); pada penggunaan sebagai \textit{encoder} kalimat, hanya bagian \textit{encoder} mT5 yang dimanfaatkan dengan \textit{mean pooling} yang dinormalisasi. mT5 \citep{xueMT52021} adalah varian multibahasa T5 yang dilatih pada korpus mC4 mencakup 101 bahasa dengan tujuan \textit{span corruption}.
+
+\subsubsection{BGE-M3}
+
+BGE-M3 \citep{chenBGEM32024} adalah \textit{embedding model} multibahasa dari BAAI yang mendukung multibahasa (100+ bahasa), multifungsi (\textit{dense}, \textit{sparse}, dan \textit{multi-vector retrieval}), serta multigranularitas (hingga 8.192 token). Arsitekturnya didasarkan pada XLM-RoBERTa \textit{large} (sekitar 560 juta parameter) dengan strategi \textit{self-knowledge distillation}. \textit{Embedding} yang dihasilkan berdimensi 1024 dari token CLS dengan normalisasi L2. Keluarga E5 yang menjadi \textit{encoder} teks terpilih pada \textit{pipeline} akhir dibahas pada subbagian berikut.
 
 \subsection{Keluarga E5 dan \textit{multilingual-E5}}
 
@@ -426,7 +630,9 @@ Sebagai konsekuensi, sistem ini bergantung pada ketersediaan jaringan dan keters
 
 \textit{Unified Modeling Language} (UML) adalah bahasa permodelan visual standar yang dipergunakan untuk merancang, memvisualisasikan, mendokumentasikan, dan mengkonstruksi sistem perangkat lunak \citep{boochUML2005}. UML dirumuskan pada pertengahan 1990-an sebagai unifikasi tiga metode permodelan berorientasi objek yang dikembangkan oleh Grady Booch, James Rumbaugh, dan Ivar Jacobson, kemudian dibakukan oleh \textit{Object Management Group} (OMG). Versi mutakhir UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (\textit{structural}) dan diagram perilaku (\textit{behavioral}).
 
-UML 2.x mendefinisikan empat belas jenis diagram yang dikelompokkan menjadi diagram struktur (memodelkan elemen statis, contohnya \textit{class}, \textit{component}, dan \textit{deployment diagram}) dan diagram perilaku (memodelkan dinamika sistem, contohnya \textit{use case}, \textit{sequence}, \textit{activity}, dan \textit{state machine diagram}). Penelitian ini memakai \textit{use case}, \textit{activity}, \textit{class}, \textit{sequence}, serta \textit{component} dan \textit{deployment diagram} untuk mendokumentasikan rancangan SmartCityApps (Bab~\ref{ch:metode}). Uraian rinci jenis-jenis diagram UML serta pendekatan pelengkap \textit{C4 Model} \citep{brownC42018} disajikan pada Lampiran~\ref{app:uml-detail}.
+\textbf{Diagram struktur} memodelkan elemen sistem yang relatif statis. Tiga jenis yang paling sering dipakai adalah Diagram Kelas (\textit{class diagram}: kelas, atribut, metode, dan relasi), Diagram Komponen (\textit{component diagram}: komponen yang dapat di-\textit{deploy} beserta antarmukanya), dan Diagram Deployment (\textit{deployment diagram}: pemetaan komponen ke simpul perangkat keras). \textbf{Diagram perilaku} memodelkan dinamika sistem; empat jenis yang relevan adalah Diagram \textit{Use Case} (interaksi aktor dengan fungsionalitas), Diagram \textit{Sequence} (urutan pesan antar objek pada sumbu waktu), Diagram Aktivitas (\textit{activity diagram}: alur kerja dengan simpul keputusan dan paralel), dan Diagram \textit{State Machine} (keadaan objek dan transisinya). Penelitian ini memakai \textit{use case}, \textit{activity}, \textit{class}, \textit{sequence}, serta \textit{component} dan \textit{deployment diagram} untuk mendokumentasikan rancangan SmartCityApps (Bab~\ref{ch:metode}).
+
+Sebagai pelengkap, \citet{brownC42018} memperkenalkan \textit{C4 Model} yang menyederhanakan dokumentasi arsitektur menjadi empat tingkat abstraksi, yaitu \textit{Context}, \textit{Container}, \textit{Component}, dan \textit{Code}. C4 sering dipadukan dengan UML dan lebih mudah dibaca oleh pemangku kepentingan non-teknis.
 
 \subsection{Peran UML pada Pengembangan Aplikasi Mobile}
 
@@ -485,7 +691,9 @@ FastAPI banyak digunakan untuk \textit{serving} model \textit{machine learning} 
 \label{sec:docker}
 % =====================================================================
 
-Docker \citep{merkelDocker2014} adalah \textit{platform} kontainerisasi yang mengemas aplikasi beserta seluruh dependensinya ke dalam satu unit yang dapat dijalankan secara konsisten di berbagai lingkungan. Berbeda dari mesin virtual, kontainer berbagi \textit{kernel} sistem operasi induk dan mengisolasi proses melalui \textit{Linux namespaces} dan \textit{cgroups}, sehingga ringan dan cepat dijalankan. Pada penelitian ini Docker dipakai untuk mengemas server inferensi FastAPI beserta \textit{artifact} ONNX dengan pola \textit{multi-stage build}, sehingga lingkungan inferensi konsisten dan dapat direproduksi. Konsep inti Docker (\textit{image}, \textit{container}, \texttt{Dockerfile}, \textit{volume}, \textit{registry}), struktur \texttt{Dockerfile}, \textit{multi-stage build}, Docker Compose, serta manfaatnya bagi \textit{pipeline machine learning} diuraikan pada Lampiran~\ref{app:docker-detail}.
+Docker \citep{merkelDocker2014} adalah \textit{platform} kontainerisasi yang mengemas aplikasi beserta seluruh dependensinya ke dalam satu unit yang dapat dijalankan secara konsisten di berbagai lingkungan. Berbeda dari mesin virtual, kontainer berbagi \textit{kernel} sistem operasi induk dan mengisolasi proses melalui \textit{Linux namespaces} dan \textit{cgroups}, sehingga ringan dan cepat dijalankan. Pada penelitian ini Docker dipakai untuk mengemas server inferensi FastAPI beserta \textit{artifact} ONNX dengan pola \textit{multi-stage build}, sehingga lingkungan inferensi konsisten dan dapat direproduksi. Lima konsep inti Docker adalah \textbf{Image} (\textit{template} \textit{read-only} berisi sistem berkas aplikasi), \textbf{Container} (instansi \textit{image} yang berjalan), \textbf{Dockerfile} (skrip deklaratif langkah \textit{build}), \textbf{Volume} (penyimpanan persisten), dan \textbf{Registry} (gudang \textit{image} terpusat seperti Docker Hub). Sebuah \texttt{Dockerfile} umumnya memuat instruksi \texttt{FROM}, \texttt{WORKDIR}, \texttt{COPY}/\texttt{ADD}, \texttt{RUN}, \texttt{EXPOSE}, \texttt{ENV}, \texttt{HEALTHCHECK}, serta \texttt{CMD}/\texttt{ENTRYPOINT}.
+
+Strategi \textit{multi-stage build} memisahkan tahap \textit{build} (yang membutuhkan kompilator) dari tahap \textit{runtime} (yang hanya membutuhkan binari hasil), sehingga \textit{image} akhir lebih ramping. Docker Compose mendefinisikan aplikasi multi-kontainer melalui berkas YAML, sehingga lingkungan (server inferensi, basis data, \textit{reverse proxy}) dapat dijalankan dengan satu perintah \texttt{docker compose up}. Pada \textit{pipeline machine learning}, Docker memberikan keuntungan berupa \textit{reproducibility}, isolasi dependensi (PyTorch, ONNX Runtime, CUDA), \textit{portability}, dan akselerasi GPU melalui \texttt{nvidia-container-toolkit}.
 
 % =====================================================================
 \section{Metrik Evaluasi Klasifikasi Multi-Kelas}

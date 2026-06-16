@@ -75,7 +75,7 @@ Pengguna utama sistem ini adalah masyarakat Jakarta yang berinteraksi langsung d
 
 \subsubsection{Latar Belakang Institusi}
 
-Penelitian ini berorientasi pada konteks tata kelola Pemerintah Provinsi DKI Jakarta yang memiliki kanal aduan publik berbasis CRM. Struktur instansi yang menjadi target perutean meliputi Dinas Bina Marga, Dinas Perhubungan, Satpol PP, Dinas Pertamanan dan Hutan Kota, Badan Pembina BUMD, Dinas Cipta Karya Tata Ruang dan Pertanahan, Dinas Sumber Daya Air, dan Kelurahan, beserta kategori \textit{Instansi Lain} sebagai kelas \textit{catch-all} untuk laporan di luar kelas utama. Kesembilan instansi target ini ditetapkan secara konsisten pada Bagian~\ref{sec:dataset}.
+Penelitian ini berorientasi pada konteks tata kelola Pemerintah Provinsi DKI Jakarta yang memiliki kanal aduan publik berbasis CRM. Struktur instansi yang menjadi target perutean meliputi Dinas Bina Marga, Dinas Perhubungan, Satuan Polisi Pamong Praja (Satpol PP), Dinas Pertamanan dan Hutan, Badan Pembinaan BUMD, Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Dinas Sumber Daya Air, dan Kelurahan, beserta kategori \textit{Instansi lain} sebagai kelas \textit{catch-all} untuk laporan di luar kelas utama. Kesembilan instansi target ini ditetapkan secara konsisten pada Bagian~\ref{sec:dataset}.
 
 \subsection{Analisis Aplikasi Sejenis}
 
@@ -130,7 +130,7 @@ Dataset penelitian diperoleh dari portal aduan publik Jakarta yang berfungsi seb
 
 \subsection{Struktur Data Multimodal}
 
-Setiap baris dataset memuat sepasang masukan multimodal (gambar dan teks) yang berasal dari satu kejadian yang sama, beserta label dinas sebagai target klasifikasi. Satu contoh baris representatif ditampilkan pada Gambar~\ref{fig:sample-row-1}; dua contoh tambahan dengan karakteristik berbeda (saluran air mampet dengan narasi panjang dan pembatas jalan pudar dengan permohonan pengecatan ulang) disajikan pada Lampiran~\ref{app:sample-multimodal}.
+Setiap baris dataset memuat sepasang masukan multimodal (gambar dan teks) yang berasal dari satu kejadian yang sama, beserta label dinas sebagai target klasifikasi. Satu contoh baris representatif ditampilkan pada Gambar~\ref{fig:sample-row-1}; dua contoh tambahan dengan karakteristik berbeda (saluran air mampet dengan narasi panjang dan pembatas jalan pudar dengan permohonan pengecatan ulang) ditampilkan pada Gambar~\ref{fig:sample-row-2} dan Gambar~\ref{fig:sample-row-3}.
 
 \begin{figure}[htbp]
     \centering
@@ -147,7 +147,21 @@ Tiga kolom inti yang menjadi masukan dan keluaran sistem dirangkum sebagai berik
     \item \textbf{Kolom Label}: nama dinas penanggung jawab yang berasal dari proses pemetaan oleh operator portal CRM. Label ini menjadi target klasifikasi multikelas pada sembilan kategori akhir setelah pemetaan (Bagian~\ref{sec:dataset}).
 \end{itemize}
 
-Sifat multimodal dan komplementer kedua modalitas terlihat pada contoh Gambar~\ref{fig:sample-row-1}: foto memperlihatkan kendaraan terparkir di sekitar halte bus, sementara narasi memberi konteks bahwa kendaraan tersebut adalah \textit{ojol} dan tindakannya berstatus pelanggaran. Dua contoh tambahan pada Lampiran~\ref{app:sample-multimodal} memperkuat pola yang sama, yaitu narasi panjang yang menjelaskan dampak banjir dari saluran air mampet (label Kelurahan) serta foto pembatas jalan pudar yang disertai permohonan pengecatan ulang (label Dinas Perhubungan). Ketiga contoh tersebut mengilustrasikan bahwa baik citra maupun teks membawa informasi yang tidak sepenuhnya saling tergantikan, sehingga fusi multimodal diperlukan untuk klasifikasi yang akurat.
+Sifat multimodal dan komplementer kedua modalitas terlihat pada contoh Gambar~\ref{fig:sample-row-1}: foto memperlihatkan kendaraan terparkir di sekitar halte bus, sementara narasi memberi konteks bahwa kendaraan tersebut adalah \textit{ojol} dan tindakannya berstatus pelanggaran. Dua contoh tambahan pada Gambar~\ref{fig:sample-row-2} dan Gambar~\ref{fig:sample-row-3} memperkuat pola yang sama, yaitu narasi panjang yang menjelaskan dampak banjir dari saluran air mampet (label Kelurahan) serta foto pembatas jalan pudar yang disertai permohonan pengecatan ulang (label Dinas Perhubungan). Ketiga contoh tersebut mengilustrasikan bahwa baik citra maupun teks membawa informasi yang tidak sepenuhnya saling tergantikan, sehingga fusi multimodal diperlukan untuk klasifikasi yang akurat.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{sample_row_2.png}
+    \caption{Contoh 2 struktur data multimodal: foto saluran air mampet dengan narasi panjang yang menjelaskan dampak banjir terhadap warga sekitar, dipetakan ke label \textit{Kelurahan}. Narasi yang panjang menyediakan konteks tekstual kuat, sedangkan citra memvalidasi kondisi fisik saluran.}
+    \label{fig:sample-row-2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{sample_row_3.png}
+    \caption{Contoh 3 struktur data multimodal: foto pembatas jalan dengan cat yang sudah pudar, narasi permohonan pengecatan ulang oleh warga, dipetakan ke label \textit{Dinas Perhubungan}. Kondisi visual pudar pada citra menjadi sinyal utama, sedangkan narasi menegaskan jenis tindakan yang diharapkan.}
+    \label{fig:sample-row-3}
+\end{figure}
 
 \subsection{Metadata Tambahan}
 
@@ -175,7 +189,7 @@ Tahap pembersihan dilakukan dengan langkah-langkah berikut:
 \begin{itemize}
     \item \textbf{Deduplikasi teks}: penghapusan baris dengan kolom \texttt{laporan} yang persis sama. Tahap ini menghilangkan sekitar 30\% laporan yang merupakan duplikat hasil \textit{copy-paste} (terutama dari kanal Kelurahan).
     \item \textbf{Normalisasi nama dinas}: penyeragaman ejaan dan kapitalisasi nama instansi yang ditulis berbeda-beda pada data sumber.
-    \item \textbf{Pembersihan teks}: pemotongan URL via \textit{regex} \texttt{https?://\textbackslash S+|www\textbackslash .\textbackslash S+}, normalisasi unicode ke bentuk NFC, dan \textit{whitespace collapsing}.
+    \item \textbf{Pembersihan teks}: pemotongan URL via \textit{regex} \texttt{https?://\textbackslash S+|www\textbackslash .\textbackslash S+} dan \textit{whitespace collapsing}.
     \item \textbf{Validasi gambar}: pengecekan keterbacaan berkas gambar dan penghapusan baris dengan gambar rusak.
 \end{itemize}
 
@@ -186,7 +200,7 @@ Setelah pembersihan, dataset bersih berukuran \textbf{61.773 laporan} siap dipak
 \paragraph{Definisi terminologi.} Untuk menghindari kerancuan istilah pada bab-bab selanjutnya, ditetapkan tiga definisi berikut yang dipakai secara konsisten di seluruh manuskrip:
 
 \begin{itemize}
-    \item \textbf{Instansi (dinas)}: nama lembaga pemerintah daerah yang menjadi target klasifikasi. Sembilan instansi target pada penelitian ini adalah Dinas Bina Marga, Satuan Polisi Pamong Praja (Satpol PP), Dinas Perhubungan, Kelurahan, Dinas Pertamanan dan Hutan, Dinas Sumber Daya Air, Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, dan Instansi Lain.
+    \item \textbf{Instansi (dinas)}: nama lembaga pemerintah daerah yang menjadi target klasifikasi. Sembilan instansi target pada penelitian ini adalah Dinas Bina Marga, Satuan Polisi Pamong Praja (Satpol PP), Dinas Perhubungan, Kelurahan, Dinas Pertamanan dan Hutan, Dinas Sumber Daya Air, Dinas Cipta Karya, Tata Ruang, dan Pertanahan, Badan Pembinaan BUMD, dan Instansi lain.
     \item \textbf{Instansi prediksi} (\texttt{predicted\_dinas}): keluaran langsung model klasifikasi multimodal berupa salah satu dari sembilan instansi di atas, beserta probabilitas masing-masing kelas.
     \item \textbf{Instansi tujuan terdekat}: hasil tahap routing setelah inferensi. Backend menggunakan \texttt{predicted\_dinas} serta koordinat latitude dan longitude laporan untuk memilih kantor atau unit instansi aktif yang paling dekat dan relevan. Tahap ini \textbf{bukan} agregasi label model; model tetap menghasilkan keluaran pada granularitas sembilan instansi penuh (lihat \texttt{TARGET\_CLASSES} pada \texttt{src/crm/\_\_init\_\_.py}).
 \end{itemize}
@@ -195,7 +209,7 @@ Istilah ``kategori'' dan ``kelas'' dipakai hanya pada konteks teori klasifikasi 
 
 Label dinas pada dataset ini bukan anotasi yang dibuat ulang oleh peneliti, melainkan \textbf{label operasional} (\textit{operational ground truth}) yang diambil dari sistem produksi CRM Jakarta, yaitu instansi yang secara historis benar-benar menindaklanjuti setiap laporan. Penugasan tersebut mengikuti aturan kewenangan resmi pada Surat Keputusan Sekretaris Daerah Provinsi DKI Jakarta Nomor 99 Tahun 2022 yang menetapkan instansi penanggung jawab untuk setiap jenis aduan, sebagaimana didokumentasikan oleh penelitian acuan \citep{hanifPenugasanOtomatis2024}. Dengan demikian, validitas label bertumpu pada keputusan administratif yang dapat ditelusuri ke dasar hukum, bukan pada penilaian subjektif anotator, sehingga re-anotasi manual terhadap 61.773 sampel tidak diperlukan dan masalah \textit{inter-annotator agreement} yang lazim pada pelabelan manual tidak berlaku. Sebagai konsekuensinya, kualitas label mewarisi derajat \textit{noise} operasional yang melekat pada sistem, yaitu potensi ketidakkonsistenan keputusan petugas antar-waktu serta keberadaan laporan yang secara sah dapat ditangani lebih dari satu instansi; karakteristik ini diperlakukan secara eksplisit sebagai ketidakpastian \textit{aleatoric} dan ditinjau pada analisis kesalahan di Bab~\ref{ch:hasil}.
 
-Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{multi-class} dengan jumlah sampel yang tidak seimbang, label dinas mentah dipetakan ke sembilan instansi target yang lebih representatif dan operasional. Pemetaan ini bersifat deterministik dan mengikuti dua prinsip: (1) \textit{penggabungan hierarkis}, yaitu suku dinas dan unit pelaksana teknis dikonsolidasikan ke dinas induknya sesuai struktur organisasi Pemerintah Provinsi DKI Jakarta; dan (2) \textit{pemotongan berbasis frekuensi}, yaitu delapan instansi dengan volume laporan terbanyak (mencakup lebih dari 90 persen total laporan) dipertahankan sebagai kelas tersendiri, sedangkan ekor-panjang yang heterogen dikonsolidasikan ke satu kelas \textit{catch-all} ``Instansi Lain''. Strategi dua-prinsip ini selaras dengan penelitian acuan \citep{hanifPenugasanOtomatis2024}. Pemetaan dan distribusi sampel per instansi dirangkum pada Tabel~\ref{tab:kategori-target}.
+Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{multi-class} dengan jumlah sampel yang tidak seimbang, label dinas mentah dipetakan ke sembilan instansi target yang lebih representatif dan operasional. Pemetaan ini bersifat deterministik dan mengikuti dua prinsip: (1) \textit{penggabungan hierarkis}, yaitu suku dinas dan unit pelaksana teknis dikonsolidasikan ke dinas induknya sesuai struktur organisasi Pemerintah Provinsi DKI Jakarta; dan (2) \textit{pemotongan berbasis frekuensi}, yaitu delapan instansi dengan volume laporan terbanyak (mencakup lebih dari 90 persen total laporan) dipertahankan sebagai kelas tersendiri, sedangkan ekor-panjang yang heterogen dikonsolidasikan ke satu kelas \textit{catch-all} ``Instansi lain''. Strategi dua-prinsip ini selaras dengan penelitian acuan \citep{hanifPenugasanOtomatis2024}. Pemetaan dan distribusi sampel per instansi dirangkum pada Tabel~\ref{tab:kategori-target}.
 
 \begin{table}[htbp]
 \centering
@@ -206,14 +220,14 @@ Karena 487 SKPD mentah terlalu \textit{fine-grained} untuk klasifikasi \textit{m
 \textbf{ID} & \textbf{Kategori (Dinas)} & \textbf{Jumlah} & \textbf{Persen} \\
 \midrule
 0 & Dinas Bina Marga & 13.525 & 21,9\% \\
-1 & Dinas Perhubungan (termasuk UP Perparkiran, UPSL) & 11.678 & 18,9\% \\
-2 & Kelurahan & 11.980 & 19,4\% \\
-3 & Satuan Polisi Pamong Praja & 8.405 & 13,6\% \\
-4 & Dinas Pertamanan dan Hutan Kota & 6.000 & 9,7\% \\
+1 & Satuan Polisi Pamong Praja & 8.405 & 13,6\% \\
+2 & Dinas Perhubungan (termasuk UP Perparkiran, UPSL) & 11.678 & 18,9\% \\
+3 & Kelurahan & 11.980 & 19,4\% \\
+4 & Dinas Pertamanan dan Hutan & 6.000 & 9,7\% \\
 5 & Dinas Sumber Daya Air & 2.605 & 4,2\% \\
-6 & Badan Pembina BUMD (TransJakarta, Pasar Jaya, PAM Jaya) & 1.684 & 2,7\% \\
-7 & Dinas Cipta Karya Tata Ruang dan Pertanahan & 1.475 & 2,4\% \\
-8 & Instansi Lain (\textit{catch-all}) & 4.421 & 7,2\% \\
+6 & Dinas Cipta Karya, Tata Ruang, dan Pertanahan & 1.475 & 2,4\% \\
+7 & Badan Pembinaan BUMD (TransJakarta, Pasar Jaya, PAM Jaya) & 1.684 & 2,7\% \\
+8 & Instansi lain (\textit{catch-all}) & 4.421 & 7,2\% \\
 \midrule
 & \textbf{Total} & \textbf{61.773} & \textbf{100\%} \\
 \bottomrule
@@ -296,18 +310,124 @@ Port \textit{exposed} & 22 (SSH), 8888 (Jupyter) \\
 
 \subsection{Workflow Pelatihan dan Manajemen Lingkungan}
 
-Akses ke \textit{pod} dilakukan melalui kunci publik SSH yang didaftarkan pada akun RunPod. \textit{Workflow} pelatihan mencakup sinkronisasi dataset dengan \texttt{rsync}, pemasangan dependensi (\texttt{torch}, \texttt{transformers}, \texttt{timm}, \texttt{catboost}, \texttt{onnxruntime-gpu}), eksekusi notebook melalui \textit{SSH tunnel} ke Jupyter Lab, penyimpanan \textit{artifact} pada \textit{persistent volume}, dan pengunduhan hasil ke mesin lokal. Lingkungan direproduksi dari berkas konfigurasi dengan versi dependensi presisi, dan \textit{forward pass} \textit{encoder} memakai presisi campuran FP16 dengan ukuran \textit{batch} yang disesuaikan per \textit{encoder} (misalnya 32 untuk DINOv3 pada 224x224 dan 8 untuk EVA-02 pada 448x448). Konteks visual alur kerja ini sudah disajikan pada Gambar~\ref{fig:kerangka-pelatihan-setup}, sedangkan rincian langkah SSH serta praktik manajemen lingkungan secara penuh disajikan pada Lampiran~\ref{app:runpod-workflow}.
+Akses ke \textit{pod} dilakukan melalui kunci publik SSH yang didaftarkan pada akun RunPod, dan konteks visual alur kerja ini sudah disajikan pada Gambar~\ref{fig:kerangka-pelatihan-setup}. \textit{Workflow} pelatihan terdiri atas langkah-langkah berikut.
+
+\begin{enumerate}
+    \item \textbf{Penyiapan kunci SSH}: pembuatan pasangan kunci pada mesin lokal dan unggah kunci publik ke profil RunPod.
+    \item \textbf{Login ke pod}: \texttt{ssh root@<pod-host>\allowbreak{} -p <port>\allowbreak{} -i \textasciitilde/.ssh/\allowbreak{}id\_ed25519}.
+    \item \textbf{Sinkronisasi dataset}: pengiriman dataset bersih dan direktori gambar dari mesin lokal ke \textit{pod} menggunakan \texttt{rsync} melalui kanal SSH.
+    \item \textbf{Penyiapan lingkungan Python}: pemasangan dependensi pelatihan, mencakup \texttt{torch}, \texttt{transformers}, \texttt{timm}, \texttt{catboost}, dan \texttt{onnxruntime-gpu}.
+    \item \textbf{Eksekusi pelatihan}: peluncuran Jupyter Lab pada \textit{pod} dan akses dari peramban lokal melalui \textit{SSH tunnel} ke \textit{port} 8888.
+    \item \textbf{Penyimpanan \textit{artifact}}: \textit{embedding} dan model akhir disimpan pada \textit{persistent volume} \textit{pod}.
+    \item \textbf{Pengunduhan hasil}: \textit{embedding cache} dan \textit{checkpoint} CatBoost diunduh kembali ke mesin lokal menggunakan \texttt{rsync} setelah pelatihan selesai.
+\end{enumerate}
+
+Daftar dependensi dengan versi presisi dipertahankan sebagai berkas konfigurasi pelatihan sehingga lingkungan dapat direproduksi pada \textit{pod} baru. Eksekusi \textit{forward pass} \textit{encoder} memanfaatkan presisi campuran (\textit{Automatic Mixed Precision}) FP16 untuk mengurangi konsumsi VRAM dan mempercepat komputasi. Ukuran \textit{batch} disesuaikan per \textit{encoder}, contohnya 32 untuk DINOv3 pada masukan 224x224 dan 8 untuk EVA-02 pada masukan 448x448, berdasarkan ketersediaan VRAM.
 
 % =====================================================================
 \section{Pemrosesan, Ekstraksi \textit{Embedding}, dan Fusi Dini}
 \label{sec:preprocessing}
 % =====================================================================
 
-Tahap pemrosesan data multimodal, ekstraksi \textit{embedding}, dan fusi dini menyiapkan masukan tunggal berdimensi 2048 untuk \textit{classifier head} CatBoost. Pada sisi citra, setiap gambar dibaca dan diorientasikan ulang sesuai EXIF, kemudian di-\textit{resize} dengan \textit{square padding} ke 224x224 (atau 448x448 untuk EVA-02) mengikuti \textit{AutoImageProcessor} bawaan DINOv3, lalu dinormalisasi per kanal dengan rerata serta simpangan baku ImageNet sesuai Persamaan~\ref{eq:norm}. Augmentasi tidak diterapkan karena \textit{encoder} dibekukan. Pada sisi teks, narasi dipangkas spasinya dan dideduplikasi (penghapusan teks identik pada tahap pembersihan dataset), dipotong ke 256 token (mencakup sebagian besar laporan tanpa pemotongan), diberi prefiks instruksi untuk varian mE5-Instruct, ditokenisasi dengan tokenizer bawaan tiap \textit{encoder}, lalu \textit{embedding} keluarannya dinormalisasi L2.
+Tahap pemrosesan data multimodal, ekstraksi \textit{embedding}, dan fusi dini menyiapkan masukan tunggal berdimensi 2048 untuk \textit{classifier head} CatBoost. Pada sisi citra, setiap gambar dibaca dan diorientasikan ulang sesuai EXIF, kemudian di-\textit{resize} ke 224x224 (atau 448x448 untuk EVA-02) mengikuti \textit{AutoImageProcessor} bawaan DINOv3, lalu dinormalisasi per kanal dengan rerata serta simpangan baku ImageNet sesuai Persamaan~\ref{eq:norm}. Augmentasi tidak diterapkan karena \textit{encoder} dibekukan. Pada sisi teks, narasi dipangkas spasinya dan dideduplikasi (penghapusan teks identik pada tahap pembersihan dataset), dipotong ke 256 token (mencakup sebagian besar laporan tanpa pemotongan), diberi prefiks instruksi untuk varian mE5-Instruct, ditokenisasi dengan tokenizer bawaan tiap \textit{encoder}, lalu \textit{embedding} keluarannya dinormalisasi L2.
 
 Ekstraksi \textit{embedding} dilakukan dengan empat kandidat \textit{encoder} citra (DINOv2-L, DINOv3-ViT-L, Hiera-L, EVA-02-L) dan empat kandidat \textit{encoder} teks (mE5-Large-Instruct \texttt{intfloat/multilingual-e5-large-instruct}, BGE-M3, IndoBERT-Large-p2, Cendol-mT5-Large), seluruhnya menghasilkan vektor berdimensi 1024. \textit{Encoder} teks yang dipakai pada konfigurasi terbaik adalah varian \textbf{\textit{instruct}} dari \textit{multilingual-E5 large} (selanjutnya disingkat mE5), yang diberi prefiks instruksi pada setiap masukan. Inferensi dilakukan secara \textit{batch} dengan presisi campuran FP16 dan hasilnya disimpan pada \textit{cache} terkompresi sehingga eksperimen ablasi pasangan \textit{encoder} dapat dilakukan tanpa menjalankan ulang \textit{encoder}.
 
-Skema fusi yang digunakan adalah konkatenasi langsung dua vektor \textit{embedding} yang sudah dinormalisasi L2 per modalitas, mengikuti pendekatan \citet{hanifPenugasanOtomatis2024}, menghasilkan vektor fusi berdimensi 2048 yang menjadi masukan tunggal CatBoost. Reduksi dimensi (PCA) tidak diterapkan karena CatBoost berbasis pohon \textit{oblivious} mampu menangani fitur padat berdimensi tinggi serta untuk menghindari hilangnya informasi diskriminatif. Rincian lengkap berupa urutan langkah pemrosesan, tabel kandidat \textit{encoder}, formula normalisasi L2, dan persamaan vektor fusi disajikan pada Lampiran~\ref{app:preprocessing-embedding}.
+Skema fusi yang digunakan adalah konkatenasi langsung dua vektor \textit{embedding} yang sudah dinormalisasi L2 per modalitas, mengikuti pendekatan \citet{hanifPenugasanOtomatis2024}, menghasilkan vektor fusi berdimensi 2048 yang menjadi masukan tunggal CatBoost. Reduksi dimensi (PCA) tidak diterapkan karena CatBoost berbasis pohon \textit{oblivious} mampu menangani fitur padat berdimensi tinggi serta untuk menghindari hilangnya informasi diskriminatif. Subbagian berikut merinci urutan langkah pemrosesan kedua modalitas, daftar kandidat \textit{encoder} yang dievaluasi, \textit{pipeline} inferensi \textit{batch} beserta \textit{caching}, dan formulasi fusi dini.
+
+\subsection{Langkah Pemrosesan Data Gambar}
+\label{sec:img-preprocess}
+
+Setiap gambar masukan diolah dengan urutan langkah berikut sebelum dilewatkan ke \textit{encoder} citra.
+
+\begin{enumerate}
+    \item \textbf{Pembacaan dan konversi}: berkas JPEG/PNG dibaca menggunakan \texttt{PIL.Image.open}, kemudian dikonversi ke \textit{mode} RGB.
+    \item \textbf{Koreksi orientasi EXIF}: tag orientasi sensor kamera dibaca dan citra diputar ke orientasi normal agar foto vertikal tidak diumpankan dalam orientasi miring.
+    \item \textbf{\textit{Resize}}: untuk \textit{encoder} ter-\textit{deploy} DINOv3, citra di-\textit{resize} langsung ke 224x224 berbentuk persegi melalui \textit{AutoImageProcessor} (\texttt{default\_to\_square}, tanpa \textit{padding} maupun \textit{center crop}); untuk \textit{encoder} pembanding, sisi pendek citra di-\textit{resize} ke 256 piksel (DINOv2, Hiera) atau 512 piksel (EVA-02) menggunakan interpolasi bilinear.
+    \item \textbf{\textit{Center crop}} (hanya \textit{encoder} pembanding): pemotongan tengah ke ukuran target 224x224 atau 448x448; DINOv3 tidak menggunakan \textit{center crop}.
+    \item \textbf{Normalisasi per kanal}: piksel dinormalisasi dengan rerata $\mu = (0{,}485, 0{,}456, 0{,}406)$ dan simpangan baku $\sigma = (0{,}229, 0{,}224, 0{,}225)$ ImageNet sesuai Persamaan~\ref{eq:norm}.
+    \item \textbf{\textit{Layout} tensor}: konversi ke tensor \texttt{float32} dengan \textit{layout} NCHW (\textit{batch, channel, height, width}).
+\end{enumerate}
+
+Karena \textit{encoder} citra dibekukan dan tidak dilatih ulang, augmentasi data tidak diterapkan pada saat ekstraksi \textit{embedding}.
+
+\subsection{Langkah Pemrosesan Data Teks}
+\label{sec:txt-preprocess}
+
+Narasi laporan pada kolom \texttt{laporan} diolah dengan urutan langkah berikut.
+
+\begin{enumerate}
+    \item \textbf{Penghapusan URL}: \textit{regex} \texttt{https?://\textbackslash S+|www\textbackslash .\textbackslash S+} dipakai untuk menghapus tautan yang sering muncul pada laporan.
+    \item \textbf{Whitespace collapsing}: penggantian beberapa spasi atau \textit{tab} menjadi satu spasi.
+    \item \textbf{Pembersihan karakter kontrol}: penghapusan karakter non-cetak.
+    \item \textbf{Pemotongan}: pembatasan panjang teks ke 256 token, yang mencakup sekitar 98,5\% laporan tanpa pemotongan.
+    \item \textbf{Pemberian prefiks}: untuk \textit{multilingual-E5-Large-Instruct}, teks diberi prefiks \texttt{Instruct: Classify the following Indonesian civic report into the correct government agency.\textbackslash nQuery: } sebelum tokenisasi, mengikuti konvensi varian \textit{instruct}.
+    \item \textbf{Tokenisasi}: setiap teks ditokenisasi menggunakan tokenizer bawaan masing-masing \textit{encoder} (SentencePiece atau WordPiece) dengan parameter \texttt{max\_length=256}, \texttt{padding="longest"} (\textit{padding} dinamis ke panjang \textit{batch}, ekuivalen secara hasil dengan \texttt{max\_length} karena \textit{pooling} memakai \textit{attention mask}), dan \texttt{truncation=True}.
+\end{enumerate}
+
+Tidak diterapkan \textit{stopword removal} atau \textit{stemming}, karena \textit{Transformer encoder} sudah menangani morfologi kata secara natif.
+
+\subsection{Daftar \textit{Encoder} yang Dievaluasi}
+
+Empat \textit{encoder} citra dipilih sebagai kandidat ablasi, semuanya menghasilkan vektor \textit{embedding} berdimensi 1024. Daftar \textit{encoder} dirangkum pada Tabel~\ref{tab:image-encoders}.
+
+\begin{table}[htbp]
+\centering
+\caption{Daftar \textit{encoder} citra yang dievaluasi.}
+\label{tab:image-encoders}
+\small
+\begin{tabular}{p{2.5cm} p{5.0cm} c c c}
+\toprule
+\textbf{Model} & \textbf{Model ID} & \textbf{Dim} & \textbf{Input} & \textbf{Framework} \\
+\midrule
+DINOv2-L & dinov2-large & 1024 & 224 & PyTorch \\
+DINOv3-ViT-L & dinov3-vitl16 & 1024 & 224 & PyTorch \\
+Hiera-L & hiera\_large\_224 & 1024 & 224 & PyTorch \\
+EVA-02-L & eva02\_large\_patch14\_448 & 1024 & 448 & PyTorch \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Vektor representasi diambil dari token CLS atau rata-rata token \textit{patch} sesuai konvensi masing-masing \textit{encoder}, kemudian dinormalisasi L2. Pada sisi teks, empat \textit{encoder} dipilih sebagai kandidat ablasi, mencakup \textit{encoder} multibahasa generik dan \textit{encoder} khusus Bahasa Indonesia. Daftar dirangkum pada Tabel~\ref{tab:text-encoders}.
+
+\begin{table}[htbp]
+\centering
+\caption{Daftar \textit{encoder} teks yang dievaluasi.}
+\label{tab:text-encoders}
+\small
+\begin{tabular}{p{3.2cm} p{5.0cm} c p{2.8cm}}
+\toprule
+\textbf{Model} & \textbf{Model ID} & \textbf{Dim} & \textbf{Pool Strategy} \\
+\midrule
+mE5-Large-Instruct & multilingual-e5-large-instruct & 1024 & Mean masked \\
+BGE-M3 & bge-m3 & 1024 & CLS \\
+IndoBERT-Large-p2 & indobert-large-p2 & 1024 & CLS \\
+Cendol-mT5-Large & cendol-mt5-large-inst & 1024 & Mean (encoder) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textit{Output} setiap \textit{encoder} dinormalisasi L2 setelah \textit{pooling}.
+
+\subsection{\textit{Pipeline} Inferensi Batch dan \textit{Caching Embedding}}
+
+Inferensi \textit{batch} dilakukan dengan \textit{loop} di atas \texttt{DataLoader} PyTorch yang membaca masukan secara \textit{streaming} dari direktori gambar atau \texttt{Dataset} teks. Konteks \texttt{torch.no\_grad()} dan \texttt{torch.autocast(dtype=torch.float16)} dipakai untuk efisiensi memori. Vektor keluaran dikonversi ke \texttt{numpy} \texttt{float32} sebelum dituliskan ke berkas \textit{cache}.
+
+\textit{Embedding} hasil ekstraksi disimpan pada berkas terkompresi yang dikelompokkan per \textit{encoder} dan per partisi data, dengan identitas baris yang sejajar dengan label. Strategi \textit{caching} ini memungkinkan eksperimen ablasi pada algoritma klasifikasi dilakukan tanpa perlu menjalankan ulang \textit{encoder}, sehingga setiap kombinasi (\textit{encoder} citra, \textit{encoder} teks) dapat dievaluasi dengan biaya komputasi yang sangat rendah.
+
+\subsection{Rincian Fusi Multimodal Dini}
+\label{sec:fusion-detail}
+
+Penelitian ini mengadopsi skema fusi awal (\textit{early fusion}) berbasis konkatenasi, sebagaimana metodologi yang dipublikasikan oleh \citet{hanifPenugasanOtomatis2024}. Sebelum konkatenasi, setiap \textit{embedding} dinormalisasi L2 secara independen agar magnitudonya seragam dan tidak ada modalitas yang mendominasi karena perbedaan skala absolut. Normalisasi L2 didefinisikan sebagai $\mathbf{x}_{\text{norm}} = \mathbf{x} / \|\mathbf{x}\|_2$.
+
+Vektor fusi akhir adalah konkatenasi langsung sesuai Persamaan~\ref{eq:fusion-method}:
+
+\begin{equation}
+    \mathbf{e}_{\text{fuse}} = [\mathbf{e}_{\text{img}}^{\text{L2}};\, \mathbf{e}_{\text{txt}}^{\text{L2}}] \in \mathbb{R}^{2048}.
+    \label{eq:fusion-method}
+\end{equation}
+
+Vektor inilah yang menjadi masukan tunggal bagi algoritma klasifikasi CatBoost. Sebagaimana dibahas pada Bagian~\ref{sec:pca}, PCA dapat dipakai untuk mereduksi dimensi \textit{embedding}; pada penelitian ini PCA \textbf{tidak diterapkan} dengan dua pertimbangan, yaitu (1) CatBoost berbasis pohon keputusan \textit{oblivious} sehingga mampu menangani fitur padat berdimensi tinggi tanpa penalti \textit{curse of dimensionality} yang berarti, dan (2) reduksi dimensi linear seperti PCA dapat menghilangkan informasi diskriminatif yang justru diperlukan untuk membedakan kategori dinas yang dekat secara semantik.
 
 % =====================================================================
 \section{Algoritma Klasifikasi: CatBoost dengan PGS}
@@ -487,12 +607,12 @@ Laporan numerik hasil validasi paritas akan disajikan pada Bab Hasil dan Pembaha
 
 Server inferensi membungkus tiga sesi \textit{ONNX Runtime} (\textit{encoder} citra, \textit{encoder} teks, algoritma CatBoost) yang dimuat sekali pada saat \textit{startup}, kemudian menyediakan metode prediksi yang menjalankan \textit{pipeline} fusi awal pada masukan gabungan citra dan teks. Aplikasi Android SmartCityApps berperan sebagai \textit{client} untuk mengirimkan laporan, foto, serta koordinat latitude dan longitude. Proses inferensi model dilakukan pada sisi server melalui backend FastAPI, bukan pada perangkat Android. Diagram komponen dan \textit{deployment} server ditunjukkan pada Gambar~\ref{fig:server-arch}. Diagram tersebut mengikuti notasi \textit{component} dan \textit{deployment diagram} UML \citep{boochUML2005} yang dipadukan dengan pendekatan kontainer berlapis ala \textit{C4 model} \citep{brownC42018}, yaitu sebuah \textit{node} lingkungan eksekusi (Docker Container) yang memuat modul dan komponen di dalamnya (notasi kotak di dalam kotak).
 
-Model yang digunakan dapat disimpan sebagai artefak pada server atau pada \textit{model registry} seperti HuggingFace. Namun, HuggingFace pada rancangan ini diperlakukan sebagai penyimpanan atau registri artefak model, bukan sebagai layanan yang menjalankan inferensi. Dengan pemisahan ini, pembaruan model dapat dilakukan pada sisi server tanpa mewajibkan pengguna memperbarui aplikasi Android.
+HuggingFace berperan ganda pada rancangan ini. Pertama, HuggingFace Hub menjadi \textit{model registry} (penyimpanan artefak model ONNX); saat kontainer server dibangun, ketiga \textit{artifact} ONNX (\textit{encoder} citra, \textit{encoder} teks, dan algoritma CatBoost) diunduh dari Hub melalui \texttt{snapshot\_download}. Kedua, kontainer FastAPI itu sendiri dijalankan sebagai HuggingFace Space berbasis Docker (\textit{SDK} \texttt{docker}) yang mengeksekusi inferensi \textit{server-side} dan diekspos otomatis melalui URL HTTPS publik pada domain \texttt{hf.space}. Dengan demikian, inferensi tetap berlangsung pada sisi server (pada Space), bukan pada perangkat Android, dan pembaruan model cukup dilakukan dengan mendorong artefak baru ke Hub lalu memuat ulang Space tanpa mewajibkan pengguna memperbarui aplikasi Android.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.99\textwidth, height=0.55\textheight, keepaspectratio]{bab_3/deployment_component_drawio.png}
-    \caption{Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side, HuggingFace sebagai model registry/storage, dan Supabase.}
+    \caption{Diagram komponen dan deployment SmartCityApps: klien Android, backend FastAPI untuk inferensi server-side yang dijalankan sebagai HuggingFace Space berbasis Docker, HuggingFace Hub sebagai registri artefak model ONNX, dan Supabase.}
     \label{fig:server-arch}
 \end{figure}
 
@@ -572,7 +692,7 @@ Basis data \textit{cloud} aplikasi diimplementasikan pada Supabase yang berbasis
 
 \subsection{Ringkasan Tabel dan Kontrol Akses}
 
-Skema basis data terdiri atas tujuh tabel dan enam \textit{enum} pendukung. Tabel \texttt{profiles} terhubung satu-ke-satu dengan \texttt{auth.users} milik Supabase Auth dan menyimpan nama, kontak, peran (\texttt{user\_role}), serta instansi penugasan operator. Tabel \texttt{reports} adalah akar agregat yang menyimpan identitas pelapor, narasi, koordinat, keluaran model (\texttt{ai\_prediction}, \texttt{ai\_confidence}, \texttt{ai\_probabilities} dalam format \texttt{jsonb}, dan metadata model), status siklus hidup (\texttt{report\_status}), visibilitas (\texttt{report\_visibility}), serta penanda duplikasi (\texttt{duplicate\_of}). Konsep bernilai jamak dipindahkan ke tabel anak: \texttt{report\_evidence} menampung banyak berkas bukti per laporan (foto awal maupun foto penyelesaian), \texttt{report\_assignments} merekam riwayat penugasan dan penugasan-ulang instansi, \texttt{report\_history} mencatat audit perubahan status, dan \texttt{report\_sla} menyimpan tenggat layanan; tabel \texttt{agencies} menjadi registri instansi tujuan yang dirujuk oleh penugasan. Kebijakan \textit{Row Level Security} (RLS) memastikan pelapor hanya melihat laporan miliknya, petugas hanya mengakses kategori sesuai \texttt{assigned\_agency}, dan administrator memiliki akses lintas instansi. Rincian kolom seluruh tabel, daftar lengkap nilai \textit{enum}, serta kebijakan RLS disajikan pada Lampiran~\ref{app:db-schema-detail}.
+Skema basis data terdiri atas tujuh tabel dan enam \textit{enum} pendukung. Tabel \texttt{profiles} terhubung satu-ke-satu dengan \texttt{auth.users} milik Supabase Auth dan menyimpan nama, kontak, peran (\texttt{user\_role}), serta instansi penugasan operator. Tabel \texttt{reports} adalah akar agregat yang menyimpan identitas pelapor, narasi, koordinat, keluaran model (\texttt{ai\_prediction}, \texttt{ai\_confidence}, \texttt{ai\_probabilities} dalam format \texttt{jsonb}, dan metadata model), status siklus hidup (\texttt{report\_status}), visibilitas (\texttt{report\_visibility}), serta penanda duplikasi (\texttt{duplicate\_of}). Konsep bernilai jamak dipindahkan ke tabel anak: \texttt{report\_evidence} menampung banyak berkas bukti per laporan (foto awal maupun foto penyelesaian), \texttt{report\_assignments} merekam riwayat penugasan dan penugasan-ulang instansi, \texttt{report\_history} mencatat audit perubahan status, dan \texttt{report\_sla} menyimpan tenggat layanan; tabel \texttt{agencies} menjadi registri instansi tujuan yang dirujuk oleh penugasan. Kebijakan \textit{Row Level Security} (RLS) memastikan pelapor hanya melihat laporan miliknya, petugas hanya mengakses kategori sesuai \texttt{assigned\_agency}, dan administrator memiliki akses lintas instansi. Rincian kolom seluruh tabel, daftar lengkap nilai \textit{enum}, serta kebijakan RLS dipaparkan pada Subbagian~\ref{sec:db-schema-detail}.
 
 Tabel \texttt{agencies} berperan sebagai registri instansi tujuan perutean (\textit{system of record}) yang dirujuk oleh \texttt{report\_assignments.agency\_id} melalui \textit{foreign key}, dan hak tulisnya dibatasi pada peran super admin melalui kebijakan RLS \texttt{agencies\_write\_super\_admin}. Strategi sumber data registri, mekanisme pembacaannya oleh server inferensi (termasuk \textit{caching} dan \textit{fallback}), pemetaan kategori-ke-kantor, serta \textit{provenance} koordinat dibahas tersendiri pada Sub-bab~\ref{subsec:registri-instansi}.
 
@@ -581,6 +701,238 @@ Pemisahan tabel anak ini menghindari rancangan yang menumpuk seluruh konsep pada
 Berkas bukti dan foto profil disimpan pada \textit{bucket} privat Supabase Storage. Mengikuti praktik produksi, basis data tidak menyimpan URL final melainkan pasangan \textit{bucket} dan \texttt{object\_path} pada \texttt{report\_evidence}; URL akses dibuat sebagai \textit{signed URL} berumur singkat saat berkas hendak ditampilkan. Pendekatan ini mencegah tautan yang dapat kedaluwarsa atau bocor mengekspos foto warga yang berpotensi memuat data pribadi, dan memisahkan referensi penyimpanan secara logis (bukan \textit{foreign key} fisik) dari basis data relasional.
 
 Otentikasi pengguna ditangani oleh Supabase Auth dengan metode surel dan kata sandi. Proses registrasi memicu verifikasi surel, yaitu tautan konfirmasi dikirim ke alamat pengguna dan sesi baru menjadi aktif setelah verifikasi, sedangkan pemulihan kata sandi dilakukan melalui tautan \textit{reset} yang juga dikirim melalui surel. Pengiriman seluruh surel transaksional tersebut difasilitasi oleh layanan SMTP yang terhubung dengan Supabase Auth. Pada prototipe ini digunakan SMTP bawaan Supabase yang memiliki batas laju pengiriman sehingga memadai untuk pengujian, dan dapat diganti dengan penyedia SMTP khusus (misalnya SendGrid atau Resend) pada penerapan produksi tanpa mengubah kode aplikasi.
+
+\subsection{Rincian Tabel, \textit{Enum}, dan Kebijakan RLS}
+\label{sec:db-schema-detail}
+
+Subbagian ini menampilkan rincian kolom seluruh tabel basis data Supabase, daftar \textit{enum} pendukung, dan kebijakan \textit{Row Level Security} (RLS) yang diringkas pada subbagian sebelumnya.
+
+\subsubsection{Tabel \texttt{profiles}}
+
+Tabel \texttt{profiles} memuat informasi profil pengguna yang terhubung satu-ke-satu dengan tabel sistem \texttt{auth.users} milik Supabase Auth. Atribut utama dirangkum pada Tabel~\ref{tab:profiles}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{profiles}.}
+\label{tab:profiles}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Mengacu ke \texttt{auth.users.id}. \\
+full\_name & text & Nama lengkap pengguna. \\
+email & text & Alamat email pengguna. \\
+phone\_number & text & Nomor telepon kontak. \\
+profile\_photo\_url & text & URL foto profil pada Supabase Storage. \\
+is\_moderator & bool & Penanda peran moderator. \\
+role & user\_role & \textit{Enum} peran (warga, operator, moderator). \\
+assigned\_agency & issue\_category & \textit{Enum} instansi penugasan operator. \\
+created\_at & timestamptz & Waktu pembuatan profil. \\
+updated\_at & timestamptz & Waktu perubahan terakhir. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Tabel \texttt{reports}}
+
+Tabel \texttt{reports} adalah tabel utama yang menyimpan setiap laporan warga beserta hasil klasifikasi AI dan metadata lokasi. Atribut utama dirangkum pada Tabel~\ref{tab:reports}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{reports}.}
+\label{tab:reports}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik laporan. \\
+user\_id & uuid (FK) & Mengacu ke \texttt{profiles.id}. \\
+reporter\_name & text & Nama pelapor saat mengirim. \\
+reporter\_email & text & Email pelapor saat mengirim. \\
+category & issue\_category & \textit{Enum} kategori dinas akhir. \\
+ai\_prediction & text & Kategori dinas yang diprediksi AI. \\
+ai\_confidence & numeric & Tingkat keyakinan model (0..1). \\
+ai\_probabilities & jsonb & Skor probabilitas untuk setiap dari sembilan instansi target. \\
+ai\_model\_* & text & Metadata model server-side, mencakup nama dan versi model. \\
+assigned\_* & text/float8 & \textit{Proyeksi-baca} penugasan instansi terkini (sumber: \texttt{report\_assignments}). \\
+image\_url & text & \textit{Proyeksi-baca} referensi foto awal (sumber: \texttt{report\_evidence}). \\
+description & text & Narasi laporan dalam Bahasa Indonesia. \\
+latitude & float8 & Koordinat lintang lokasi kejadian. \\
+longitude & float8 & Koordinat bujur lokasi kejadian. \\
+address & text & Alamat hasil \textit{reverse geocoding}. \\
+visibility & report\_visibility & \textit{Enum} visibilitas (\textit{public}/\textit{private}). \\
+duplicate\_of & uuid (FK) & Menunjuk laporan asal bila laporan ini duplikat. \\
+status & report\_status & \textit{Enum} status (\textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}). \\
+verified\_by & uuid (FK) & Operator yang memverifikasi laporan. \\
+verified\_at & timestamptz & Waktu verifikasi. \\
+rejection\_reason & text & Alasan penolakan bila status \textit{rejected}. \\
+resolution\_* & text/\allowbreak{}uuid/\allowbreak{}timestamptz & \textit{Proyeksi-baca} bukti/metadata penyelesaian (sumber: \texttt{report\_evidence}). \\
+created\_at & timestamptz & Waktu laporan dikirim. \\
+updated\_at & timestamptz & Waktu perubahan terakhir. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Kolom \texttt{assigned\_*}, \texttt{image\_url}, dan \texttt{resolution\_*} pada tabel \texttt{reports} merupakan \textit{proyeksi-baca}: nilainya disinkronkan otomatis oleh \textit{trigger} \texttt{SECURITY DEFINER} dari tabel anak \texttt{report\_assignments} dan \texttt{report\_evidence} yang menjadi sumber kebenaran. Proyeksi ini dipertahankan agar klien Flutter yang membaca melalui Supabase \textit{Realtime} (\textit{stream} satu tabel) tetap menerima satu baris datar.
+
+\subsubsection{Tabel \texttt{report\_evidence}}
+
+Tabel \texttt{report\_evidence} menyimpan banyak berkas bukti per laporan (foto awal, foto penyelesaian, atau bukti tambahan). Referensi penyimpanan dicatat sebagai pasangan \textit{bucket} dan \texttt{object\_path}, bukan URL final, sehingga URL akses dapat dibuat sebagai \textit{signed URL} berumur singkat saat dibutuhkan. Atribut utama dirangkum pada Tabel~\ref{tab:report-evidence}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_evidence}.}
+\label{tab:report-evidence}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik berkas bukti. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+kind & evidence\_kind & Jenis bukti (\textit{initial}, \textit{resolution}, \textit{additional}). \\
+bucket & text & Nama \textit{bucket} Supabase Storage. \\
+object\_path & text & Lintasan objek di dalam \textit{bucket}. \\
+content\_type & text & Tipe MIME berkas. \\
+uploaded\_by & uuid (FK) & Pengguna yang mengunggah. \\
+created\_at & timestamptz & Waktu unggah. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Tabel \texttt{report\_assignments}}
+
+Tabel \texttt{report\_assignments} merekam riwayat penugasan instansi untuk tiap laporan, sehingga penugasan-ulang (\textit{reassignment}) dan eskalasi dapat ditelusuri. Hanya satu baris berstatus \textit{active} yang berlaku per laporan (dijamin indeks unik parsial). Atribut utama dirangkum pada Tabel~\ref{tab:report-assignments}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_assignments}.}
+\label{tab:report-assignments}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik penugasan. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+agency\_id & text & Referensi logis ke \texttt{agencies.id}. \\
+agency\_name & text & Nama instansi tujuan. \\
+agency\_category & issue\_category & Kategori instansi tujuan. \\
+distance\_meters & float8 & Jarak instansi dari koordinat laporan. \\
+routing\_method & text & Metode penentuan instansi terdekat. \\
+status & assignment\_status & \textit{Enum} status (\textit{active}, \textit{reassigned}, \textit{escalated}, \textit{superseded}). \\
+reason & text & Alasan penugasan/eskalasi. \\
+assigned\_by & uuid (FK) & Aktor penugasan (kosong bila otomatis). \\
+created\_at & timestamptz & Waktu penugasan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Tabel \texttt{agencies}}
+
+Tabel \texttt{agencies} adalah registri instansi tujuan yang dirujuk oleh \texttt{report\_assignments}, menggantikan medan teks instansi yang sebelumnya tersimpan datar pada \texttt{reports}. Atribut utama dirangkum pada Tabel~\ref{tab:agencies}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{agencies}.}
+\label{tab:agencies}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & text (PK) & Identitas unit instansi. \\
+name & text & Nama instansi. \\
+category & issue\_category & Kategori dinas instansi. \\
+latitude & float8 & Koordinat lintang unit (opsional). \\
+longitude & float8 & Koordinat bujur unit (opsional). \\
+is\_active & bool & Penanda instansi aktif. \\
+created\_at / updated\_at & timestamptz & Waktu pembuatan dan perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Tabel \texttt{report\_history}}
+
+Tabel \texttt{report\_history} mencatat setiap perubahan status pada laporan agar jejak audit (\textit{audit trail}) dapat ditelusuri dari awal pengiriman hingga penyelesaian. Atribut utama dirangkum pada Tabel~\ref{tab:report-history}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_history}.}
+\label{tab:report-history}
+\small
+\begin{tabular}{p{3.4cm} p{2.6cm} p{6.5cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+id & uuid (PK) & Identitas unik catatan riwayat. \\
+report\_id & uuid (FK) & Mengacu ke \texttt{reports.id}. \\
+status & report\_status & Status baru pada langkah ini. \\
+note & text & Catatan operator atau sistem. \\
+updated\_by & uuid & Pengguna yang memicu perubahan. \\
+created\_at & timestamptz & Waktu perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Tabel \texttt{report\_sla}}
+
+Tabel \texttt{report\_sla} menyimpan tenggat layanan per laporan untuk memantau pemenuhan SLA; kebijakan SLA tingkat instansi diserahkan sebagai pengembangan lanjutan. Atribut utama dirangkum pada Tabel~\ref{tab:report-sla}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atribut tabel \texttt{report\_sla}.}
+\label{tab:report-sla}
+\small
+\begin{tabular}{p{3.8cm} p{2.4cm} p{6.3cm}}
+\toprule
+\textbf{Kolom} & \textbf{Tipe} & \textbf{Deskripsi} \\
+\midrule
+report\_id & uuid (PK, FK) & Mengacu ke \texttt{reports.id}. \\
+first\_response\_due\_at & timestamptz & Tenggat respons pertama. \\
+resolution\_due\_at & timestamptz & Tenggat penyelesaian. \\
+first\_response\_at & timestamptz & Waktu respons pertama tercapai. \\
+breached\_at & timestamptz & Waktu SLA terlanggar. \\
+created\_at / updated\_at & timestamptz & Waktu pembuatan dan perubahan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{\textit{Enum} Pendukung}
+
+Skema mendefinisikan enam \textit{enum} kustom PostgreSQL yang dipakai bersama oleh tabel-tabel di atas, yaitu:
+
+\begin{itemize}
+    \item \texttt{issue\_category}: kategori dinas dengan nilai sesuai sembilan kategori target pada Tabel~\ref{tab:kategori-target}.
+    \item \texttt{report\_status}: status siklus hidup laporan, yaitu \textit{submitted}, \textit{verified}, \textit{in\_progress}, \textit{resolved}, \textit{rejected}.
+    \item \texttt{user\_role}: peran pengguna, yaitu \textit{citizen}, \textit{agency\_admin}, \textit{super\_admin}.
+    \item \texttt{evidence\_kind}: jenis bukti, yaitu \textit{initial}, \textit{resolution}, \textit{additional}.
+    \item \texttt{assignment\_status}: status penugasan, yaitu \textit{active}, \textit{reassigned}, \textit{escalated}, \textit{superseded}.
+    \item \texttt{report\_visibility}: visibilitas laporan, yaitu \textit{public}, \textit{private}.
+\end{itemize}
+
+\subsubsection{\textit{Row Level Security} dan Penyimpanan}
+
+Kebijakan \textit{Row Level Security} (RLS) diaktifkan pada seluruh tabel agar akses data terkontrol pada level baris. Beberapa kebijakan utama yang dirancang adalah:
+
+\begin{itemize}
+    \item Setiap pelapor hanya dapat membaca dan memperbarui baris \texttt{reports} miliknya sendiri (\(\texttt{auth.uid()} = \texttt{user\_id}\)).
+    \item Petugas dengan \texttt{role = 'agency\_admin'} dapat membaca dan memperbarui laporan pada \texttt{assigned\_agency} yang sesuai dengan \texttt{category}.
+    \item Admin dengan \texttt{role = 'super\_admin'} memiliki akses lintas instansi, termasuk koreksi penugasan; penulisan tabel \texttt{agencies} dibatasi pada peran ini.
+    \item Tabel anak \texttt{report\_evidence} dan \texttt{report\_assignments} hanya dapat dibaca oleh pengguna terautentikasi; penulisannya dilakukan eksklusif melalui \textit{trigger} \texttt{SECURITY DEFINER} sehingga tidak ada kebijakan \texttt{INSERT} langsung.
+    \item Tabel \texttt{report\_history} hanya ditulis melalui RPC/pemicu basis data saat status \texttt{reports} berubah.
+\end{itemize}
+
+Berkas disimpan pada \textit{bucket} privat \texttt{report-images} dan \texttt{profile-photos}. Kebijakan unggah membatasi penulisan objek ke prefiks \texttt{\{user\_id\}/} milik pengguna, sedangkan pembacaan dilakukan melalui \textit{signed URL} berumur singkat yang dibuat atas dasar kebijakan \texttt{SELECT} untuk pengguna terautentikasi; basis data menyimpan \textit{bucket} dan \texttt{object\_path}, bukan URL final. Skema \texttt{storage} bawaan Supabase ditunjukkan pada Gambar~\ref{fig:storage-schema}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{supabase/storage_schema.png}
+    \caption{Skema \texttt{storage} yang dikelola Supabase. Aplikasi hanya merujuk secara logis tabel \texttt{objects} (melalui \texttt{bucket\_id} serta \texttt{name}/\texttt{object\_path}) dan \texttt{buckets}; tabel lain seperti \texttt{s3\_multipart\_uploads} dan \texttt{vector\_indexes} merupakan internal Supabase Storage dan tidak digunakan aplikasi.}
+    \label{fig:storage-schema}
+\end{figure}
 
 \subsection{Bukti Penyelesaian Laporan}
 
@@ -608,7 +960,7 @@ Diagram \textit{use case} memetakan interaksi antara aktor utama (Warga Pelapor 
 
 \subsection{Use Case Description}
 
-Setiap \textit{use case} utama dirangkum pada Tabel~\ref{tab:uc-ringkas}. Deskripsi lengkap setiap \textit{use case} (alur utama, alur alternatif, pra-kondisi, dan pasca-kondisi) disajikan pada Lampiran~\ref{app:usecase-detail}.
+Setiap \textit{use case} utama dirangkum pada Tabel~\ref{tab:uc-ringkas}. Deskripsi lengkap setiap \textit{use case} (alur utama, alur alternatif, pra-kondisi, dan pasca-kondisi) dipaparkan pada Tabel~\ref{tab:uc-auth} hingga Tabel~\ref{tab:uc-riwayat}.
 
 \begin{table}[htbp]
 \centering
@@ -626,6 +978,158 @@ Meninjau Hasil AI & Warga Pelapor & Lihat instansi prediksi, confidence, dan ins
 Mengoreksi Kategori & Warga Pelapor & Ganti instansi prediksi secara manual bila keliru. \\
 Menyimpan Laporan & Warga Pelapor & Simpan laporan dan hasil klasifikasi ke Supabase. \\
 Melihat Riwayat/Peta & Warga Pelapor & Lihat daftar dan lokasi laporan tersimpan. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mendaftar atau Masuk Akun.}
+\label{tab:uc-auth}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mendaftar atau Masuk Akun \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mendaftar akun baru atau masuk ke akun yang sudah ada untuk mengakses fitur pelaporan. \\
+Pra-kondisi & Aplikasi terinstal pada perangkat Android. \\
+Alur Utama & 1. Pelapor membuka aplikasi. 2. Pelapor memilih opsi daftar atau masuk. 3. Pelapor memasukkan kredensial. 4. Sistem memvalidasi dan menyimpan sesi lokal. \\
+Alur Alternatif & Bila kredensial salah, sistem menampilkan pesan kesalahan. \\
+Pasca-kondisi & Pelapor masuk dan menuju layar utama. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengambil Foto Laporan.}
+\label{tab:uc-foto}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengambil Foto Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mengambil foto kejadian dengan kamera atau memilih dari galeri sebagai bukti visual laporan. \\
+Pra-kondisi & Pelapor sudah masuk dan berada di layar buat laporan. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Ambil Foto}. 2. Sistem meminta izin kamera/galeri. 3. Pelapor mengambil atau memilih foto. 4. Sistem menyimpan referensi foto pada \textit{state} laporan. \\
+Alur Alternatif & Pelapor membatalkan pengambilan foto. \\
+Pasca-kondisi & Foto tampil pada \textit{preview} dan siap dikirim. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Menulis Narasi Laporan.}
+\label{tab:uc-narasi}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Menulis Narasi Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor menulis narasi laporan dalam Bahasa Indonesia untuk melengkapi foto. \\
+Pra-kondisi & Pelapor berada di layar buat laporan. \\
+Alur Utama & 1. Pelapor mengetuk medan teks \textit{Narasi Laporan}. 2. Pelapor menulis deskripsi singkat. 3. Sistem menyimpan teks pada \textit{state} laporan. \\
+Alur Alternatif & Pelapor mengosongkan medan teks; sistem menampilkan peringatan. \\
+Pasca-kondisi & Narasi siap dikirim bersama foto. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengirim Laporan untuk Klasifikasi.}
+\label{tab:uc-kirim}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengirim Laporan untuk Klasifikasi \\
+Aktor & Warga Pelapor, Server FastAPI \\
+Deskripsi & Aplikasi mengirim foto, narasi, latitude, dan longitude ke server FastAPI untuk diklasifikasikan ke salah satu dari sembilan instansi. \\
+Pra-kondisi & Foto dan narasi sudah lengkap, koneksi jaringan tersedia. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Klasifikasi}. 2. Aplikasi membentuk permintaan \textit{multipart} berisi foto, narasi, latitude, dan longitude. 3. Permintaan dikirim ke \textit{endpoint} klasifikasi pada server. 4. Server menjalankan fusi awal dan algoritma CatBoost+PGS. 5. Server menghitung confidence dan instansi terdekat. 6. Server mengirim respons JSON ke aplikasi. \\
+Alur Alternatif & Bila server tidak tersedia, sistem menampilkan pesan kesalahan dan menawarkan menyimpan laporan sebagai \textit{draft}. \\
+Pasca-kondisi & Pelapor diarahkan ke layar tinjauan AI. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Meninjau Hasil Klasifikasi AI.}
+\label{tab:uc-tinjau}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Meninjau Hasil Klasifikasi AI \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor melihat instansi yang diprediksi beserta tingkat keyakinan dan rekomendasi instansi. \\
+Pra-kondisi & Respons klasifikasi sudah diterima. \\
+Alur Utama & 1. Sistem menampilkan instansi prediksi, \textit{confidence}, dan tiga prediksi teratas. 2. Sistem menampilkan instansi tujuan terdekat beserta estimasi jarak. 3. Pelapor membaca informasi. \\
+Alur Alternatif & Bila \textit{confidence} di bawah ambang, sistem menyarankan tinjauan manual. \\
+Pasca-kondisi & Pelapor dapat menerima atau mengoreksi hasil. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Mengoreksi Kategori Manual.}
+\label{tab:uc-koreksi}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Mengoreksi Kategori Manual \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor mengganti instansi yang diprediksi AI bila menurutnya salah. \\
+Pra-kondisi & Pelapor berada di layar tinjauan AI. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Edit Kategori}. 2. Sistem menampilkan daftar sembilan kategori. 3. Pelapor memilih kategori baru. 4. Sistem memperbarui \textit{state} laporan. \\
+Alur Alternatif & Pelapor membatalkan koreksi. \\
+Pasca-kondisi & Kategori laporan diperbarui sesuai pilihan pelapor. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Menyimpan Laporan ke Riwayat.}
+\label{tab:uc-simpan}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Menyimpan Laporan ke Riwayat \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor menyimpan laporan beserta hasil klasifikasi ke basis data Supabase. \\
+Pra-kondisi & Hasil klasifikasi (otomatis atau hasil koreksi) tersedia dan pelapor terotentikasi. \\
+Alur Utama & 1. Pelapor menekan tombol \textit{Simpan}. 2. Aplikasi mengunggah berkas gambar ke Supabase Storage. 3. Aplikasi menulis baris baru ke tabel \texttt{reports} pada basis data Supabase. 4. Aplikasi menyisipkan baris audit ke tabel \texttt{report\_history}. 5. Sistem menampilkan konfirmasi. \\
+Alur Alternatif & Bila penyimpanan gagal, sistem menampilkan pesan kesalahan. \\
+Pasca-kondisi & Laporan tersimpan dan terlihat pada layar Riwayat. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{\textit{Use case description} untuk Melihat Riwayat dan Peta Laporan.}
+\label{tab:uc-riwayat}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Atribut} & \textbf{Deskripsi} \\
+\midrule
+Use Case & Melihat Riwayat dan Peta Laporan \\
+Aktor & Warga Pelapor \\
+Deskripsi & Pelapor melihat daftar laporan yang sudah disimpan, beserta lokasi pada peta. \\
+Pra-kondisi & Sudah ada minimal satu laporan tersimpan. \\
+Alur Utama & 1. Pelapor membuka \textit{tab} Riwayat atau Peta. 2. Sistem membaca tabel laporan dari basis data. 3. Sistem menampilkan daftar laporan atau \textit{pin} lokasi pada peta. \\
+Alur Alternatif & Bila tidak ada laporan, sistem menampilkan pesan \textit{empty state}. \\
+Pasca-kondisi & Pelapor dapat memilih laporan untuk melihat rincian. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -726,7 +1230,7 @@ Layanan Otentikasi Supabase & Pendaftaran, masuk, keluar, dan pembaruan profil p
 
 \subsection{Keluaran Model Tetap Sembilan Instansi}
 
-Model klasifikasi tidak menghasilkan empat kluster operasional. Keluaran model tetap berupa prediksi multiclass pada sembilan instansi target, yaitu satu \texttt{predicted\_dinas}, nilai \textit{confidence}, dan skor probabilitas untuk seluruh kelas. Istilah kluster operasional pada rancangan awal hanya berfungsi sebagai panduan tampilan atau pengelompokan naratif, bukan sebagai label model dan bukan sebagai hasil akhir routing pada arsitektur Phase 2.
+Model klasifikasi tidak menghasilkan empat kluster operasional. Keluaran model tetap berupa prediksi multiclass pada sembilan instansi target, yaitu satu \texttt{predicted\_dinas}, nilai \textit{confidence}, dan skor probabilitas untuk seluruh kelas. Istilah kluster operasional hanya berfungsi sebagai panduan tampilan atau pengelompokan naratif, bukan sebagai label model dan bukan sebagai hasil akhir routing.
 
 Dengan demikian, alur yang dipakai pada implementasi adalah: notebook melatih dan mengevaluasi model 9 kelas, artefak terbaik diekspor ke ONNX, backend FastAPI memuat artefak tersebut, lalu SmartCityApps menerima hasil prediksi dari server. Aplikasi Android tidak menjalankan model secara lokal.
 
@@ -742,7 +1246,7 @@ Perhitungan jarak menggunakan formula Haversine karena koordinat berada pada per
 
 dengan \(R\) adalah jari-jari bumi dan \(a\) dihitung dari selisih lintang serta bujur. Hasil routing yang dikembalikan backend meliputi \texttt{agency\_id}, \texttt{agency\_name}, \texttt{agency\_category}, \texttt{distance\_meters}, dan \texttt{routing\_method}.
 
-Perlu ditegaskan bahwa daftar instansi beserta koordinatnya pada prototipe ini merupakan data contoh representatif (\textit{seeded}) yang ditanamkan pada layanan, bukan registri resmi yang memuat seluruh unit instansi se-DKI Jakarta. Selain itu, perutean berbasis jarak Haversine merupakan penyederhanaan; pada praktik pemerintahan, penugasan laporan umumnya mengikuti batas wilayah administratif (kelurahan atau kecamatan) yang menaungi lokasi kejadian, bukan semata kantor yang terdekat secara garis lurus. Pada penerapan produksi, koordinat instansi idealnya diisi melalui registrasi lokasi mandiri oleh masing-masing Operator Instansi atau diambil dari registri resmi pemerintah; mekanisme tersebut dibahas sebagai arah pengembangan lanjutan pada Bab~\ref{ch:simpulan}.
+Perlu ditegaskan bahwa koordinat tiap kantor pada prototipe ini diperoleh melalui \textit{geocoding} alamat kantor resmi (OpenStreetMap Nominatim), namun registri yang ditanamkan belum memuat seluruh unit instansi se-DKI Jakarta: hanya enam belas kantor representatif yang didaftarkan, dengan suku dinas dan entri tingkat kelurahan diproksikan ke kompleks Kantor Walikota kotamadya tempatnya berkedudukan. Dengan demikian koordinatnya otentik pada tingkat kantor, tetapi cakupannya belum lengkap dan sebagian bersifat aproksimasi wilayah, sebagaimana didokumentasikan pada metadata \texttt{agencies\_seed.json}. Selain itu, perutean berbasis jarak Haversine merupakan penyederhanaan; pada praktik pemerintahan, penugasan laporan umumnya mengikuti batas wilayah administratif (kelurahan atau kecamatan) yang menaungi lokasi kejadian, bukan semata kantor yang terdekat secara garis lurus. Pada penerapan produksi, koordinat instansi idealnya diisi melalui registrasi lokasi mandiri oleh masing-masing Operator Instansi atau diambil dari registri resmi pemerintah; mekanisme tersebut dibahas sebagai arah pengembangan lanjutan pada Bab~\ref{ch:simpulan}.
 
 \subsection{Kasus Confidence Rendah dan Fallback}
 
@@ -812,7 +1316,7 @@ Setelah pelatihan selesai, model \textit{native} CatBoost diekspor ke format ONN
 
 \subsection{Pengujian Aplikasi Flutter}
 
-Aplikasi Flutter diuji secara end-to-end pada perangkat Android fisik dengan tiga skenario, yaitu (a) alur pelaporan oleh Warga Pelapor mulai dari pengambilan foto, penulisan narasi, klasifikasi AI, tinjauan, hingga penyimpanan ke Supabase, (b) alur verifikasi oleh Operator Instansi pada antrean laporan yang sudah dikategorisasi, dan (c) alur moderasi lintas instansi oleh Moderator. Setiap skenario dievaluasi dari sisi waktu respons, konsumsi data jaringan, dan ketepatan klasifikasi yang ditampilkan pada layar tinjauan AI.
+Aplikasi Flutter diuji secara end-to-end pada perangkat Android fisik dengan tiga skenario, yaitu (a) alur pelaporan oleh Warga Pelapor mulai dari pengambilan foto, penulisan narasi, klasifikasi AI, tinjauan, hingga penyimpanan ke Supabase, (b) alur verifikasi oleh Operator Instansi pada antrean laporan yang sudah dikategorisasi, dan (c) alur moderasi lintas instansi oleh Moderator. Setiap skenario dievaluasi secara kualitatif dari sisi keberhasilan fungsional setiap tahap alur, sementara latensi inferensi per tahap pada server dilaporkan secara kuantitatif dan usabilitas aplikasi diukur dengan \textit{System Usability Scale} (SUS) pada Bab~\ref{ch:hasil}.
 
 \subsection{Catatan tentang Pemilihan Algoritma}
 

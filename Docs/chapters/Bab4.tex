@@ -30,7 +30,7 @@ RunPod & GPU \textit{cloud} NVIDIA GeForce RTX 4090 (24 GB VRAM), sesuai Tabel~\
 \end{tabular}
 \end{table}
 
-Pengujian aplikasi Flutter dilakukan pada perangkat Android fisik dengan koneksi USB \textit{tethering}, dengan port server FastAPI yang diteruskan melalui \texttt{adb reverse} sehingga \textit{endpoint} \texttt{/predict} dapat diakses oleh aplikasi seolah-olah berjalan di perangkat lokal.
+Pengujian aplikasi Flutter dilakukan pada perangkat Android fisik dengan koneksi USB \textit{tethering}, dengan port server FastAPI yang diteruskan melalui \texttt{adb reverse} sehingga \textit{endpoint} \texttt{/predict} dapat diakses oleh aplikasi seolah-olah berjalan di perangkat lokal. Pada \textit{deployment} publik, server yang sama dijalankan sebagai HuggingFace Space berbasis Docker dengan URL HTTPS otomatis sehingga dapat dijangkau tanpa \textit{tethering}.
 
 % =====================================================================
 \section{Persiapan dan Eksplorasi Data}
@@ -85,7 +85,7 @@ Konfigurasi terbaik yang dipilih untuk \textit{deployment} adalah kombinasi \tex
 \label{tab:hasil-utama}
 \begin{tabular}{l c c}
 \toprule
-\textbf{Konfigurasi} & \textbf{Balanced Accuracy} & \textbf{Macro F1} \\
+\textbf{Konfigurasi} & \textbf{Akurasi} & \textbf{Macro F1} \\
 \midrule
 CatBoost (tanpa PGS) & 0,7996 & 0,7684 \\
 CatBoost dengan PGS & \textbf{0,8074} & \textbf{0,7747} \\
@@ -94,7 +94,7 @@ $\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
 \end{tabular}
 \end{table}
 
-Konfigurasi terbaik mencapai \textit{balanced accuracy} 0,8074 dan \textit{macro F1} 0,7747 pada set uji 9.266 sampel, dengan akurasi keseluruhan 0,8073 dan \textit{macro ROC-AUC} (\textit{one-vs-rest}) sebesar 0,9667. Capaian ini kompetitif terhadap baseline yang dilaporkan oleh \citet{hanifPenugasanOtomatis2024} sebesar akurasi 80,5 persen pada delapan kelas. Perbandingan ini perlu dibaca secara hati-hati dan bukan sebagai unggul-langsung pada kondisi eksperimen yang identik, karena metrik dan jumlah kelas berbeda: penelitian ini melaporkan \textit{balanced accuracy} dan \textit{macro F1} pada sembilan kelas (termasuk kelas \textit{catch-all} Instansi Lain yang lebih sulit), sedangkan baseline melaporkan akurasi pada delapan kelas. Dengan kondisi tugas yang lebih luas tersebut, penggantian DINOv2 dengan DINOv3 \textit{large} tetap mempertahankan kinerja pada tingkat yang setara atau sedikit lebih tinggi. Rerata waktu pelatihan satu konfigurasi CatBoost adalah 308 detik tanpa PGS dan 602 detik dengan PGS, yang membuktikan bahwa biaya komputasi pelatihan masih dapat ditoleransi pada satu sesi eksperimen.
+Konfigurasi terbaik mencapai \textit{akurasi} 0,8074 dan \textit{macro F1} 0,7747 pada set uji 9.266 sampel, dengan \textit{balanced accuracy} (rata-rata \textit{recall} per kelas) 0,7916 dan \textit{macro ROC-AUC} (\textit{one-vs-rest}) sebesar 0,9667. Capaian ini kompetitif terhadap baseline yang dilaporkan oleh \citet{hanifPenugasanOtomatis2024} sebesar akurasi 80,5 persen pada delapan kelas. Perbandingan ini perlu dibaca secara hati-hati dan bukan sebagai unggul-langsung pada kondisi eksperimen yang identik, karena jumlah kelas berbeda: penelitian ini melaporkan \textit{akurasi}, \textit{balanced accuracy}, dan \textit{macro F1} pada sembilan kelas (termasuk kelas \textit{catch-all} Instansi lain yang lebih sulit), sedangkan baseline melaporkan akurasi pada delapan kelas. Dengan kondisi tugas yang lebih luas tersebut, penggantian DINOv2 dengan DINOv3 \textit{large} tetap mempertahankan kinerja pada tingkat yang setara atau sedikit lebih tinggi. Rerata waktu pelatihan satu konfigurasi CatBoost adalah 308 detik tanpa PGS dan 602 detik dengan PGS, yang membuktikan bahwa biaya komputasi pelatihan masih dapat ditoleransi pada satu sesi eksperimen.
 
 \subsection{Metrik Per-Kelas}
 \label{sec:metrik-per-kelas}
@@ -157,7 +157,7 @@ Fusi awal (citra + teks) & \textbf{0,7996} & \textbf{0,7684} & \textbf{0,8074} &
     \label{fig:modality-ablation}
 \end{figure}
 
-Hasil ini menyampaikan tiga temuan penting. Pertama, modalitas teks saja jauh lebih diskriminatif dibandingkan modalitas citra saja, yaitu \textit{macro F1} 0,7498 untuk teks dibandingkan 0,6016 untuk citra. Hal ini wajar karena narasi laporan sering kali memuat petunjuk eksplisit tentang dinas yang dituju, sedangkan citra hanya menampilkan kondisi visual yang ambigu pada beberapa kategori. Kedua, fusi awal memberikan peningkatan yang konsisten di atas modalitas tunggal terbaik, yaitu peningkatan \textit{macro F1} sebesar 0,0186 (1,86 \textit{percentage point}) terhadap teks saja pada konfigurasi PGS, menunjukkan bahwa citra membawa informasi tambahan yang tidak selalu tertangkap oleh teks. Ketiga, pengaruh PGS pada modalitas citra saja adalah negatif tipis (selisih $-0,0043$ pada F1), sedangkan pada modalitas teks saja dan fusi awal pengaruhnya positif. Hal ini mengindikasikan bahwa PGS bekerja optimal ketika model awal sudah memberikan probabilitas yang relatif terkalibrasi, kondisi yang lebih sulit dipenuhi oleh model yang hanya mengandalkan modalitas visual.
+Hasil ini menyampaikan tiga temuan penting. Pertama, modalitas teks saja jauh lebih diskriminatif dibandingkan modalitas citra saja, yaitu \textit{macro F1} 0,7498 untuk teks dibandingkan 0,6016 untuk citra. Hal ini wajar karena narasi laporan sering kali memuat petunjuk eksplisit tentang dinas yang dituju, sedangkan citra hanya menampilkan kondisi visual yang ambigu pada beberapa kategori. Kedua, fusi awal memberikan peningkatan yang konsisten di atas modalitas tunggal terbaik, yaitu peningkatan \textit{macro F1} sebesar 0,0232 (2,32 \textit{percentage point}) terhadap teks saja pada konfigurasi PGS, menunjukkan bahwa citra membawa informasi tambahan yang tidak selalu tertangkap oleh teks. Ketiga, pengaruh PGS pada modalitas citra saja adalah negatif tipis (selisih $-0,0043$ pada F1), sedangkan pada modalitas teks saja dan fusi awal pengaruhnya positif. Hal ini mengindikasikan bahwa PGS bekerja optimal ketika model awal sudah memberikan probabilitas yang relatif terkalibrasi, kondisi yang lebih sulit dipenuhi oleh model yang hanya mengandalkan modalitas visual.
 
 % =====================================================================
 \section{Hasil Ablasi Kalibrasi (PGS)}
@@ -172,7 +172,7 @@ Pengaruh kalibrasi probabilitas dengan PGS dilaporkan pada Tabel~\ref{tab:ablasi
 \label{tab:ablasi-pgs}
 \begin{tabular}{l c c}
 \toprule
-\textbf{Model} & \textbf{Balanced Accuracy} & \textbf{Macro F1} \\
+\textbf{Model} & \textbf{Akurasi} & \textbf{Macro F1} \\
 \midrule
 CatBoost (tanpa PGS) & 0,7996 & 0,7684 \\
 CatBoost dengan PGS & \textbf{0,8074} & \textbf{0,7747} \\
@@ -184,11 +184,11 @@ $\Delta$ (PGS minus tanpa PGS) & +0,0078 & +0,0063 \\
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.78\textwidth]{bab_4/pgs_comparison.png}
-    \caption{Perbandingan balanced accuracy dan macro F1 dengan dan tanpa PGS.}
+    \caption{Perbandingan akurasi dan macro F1 dengan dan tanpa PGS.}
     \label{fig:pgs-comparison}
 \end{figure}
 
-PGS memberikan peningkatan \textit{balanced accuracy} sebesar 0,78 \textit{percentage point} dan \textit{macro F1} sebesar 0,63 \textit{percentage point} terhadap baseline tanpa PGS. Selain memberikan peningkatan akurasi, PGS juga menghasilkan ukuran ketidakpastian (\textit{mean uncertainty}) sebesar 0,00339 yang dapat ditampilkan pada antarmuka aplikasi sebagai sinyal kepercayaan kepada warga pelapor. Sinyal ini menjadi penting saat warga harus memutuskan apakah hasil klasifikasi otomatis perlu dikoreksi secara manual sebelum laporan dikirim.
+PGS memberikan peningkatan \textit{akurasi} sebesar 0,78 \textit{percentage point} dan \textit{macro F1} sebesar 0,63 \textit{percentage point} terhadap baseline tanpa PGS. Selain memberikan peningkatan akurasi, PGS juga menghasilkan ukuran ketidakpastian (\textit{mean uncertainty}) sebesar 0,00339 yang dapat ditampilkan pada antarmuka aplikasi sebagai sinyal kepercayaan kepada warga pelapor. Sinyal ini menjadi penting saat warga harus memutuskan apakah hasil klasifikasi otomatis perlu dikoreksi secara manual sebelum laporan dikirim.
 
 \subsection{Mengapa Peningkatan PGS Tergolong Marginal}
 \label{sec:pgs-marginal}
@@ -201,7 +201,7 @@ Kedua, sumber ketidakpastian dominan pada dataset ini bersifat \textit{aleatoric
 
 Ketiga, ensembel virtual PGS berbagi parameter dari satu model CatBoost yang sama, bukan model independen seperti pada \textit{deep ensembles} \citep{lakshminarayananDeepEnsembles2017}. Korelasi antar-anggota yang tinggi membuat sebaran \textit{epistemic} yang dilaporkan cenderung bias rendah, sehingga ruang perbaikan dari agregasi posterior memang sempit. Konsisten dengan ini, ablasi modalitas menunjukkan PGS justru sedikit menurunkan F1 pada modalitas citra-saja ($-0{,}43$ pp), yaitu kondisi ketika probabilitas dasar kurang terkalibrasi sehingga rerata ensembel memperkuat bias alih-alih memperbaikinya.
 
-Pengamatan ini juga sejalan dengan perbandingan terhadap penelitian acuan. \citet{hanifPenugasanOtomatis2024} melaporkan lonjakan akurasi yang jauh lebih besar akibat PGS (dari 0,7571 menjadi 0,8055) ketika \textit{encoder} citra yang dipakai adalah DINOv2 yang relatif lebih lemah. Pada penelitian ini, penggantian ke DINOv3 \textit{large} menghasilkan \textit{base learner} yang sudah lebih kuat dan lebih terkalibrasi, sehingga ruang perbaikan \textit{epistemic} yang tersisa bagi PGS menyempit secara signifikan. Dengan kata lain, semakin baik representasi dasar, semakin kecil manfaat marjinal dari kalibrasi ensembel virtual, persis seperti yang diprediksi oleh argumen aleatoric-epistemic di atas.
+Pola yang sama dapat diamati langsung di dalam eksperimen penelitian ini sendiri, tanpa perlu bersandar pada perbandingan lintas-penelitian. Pada matrix grid pasangan \textit{encoder} (Tabel~\ref{tab:ablasi-encoder}), \textit{macro F1} setelah kalibrasi PGS nyaris datar di antara \textit{image encoder} yang sudah kompeten, yaitu 0,7747 untuk DINOv3 \textit{large}, 0,7747 untuk EVA-02 \textit{large}, dan 0,7736 untuk DINOv2 \textit{large}. Keseragaman ini menunjukkan bahwa begitu representasi dasar mencapai tingkat keterpisahan kelas yang memadai, baik pemilihan \textit{encoder} citra maupun agregasi posterior PGS tidak lagi banyak menggeser kinerja; batas atas justru ditentukan oleh faktor \textit{aleatoric} pada data, bukan oleh penghalusan \textit{epistemic}. Hal ini secara struktural memang tak terhindarkan: karena \textit{posterior mean} PGS hanya bergeser tipis dari prediksi titik model tunggal, besar perbaikannya dibatasi oleh banyaknya sampel yang berada tepat di sekitar batas keputusan, dan jumlah itu kecil ketika \textit{margin} klasifikasi lebar (tercermin dari \textit{macro ROC-AUC} 0,9667). Dengan kata lain, semakin baik dan semakin terkalibrasi representasi dasar, semakin kecil manfaat marjinal dari kalibrasi ensembel virtual, persis seperti yang diprediksi oleh argumen \textit{aleatoric-epistemic} di atas.
 
 Dengan demikian, kontribusi utama PGS pada penelitian ini bukan terletak pada lonjakan akurasi, melainkan pada penyediaan sinyal ketidakpastian berbiaya inferensi nyaris nol yang dapat ditampilkan pada antarmuka sebagai dasar koreksi manual. Untuk memperoleh keandalan \textit{end-to-end} yang lebih kuat, arah lanjutan yang lebih tepat adalah lapisan \textit{selective prediction} berjaminan cakupan atau keluaran himpunan-bernilai melalui \textit{conformal prediction}, ketimbang sekadar menambah anggota ensembel virtual.
 
@@ -270,36 +270,36 @@ Selisih probabilitas absolut maksimum di bawah ambang $10^{-5}$ pada seluruh kom
 \label{sec:hasil-flutter}
 % =====================================================================
 
-Aplikasi SmartCityApps berhasil diimplementasikan menggunakan Flutter dengan arsitektur berbasis fitur, manajemen \textit{state} Riverpod, navigasi GoRouter, dan \textit{backend} Supabase. Aplikasi mendukung tiga peran pengguna, yaitu Warga Pelapor, Operator Instansi, dan Moderator atau \textit{SuperAdmin}, dengan akses yang dibatasi melalui Row Level Security pada tabel \texttt{profiles}, \texttt{reports}, dan \texttt{report\_history}.
+Aplikasi SmartCityApps berhasil diimplementasikan menggunakan Flutter dengan arsitektur berbasis fitur (\textit{feature-first}), manajemen \textit{state} Riverpod, navigasi deklaratif GoRouter, dan \textit{backend} Supabase (PostgreSQL, Auth, Storage, dan Realtime). Inferensi klasifikasi tidak dijalankan di perangkat melainkan melalui \textit{endpoint} \texttt{/predict} pada server FastAPI, sehingga aplikasi tetap ringan dan model dapat diperbarui terpusat tanpa pembaruan aplikasi. Aplikasi mendukung tiga peran pengguna, yaitu Warga Pelapor, Operator Instansi, dan Moderator atau \textit{Super Admin}. Pemilahan peran ditegakkan pada dua lapis: lapis klien memilih pohon navigasi dan ruang-lingkup data (\textit{citizen}, \textit{agency}, atau \textit{global scope}) berdasarkan peran, sedangkan lapis basis data menegakkan otorisasi sesungguhnya melalui \textit{Row Level Security} (RLS) pada tabel \texttt{profiles}, \texttt{reports}, \texttt{report\_history}, dan \texttt{agencies}. Otentikasi memanfaatkan Supabase Auth dengan konfirmasi surel dan pemulihan kata sandi melalui \textit{deep link}, sementara pembaruan status laporan dipropagasikan ke antarmuka secara langsung melalui Postgres Realtime tanpa \textit{polling}.
 
 \subsection{Tangkapan Layar Antarmuka Pengguna}
 \label{sec:ui-screenshots}
 
-Alur inti pelaporan ditampilkan pada Gambar~\ref{fig:ui-pelaporan}, sedangkan galeri lengkap seluruh layar (onboarding, autentikasi, profil, pengaturan, detail laporan, dan dasbor instansi) disajikan pada Lampiran~\ref{app:ui-mockup}. Seluruh tangkapan layar dirender langsung dari \textit{widget} Flutter yang sebenarnya melalui \textit{golden screenshot test} (pengujian render deterministik) dengan data contoh yang representatif, sehingga tampilan konsisten dan dapat direproduksi tanpa bergantung pada koneksi jaringan.
+Alur inti pelaporan oleh Warga Pelapor ditampilkan pada Gambar~\ref{fig:ui-pelaporan}, dan tampilan peran Moderator atau \textit{Super Admin} pada Gambar~\ref{fig:ui-superadmin}; galeri lengkap seluruh layar untuk ketiga peran (onboarding, autentikasi, beranda, peta, pengaturan, detail laporan, dasbor instansi, hingga registri instansi) disajikan pada Lampiran~\ref{app:ui-mockup}. Tangkapan layar bersumber dari dua kanal yang saling melengkapi. Alur peran Warga Pelapor ditangkap langsung dari perangkat Android fisik saat aplikasi berjalan \textit{end-to-end} terhadap server inferensi dan Supabase, sehingga memuat data nyata (foto kejadian, alamat hasil \textit{reverse-geocoding}, nilai \textit{confidence}, instansi tujuan beserta estimasi jarak, dan metadata model). Layar yang aksesnya dibatasi peran Operator Instansi dan Moderator dirender secara deterministik melalui \textit{golden screenshot test} (pengujian render \textit{widget} Flutter yang sebenarnya dengan data contoh terkendali), karena akun berperan instansi belum di-\textit{provisioning} pada perangkat uji; pendekatan ini menjaga tampilan tetap konsisten dan dapat direproduksi tanpa bergantung pada koneksi jaringan.
 
 \begin{figure}[htbp]
     \centering
     \begin{subfigure}[b]{0.31\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_create_report.png}
+        \includegraphics[height=6.4cm]{image-androdid/buat-laporan.jpg}
         \caption{Buat laporan}
         \label{fig:ui-create}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.31\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_ai_review.png}
+        \includegraphics[height=6.4cm]{image-androdid/Hasil-analisis-ai.jpg}
         \caption{Tinjauan hasil AI}
         \label{fig:ui-aireview}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.31\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_my_reports.png}
+        \includegraphics[height=6.4cm]{image-androdid/melihat-laporan.jpg}
         \caption{Riwayat laporan}
         \label{fig:ui-myreports}
     \end{subfigure}
-    \caption{Alur inti pelaporan: pengambilan foto, narasi, dan lokasi (a); layar tinjauan AI yang menampilkan instansi prediksi, \textit{confidence}, peringkat prediksi teratas, instansi tujuan terdekat, dan opsi koreksi kategori manual (b); serta daftar riwayat laporan beserta status (c). Galeri lengkap seluruh layar disajikan pada Lampiran~\ref{app:ui-mockup}.}
+    \caption{Alur inti pelaporan pada perangkat Android fisik: pengambilan foto, narasi, dan akuisisi lokasi GPS (a); layar tinjauan AI yang menampilkan instansi prediksi beserta \textit{confidence} ($88\%$), peringkat prediksi alternatif, instansi tujuan terdekat dengan estimasi jarak, dan opsi koreksi kategori manual (b); serta daftar riwayat laporan beserta status terkini (c). Galeri lengkap seluruh layar disajikan pada Lampiran~\ref{app:ui-mockup}.}
     \label{fig:ui-pelaporan}
 \end{figure}
 
@@ -320,15 +320,34 @@ Skenario alur pelaporan oleh Warga Pelapor diuji secara end-to-end pada perangka
 
 \subsection{Alur Verifikasi oleh Operator Instansi}
 
-Operator Instansi mengakses dasbor admin yang menampilkan antrean laporan yang sudah dikategorisasi oleh AI, difilter berdasarkan instansi yang ditugaskan kepada operator. Operator dapat memverifikasi laporan, menolak dengan mengisi alasan penolakan, atau menandai laporan sebagai selesai. Perubahan status menjadi selesai mewajibkan unggah foto bukti penyelesaian. Setiap perubahan status menulis baris audit ke tabel \texttt{report\_history} sehingga jejak verifikasi dapat ditelusuri.
+Operator Instansi diarahkan ke dasbor admin (antrean \texttt{AgencyScope}) yang, melalui RLS, hanya menampilkan laporan ter-\textit{routing} ke instansi yang ditugaskan kepada operator tersebut. Antrean dilengkapi panel \textit{triage} yang menonjolkan jumlah laporan berstatus \textit{submitted} (menunggu tindakan) dan bilah tapis status (\textit{submitted}, \textit{verified}, \textit{in progress}, \textit{resolved}) sehingga operator dapat memprioritaskan beban kerja. Saat membuka satu laporan, operator memperoleh bilah aksi pembaruan status: memverifikasi laporan, menolak dengan mengisi alasan penolakan, menandai sedang diproses, atau menandai selesai. Transisi ke status selesai diwajibkan menyertakan unggah foto bukti penyelesaian sebagai prasyarat (\textit{gating}), sehingga klaim penyelesaian selalu terdokumentasi. Setiap perubahan status menulis baris audit ke tabel \texttt{report\_history}, dan kolom datar pada \texttt{reports} disinkronkan melalui \textit{trigger} sehingga pelapor menerima pembaruan status secara \textit{realtime}.
 
-\subsection{Alur Moderasi}
+\subsection{Alur Moderasi dan Registri Instansi}
 
-Moderator memiliki hak akses lintas instansi untuk meninjau seluruh laporan, mengubah penugasan operator, dan memantau statistik serta jejak audit. Pengujian alur moderasi memastikan bahwa Row Level Security berfungsi dengan benar, yaitu Moderator dapat mengakses tabel lintas instansi sedangkan Operator hanya dapat mengakses laporan pada instansi yang ditugaskan.
+Moderator atau \textit{Super Admin} memiliki hak akses lintas instansi (\texttt{GlobalScope}). Pada antrean global ``All agencies'' (Gambar~\ref{fig:ui-superadmin}a), moderator dapat meninjau seluruh laporan dari semua instansi sekaligus, menyaringnya per instansi melalui tapis tambahan yang khusus muncul bagi peran ini, serta memantau panel \textit{triage} lintas-instansi. Selain moderasi laporan, peran ini mengelola registri instansi tujuan (Gambar~\ref{fig:ui-superadmin}b), yaitu antarmuka CRUD atas tabel \texttt{agencies} yang menjadi \textit{system of record} bagi algoritma perutean instansi terdekat. Setiap kantor memuat nama, kategori, koordinat, dan penanda aktif; aksi ``Terapkan'' memanggil \textit{endpoint} \texttt{/reload-agencies} pada server inferensi agar perutean menggunakan data terbaru tanpa \textit{restart} penuh. Penulisan ke registri dibatasi peran \texttt{super\_admin} melalui kebijakan RLS \texttt{agencies\_write\_super\_admin}. Pengujian alur moderasi memastikan RLS berfungsi dengan benar, yaitu Moderator dapat mengakses tabel lintas instansi sedangkan Operator hanya dapat mengakses laporan pada instansi yang ditugaskan, dan Warga hanya dapat mengakses laporannya sendiri.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_superadmin_inbox.png}
+        \caption{Antrean lintas instansi}
+        \label{fig:ui-superadmin-inbox}
+    \end{subfigure}
+    \hspace{0.06\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_agency_registry.png}
+        \caption{Registri instansi}
+        \label{fig:ui-superadmin-registry}
+    \end{subfigure}
+    \caption{Tampilan peran Moderator atau \textit{Super Admin}: antrean global ``All agencies'' yang menggabungkan laporan dari seluruh instansi dengan tapis instansi dan panel \textit{triage} (a); serta layar registri instansi (CRUD atas tabel \texttt{agencies}) yang memuat nama kantor, kategori, koordinat, penanda aktif, dan aksi pemuatan ulang server perutean (b).}
+    \label{fig:ui-superadmin}
+\end{figure}
 
 \subsection{Demo Perutean Instansi Terdekat}
 
-Mesin perutean memilih instansi tujuan terdekat berdasarkan sembilan instansi prediksi dan koordinat laporan. Tabel~\ref{tab:demo-perutean} menampilkan tiga contoh laporan beserta instansi prediksi dan contoh assignment yang disimpan.
+Mesin perutean memilih instansi tujuan terdekat berdasarkan instansi prediksi dan koordinat laporan. Tabel~\ref{tab:demo-perutean} menampilkan tiga contoh laporan beserta instansi prediksi dan instansi tujuan hasil perutean. Entri pada kolom tujuan bersifat ilustratif pada tingkat kategori; pemilihan kantor konkret bergantung pada koordinat laporan dan keenam belas kantor pada registri \texttt{agencies\_seed.json} (Bagian~\ref{subsec:registri-instansi}), bukan jarak yang diukur pada satu lokasi tertentu.
 
 \begin{table}[htbp]
 \centering
@@ -351,41 +370,43 @@ Foto pohon tumbang dengan narasi ``pohon roboh karena hujan deras kemarin'' & Di
 \label{sec:evaluasi-usabilitas}
 % =====================================================================
 
-Selain pengujian fungsional alur pelaporan pada Bagian~\ref{sec:hasil-flutter}, aplikasi SmartCityApps dievaluasi dari sisi pengalaman pengguna untuk mengukur sejauh mana warga dapat mengoperasikan aplikasi dengan mudah, efektif, dan memuaskan. Evaluasi usabilitas penting karena nilai klasifikasi multimodal yang tinggi hanya bermanfaat apabila warga benar-benar mampu menyelesaikan alur pelaporan dari pengambilan foto hingga pengiriman laporan tanpa hambatan berarti.
+Selain pengujian fungsional alur pelaporan pada Bagian~\ref{sec:hasil-flutter}, aplikasi SmartCityApps dievaluasi dari sisi pengalaman pengguna untuk mengukur sejauh mana warga dapat mengoperasikan aplikasi dengan mudah, efektif, dan memuaskan. Evaluasi usabilitas penting karena nilai klasifikasi multimodal yang tinggi hanya bermanfaat apabila warga benar-benar mampu menyelesaikan alur pelaporan dari pengambilan foto hingga pengiriman laporan tanpa hambatan berarti. Dalam kerangka penelitian ini, evaluasi usabilitas merupakan bagian dari tahap \textit{Evaluasi} pada DSRM sekaligus melengkapi pemenuhan kebutuhan fungsional pada RQ1, yaitu memastikan artefak klien-server yang dibangun tidak hanya berfungsi tetapi juga dapat dioperasikan dengan nyaman oleh pengguna sasaran.
 
 \subsection{Metode Evaluasi Usabilitas}
 \label{sec:metode-usabilitas}
 
-Usabilitas diukur menggunakan \textit{System Usability Scale} (SUS), instrumen baku yang dikembangkan oleh \citet{brookeSUSQuick1996} sebagai alat ukur usabilitas yang cepat, andal, dan dapat dibandingkan antar sistem. SUS dipilih karena tiga alasan: instrumen ini telah menjadi standar de facto pada bidang interaksi manusia--komputer, menghasilkan satu skor tunggal pada rentang 0--100 yang mudah diinterpretasikan dan di-\textit{benchmark}, serta singkat untuk diisi sehingga tidak membebani responden. SUS terdiri atas sepuluh pernyataan dengan skala Likert lima poin (1 = sangat tidak setuju hingga 5 = sangat setuju), dengan lima pernyataan bernada positif (nomor ganjil) dan lima pernyataan bernada negatif (nomor genap) yang disusun berselang-seling untuk mengurangi bias respons. Agar instrumen valid bagi responden berbahasa Indonesia, kesepuluh pernyataan menggunakan terjemahan Bahasa Indonesia yang telah diadaptasi dan divalidasi oleh \citet{sharfinaIndonesianAdaptationSystem2016}.
+Usabilitas diukur menggunakan \textit{System Usability Scale} (SUS), instrumen baku yang dikembangkan oleh \citet{brookeSUSQuick1996} sebagai alat ukur usabilitas yang cepat, andal, dan dapat dibandingkan antar sistem. SUS dipilih karena tiga alasan: instrumen ini telah menjadi standar de facto pada bidang interaksi manusia--komputer, menghasilkan satu skor tunggal pada rentang 0--100 yang mudah diinterpretasikan dan di-\textit{benchmark}, serta singkat untuk diisi sehingga tidak membebani responden. SUS baku terdiri atas sepuluh pernyataan dengan skala Likert lima poin (1 = sangat tidak setuju hingga 5 = sangat setuju), yang disusun berselang-seling antara pernyataan bernada positif dan negatif untuk mengurangi bias respons. Pada penelitian ini digunakan \textbf{adaptasi sembilan butir}: lima pernyataan bernada positif (P1, P2, P4, P6, P8) dan empat pernyataan bernada negatif (P3, P5, P7, P9). Satu pernyataan negatif baku, yaitu ``saya merasa aplikasi ini terlalu rumit'', tidak disertakan pada formulir yang disebarkan; konsekuensi metodologisnya dijelaskan pada paragraf penskoran berikut dan dicatat sebagai keterbatasan pada Bab~\ref{ch:simpulan}. Agar instrumen valid bagi responden berbahasa Indonesia, kesembilan pernyataan menggunakan terjemahan Bahasa Indonesia yang mengacu pada adaptasi yang telah divalidasi oleh \citet{sharfinaIndonesianAdaptationSystem2016}.
 
-Pengujian dilakukan terhadap 15 responden yang memenuhi profil pengguna sasaran, yaitu Warga Pelapor yang terbiasa menggunakan \textit{smartphone} Android. Jumlah ini sejalan dengan praktik evaluasi usabilitas dan memadai untuk memperoleh estimasi skor SUS yang stabil. Setiap responden terlebih dahulu menjalankan serangkaian skenario tugas yang merepresentasikan alur inti pelaporan (Tabel~\ref{tab:skenario-usabilitas}) pada perangkat Android fisik, kemudian mengisi formulir evaluasi yang memuat profil responden, pakta integritas, kesepuluh pernyataan SUS, serta sejumlah pertanyaan umpan balik kualitatif. Formulir lengkap yang dibagikan kepada responden disajikan pada Lampiran~\ref{app:kuesioner-sus}.
+Evaluasi melibatkan 30 responden yang memenuhi profil pengguna sasaran, yaitu Warga Pelapor yang terbiasa menggunakan \textit{smartphone} Android. Ukuran sampel ini sejalan dengan praktik evaluasi usabilitas; literatur SUS menunjukkan bahwa estimasi skor relatif stabil mulai sekitar 12--15 responden, dan tinjauan sistematis terkini menegaskan SUS tetap kokoh pada sampel kecil, sehingga sampel 30 orang memberikan estimasi yang memadai disertai interval kepercayaan yang dapat dilaporkan \citep{lewisSauroPastPresent2018, vlachogianniTseliosPerceivedUsability2022}. Setiap responden terlebih dahulu mencoba menyelesaikan serangkaian skenario tugas yang merepresentasikan alur inti pelaporan (Tabel~\ref{tab:skenario-usabilitas}) pada perangkat Android, kemudian mengisi formulir evaluasi daring (Google Form) yang memuat profil responden, pakta integritas, kesembilan pernyataan SUS (selengkapnya pada Tabel~\ref{tab:rekap-item-sus}), serta sejumlah pertanyaan umpan balik kualitatif. Rekapitulasi jawaban per responden secara anonim tersedia pada repositori penelitian (Lampiran~\ref{app:tautan}).
 
-Skor SUS dihitung mengikuti metodologi baku. Untuk pernyataan bernomor ganjil, kontribusi skor diperoleh dengan mengurangi 1 dari respons; untuk pernyataan bernomor genap, kontribusi skor diperoleh dengan mengurangi respons dari 5. Jumlah seluruh kontribusi kemudian dikalikan 2,5 sehingga menghasilkan skor akhir pada rentang 0--100, sebagaimana dinyatakan pada Persamaan~\ref{eq:sus}, dengan $R_i$ adalah respons untuk pernyataan ke-$i$.
+Skor SUS dihitung mengikuti prinsip penskoran baku \citep{brookeSUSQuick1996}. Untuk pernyataan bernada positif, kontribusi skor diperoleh dengan mengurangi 1 dari respons ($R_i - 1$); untuk pernyataan bernada negatif, kontribusi diperoleh dengan mengurangi respons dari 5 ($5 - R_j$). Setiap kontribusi karena itu bernilai 0--4. Pada SUS baku sepuluh butir, jumlah kontribusi (maksimum 40) dikalikan 2,5 agar terskala ke rentang 0--100. Karena instrumen yang digunakan hanya memuat sembilan butir, skor mentah maksimum adalah $9 \times 4 = 36$; agar skor tetap sebanding dengan \textit{benchmark} SUS pada rentang 0--100, jumlah kontribusi dinormalisasi dengan faktor $100/36 \approx 2{,}78$ menggantikan faktor 2,5 baku, sebagaimana dinyatakan pada Persamaan~\ref{eq:sus}. Dengan $R_i$ adalah respons untuk pernyataan ke-$i$, himpunan pernyataan positif adalah $\{1,2,4,6,8\}$ dan himpunan pernyataan negatif adalah $\{3,5,7,9\}$.
 
 \begin{equation}
 \label{eq:sus}
-\text{Skor SUS} = \left( \sum_{i \in \{1,3,5,7,9\}} (R_i - 1) \; + \sum_{j \in \{2,4,6,8,10\}} (5 - R_j) \right) \times 2{,}5
+\text{Skor SUS} = \left( \sum_{i \in \{1,2,4,6,8\}} (R_i - 1) \; + \sum_{j \in \{3,5,7,9\}} (5 - R_j) \right) \times \frac{100}{36}
 \end{equation}
 
-Interpretasi skor mengacu pada \textit{benchmark} \citet{bangorDeterminingWhatIndividual2009}: skor rata-rata produk berada di sekitar 68, sehingga skor di atas 68 tergolong di atas rata-rata, skor 68--80 menunjukkan usabilitas baik, skor 80--90 sangat baik, dan skor di atas 90 luar biasa, sedangkan skor di bawah 68 mengindikasikan perlunya perbaikan usabilitas. Selain skor SUS, keberhasilan responden menyelesaikan setiap skenario tugas dicatat sebagai indikator efektivitas, dan jawaban kualitatif dirangkum untuk melengkapi temuan kuantitatif.
+Interpretasi skor mengacu pada tiga rujukan \textit{benchmark} yang lazim digunakan. Pertama, ambang keberterimaan \citet{bangorDeterminingWhatIndividual2009}: skor rata-rata produk berada di sekitar 68, sehingga skor di atas 68 tergolong di atas rata-rata; skor di bawah 50 tergolong \textit{tidak dapat diterima}, 50--70 \textit{marginal}, dan di atas 70 \textit{dapat diterima}. Kedua, skala kata sifat (\textit{adjective rating scale}) \citet{bangorEmpiricalEvaluation2008} yang memetakan skor ke deskriptor \textit{poor}, \textit{OK}, \textit{good}, \textit{excellent}, hingga \textit{best imaginable}. Ketiga, skala penilaian berkurva (\textit{curved grading scale}) dan peringkat persentil \citet{lewisSauroPastPresent2018}, yang menempatkan skor relatif terhadap distribusi normatif (rata-rata 68, simpangan baku 12,5); ketiga rujukan ini dikonsolidasikan dan masih dipakai pada tinjauan SUS terkini \citep{vlachogianniTseliosPerceivedUsability2022}. Konsistensi internal instrumen dilaporkan dengan koefisien \textit{Cronbach's alpha} sebagaimana praktik validasi SUS pada perangkat \textit{smartphone} di Indonesia \citep{usmanGustalikaPengujianValiditas2022}, dan presisi estimasi rata-rata dinyatakan dengan interval kepercayaan 95\% berbasis distribusi $t$ mengingat ukuran sampel yang terbatas.
+
+Perlu ditegaskan lingkup pengukuran ini. SUS menangkap dimensi \textit{kepuasan} (\textit{satisfaction}) atau usabilitas yang dipersepsikan, bukan efektivitas dan efisiensi secara langsung; metrik objektif seperti \textit{task success rate}, \textit{time-on-task}, dan \textit{error rate} tidak diinstrumentasi terpisah pada penelitian ini meskipun setiap responden menjalankan skenario tugas pada Tabel~\ref{tab:skenario-usabilitas}. Selain itu, evaluasi terbatas pada peran Warga Pelapor; layar peran Operator Instansi dan Moderator tidak diujikan kepada pengguna (disajikan sebagai \textit{golden render} pada Bagian~\ref{sec:ui-screenshots}). Kedua batasan tersebut, beserta komposisi responden yang condong pada kelompok muda melek-digital, dicatat sebagai keterbatasan evaluasi usabilitas pada Bab~\ref{ch:simpulan}.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Skenario tugas usabilitas yang dijalankan setiap responden sebelum mengisi kuesioner SUS. Kolom status keberhasilan diisi berdasarkan hasil pengamatan saat pengujian.}
+\caption{Skenario tugas alur inti pelaporan yang dicoba setiap responden sebelum mengisi kuesioner SUS.}
 \label{tab:skenario-usabilitas}
-\begin{tabular}{p{1.4cm} p{7.2cm} p{2.6cm}}
+\begin{tabular}{p{1.4cm} p{10cm}}
 \toprule
-\textbf{Kode} & \textbf{Skenario Tugas} & \textbf{Status Keberhasilan} \\
+\textbf{Kode} & \textbf{Skenario Tugas} \\
 \midrule
-T-01 & Responden mendaftar akun baru atau masuk ke akun yang sudah ada. & \\
-T-02 & Responden membuka layar buat laporan dan mengambil foto kejadian menggunakan kamera. & \\
-T-03 & Responden memilih foto kejadian dari galeri perangkat. & \\
-T-04 & Responden mengisi narasi atau deskripsi laporan. & \\
-T-05 & Responden menetapkan lokasi laporan melalui GPS atau memilih titik secara manual di peta. & \\
-T-06 & Responden menjalankan klasifikasi AI dan meninjau hasil prediksi instansi, \textit{confidence}, serta instansi tujuan terdekat. & \\
-T-07 & Responden mengoreksi kategori instansi secara manual pada layar tinjauan AI. & \\
-T-08 & Responden mengirim laporan lalu memeriksa kemunculannya beserta status pada riwayat laporan. & \\
+T-01 & Responden mendaftar akun baru atau masuk ke akun yang sudah ada. \\
+T-02 & Responden membuka layar buat laporan dan mengambil foto kejadian menggunakan kamera. \\
+T-03 & Responden memilih foto kejadian dari galeri perangkat. \\
+T-04 & Responden mengisi narasi atau deskripsi laporan. \\
+T-05 & Responden menetapkan lokasi laporan melalui GPS atau memilih titik secara manual di peta. \\
+T-06 & Responden menjalankan klasifikasi AI dan meninjau hasil prediksi instansi, \textit{confidence}, serta instansi tujuan terdekat. \\
+T-07 & Responden mengoreksi kategori instansi secara manual pada layar tinjauan AI. \\
+T-08 & Responden mengirim laporan lalu memeriksa kemunculannya beserta status pada riwayat laporan. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -393,84 +414,115 @@ T-08 & Responden mengirim laporan lalu memeriksa kemunculannya beserta status pa
 \subsection{Hasil Evaluasi Usabilitas}
 \label{sec:hasil-usabilitas}
 
-% CATATAN: Nilai pada tabel-tabel berikut sengaja dikosongkan dan diisi
-% setelah pengujian terhadap responden dilakukan. Lihat Lampiran kuesioner.
-
-Profil 15 responden yang berpartisipasi dirangkum pada Tabel~\ref{tab:profil-responden}. Profil ini memastikan responden mewakili pengguna sasaran aplikasi, yaitu warga pengguna \textit{smartphone} Android dengan beragam latar pengalaman terhadap aplikasi pelaporan publik.
+Evaluasi usabilitas diikuti oleh 30 responden. Profil responden dirangkum pada Tabel~\ref{tab:profil-responden}. Mayoritas responden berstatus mahasiswa (86,7\%) dengan rentang usia dominan 20--22 tahun (80,0\%, rata-rata usia 21,9 tahun) dan hampir seluruhnya tergolong pengguna \textit{smartphone} aktif (96,7\% menjawab ``sering''). Komposisi ini sesuai dengan profil pengguna sasaran aplikasi, yaitu warga melek digital yang terbiasa mengoperasikan aplikasi seluler, sekaligus menjadi konteks penting saat menafsirkan skor: responden relatif paham teknologi sehingga skor usabilitas yang diperoleh cenderung merepresentasikan batas atas pengalaman pengguna umum.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Profil responden evaluasi usabilitas ($n = 15$).}
+\caption{Profil 30 responden evaluasi usabilitas.}
 \label{tab:profil-responden}
-\begin{tabular}{p{4.5cm} p{4.5cm} r r}
+\begin{tabular}{p{4.2cm} p{5cm} r r}
 \toprule
 \textbf{Karakteristik} & \textbf{Kategori} & \textbf{Jumlah} & \textbf{Persentase} \\
 \midrule
-Jenis kelamin & Laki-laki & & \\
-              & Perempuan & & \\
+Rentang usia & Di bawah 20 tahun & 2 & 6,7\% \\
+             & 20--22 tahun & 24 & 80,0\% \\
+             & Di atas 22 tahun & 4 & 13,3\% \\
 \addlinespace
-Rentang usia & Di bawah 20 tahun & & \\
-             & 20--30 tahun & & \\
-             & Di atas 30 tahun & & \\
+Pekerjaan / status & Mahasiswa/i & 26 & 86,7\% \\
+                   & Karyawan & 3 & 10,0\% \\
+                   & Wiraswasta & 1 & 3,3\% \\
 \addlinespace
-Pengalaman aplikasi & Pernah (mis. LAPOR!/JAKI) & & \\
-pelaporan publik    & Belum pernah & & \\
+Frekuensi penggunaan & Sering & 29 & 96,7\% \\
+\textit{smartphone}  & Kadang-kadang & 1 & 3,3\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Skor SUS untuk setiap responden beserta rata-rata keseluruhan ditampilkan pada Tabel~\ref{tab:skor-sus}. Skor per responden dihitung dengan Persamaan~\ref{eq:sus} dari kesepuluh respons Likert, sedangkan baris rata-rata merepresentasikan skor usabilitas akhir aplikasi.
+\subsubsection{Skor SUS Keseluruhan}
+
+Skor SUS per responden dihitung dengan Persamaan~\ref{eq:sus} lalu diringkas secara deskriptif pada Tabel~\ref{tab:sus-deskriptif}. Aplikasi SmartCityApps memperoleh \textbf{skor SUS rata-rata 71,6} (simpangan baku 14,6; median 72,2). Nilai ini berada di atas ambang rata-rata industri sebesar 68 \citep{bangorDeterminingWhatIndividual2009}, sehingga usabilitas aplikasi tergolong \textit{dapat diterima} (\textit{acceptable}) dengan deskriptor kata sifat \textit{good} \citep{bangorEmpiricalEvaluation2008} dan setara nilai \textit{B-/C+} pada skala penilaian berkurva serta kira-kira persentil ke-61 relatif terhadap distribusi normatif \citep{lewisSauroPastPresent2018}. Interval kepercayaan 95\% rata-rata adalah [66,1; 77,0]; karena batas bawah interval ini masih sedikit di bawah 68, klaim bahwa usabilitas aplikasi berada di atas rata-rata bersifat indikatif dan belum sepenuhnya terbukti secara statistik pada ukuran sampel ini. Konsistensi internal sembilan butir tergolong memadai dengan koefisien \textit{Cronbach's alpha} sebesar 0,74, sejalan dengan ambang reliabilitas yang lazim diterima ($\alpha \geq 0{,}70$) dan dengan studi reliabilitas SUS pada perangkat \textit{smartphone} di Indonesia yang melaporkan $\alpha = 0{,}835$ \citep{usmanGustalikaPengujianValiditas2022}.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Skor SUS per responden dan rata-rata keseluruhan. Kolom skor diisi setelah rekapitulasi jawaban kuesioner.}
-\label{tab:skor-sus}
-\begin{tabular}{c c c c}
+\caption{Statistik deskriptif skor SUS aplikasi SmartCityApps ($n = 30$).}
+\label{tab:sus-deskriptif}
+\begin{tabular}{l r}
 \toprule
-\textbf{Responden} & \textbf{Skor SUS} & \textbf{Responden} & \textbf{Skor SUS} \\
+\textbf{Statistik} & \textbf{Nilai} \\
 \midrule
-R-01 & & R-09 & \\
-R-02 & & R-10 & \\
-R-03 & & R-11 & \\
-R-04 & & R-12 & \\
-R-05 & & R-13 & \\
-R-06 & & R-14 & \\
-R-07 & & R-15 & \\
-R-08 & & \textbf{Rata-rata} & \\
+Rata-rata (mean) & 71,6 \\
+Median & 72,2 \\
+Simpangan baku (SD) & 14,6 \\
+Minimum & 33,3 \\
+Maksimum & 97,2 \\
+Interval kepercayaan 95\% (uji $t$) & [66,1; \, 77,0] \\
+Cronbach's $\alpha$ (9 butir) & 0,74 \\
+\midrule
+Kategori keberterimaan \citep{bangorDeterminingWhatIndividual2009} & Dapat diterima \\
+Deskriptor kata sifat \citep{bangorEmpiricalEvaluation2008} & \textit{Good} \\
+Peringkat persentil \citep{lewisSauroPastPresent2018} & $\approx$ ke-61 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Untuk analisis yang lebih rinci, Tabel~\ref{tab:rekap-item-sus} merangkum rata-rata kontribusi skor (rentang 0--4 setelah normalisasi arah pernyataan) untuk masing-masing dari kesepuluh pernyataan SUS. Rekapitulasi per pernyataan membantu mengidentifikasi aspek usabilitas yang paling kuat maupun yang paling perlu diperbaiki, misalnya kemudahan penggunaan, konsistensi antarmuka, atau kepercayaan diri pengguna.
+Sebaran skor individual ditampilkan pada Gambar~\ref{fig:sus-distribution}. Sebanyak 17 dari 30 responden (56,7\%) memberikan skor di atas 70 (kategori \textit{dapat diterima}), 12 responden (40,0\%) berada pada rentang \textit{marginal} 50--70, dan hanya 1 responden (3,3\%) memberi skor di bawah 50. Posisi skor rata-rata terhadap ketiga skala interpretasi baku (keberterimaan, kata sifat, dan nilai huruf) divisualisasikan pada Gambar~\ref{fig:sus-interpretation}, dengan penanda rata-rata beserta rentang interval kepercayaan 95\%.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{bab_4/sus_distribution.png}
+    \caption{Distribusi skor SUS individual ($n = 30$) dengan penanda rata-rata, pita interval kepercayaan 95\%, dan garis \textit{benchmark} industri 68.}
+    \label{fig:sus-distribution}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{bab_4/sus_interpretation_scale.png}
+    \caption{Posisi skor SUS rata-rata SmartCityApps (71,6) pada skala interpretasi baku: keberterimaan \citep{bangorDeterminingWhatIndividual2009}, kata sifat \citep{bangorEmpiricalEvaluation2008}, dan nilai huruf \citep{lewisSauroPastPresent2018}. Garis galat menunjukkan interval kepercayaan 95\%.}
+    \label{fig:sus-interpretation}
+\end{figure}
+
+\subsubsection{Analisis Per-Pernyataan}
+
+Untuk mengubah skor agregat menjadi temuan yang dapat ditindaklanjuti, Tabel~\ref{tab:rekap-item-sus} merinci rata-rata respons mentah (skala 1--5) beserta kontribusi terkoreksi-arah (skala 0--4, semakin tinggi semakin baik) untuk setiap pernyataan, dan Gambar~\ref{fig:sus-per-item} mengurutkannya dari yang terlemah ke terkuat. Pernyataan bernada positif memperoleh nilai konsisten tinggi: keyakinan fitur berjalan semestinya (P4, kontribusi 3,47), kemudahan penggunaan (P2, 3,33), serta keyakinan orang lain cepat memahami aplikasi (P6, 3,27) menjadi aspek terkuat. Sebaliknya, tiga kontribusi terendah seluruhnya berasal dari pernyataan bernada negatif terkait \textit{learnability}, yaitu kebutuhan bantuan orang lain atau teknisi (P3, kontribusi 1,90), kebutuhan membiasakan diri sebelum memakai aplikasi (P9, 2,20), dan persepsi ketidakkonsistenan antarmuka (P5, 2,27). Pola ini menunjukkan bahwa hambatan usabilitas utama bukan terletak pada fungsionalitas inti, melainkan pada kurva pembelajaran awal dan konsistensi tampilan, yang menjadi dasar usulan perbaikan pada Bab~\ref{ch:simpulan}.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Rekapitulasi rata-rata kontribusi skor per pernyataan SUS (rentang 0--4). Kolom nilai diisi setelah rekapitulasi jawaban kuesioner.}
+\caption{Rekapitulasi per pernyataan SUS: rata-rata respons mentah (skala 1--5) dan kontribusi skor terkoreksi-arah (skala 0--4). Tanda (+) menandai pernyataan positif dan ($-$) pernyataan negatif.}
 \label{tab:rekap-item-sus}
-\begin{tabular}{c p{9cm} c}
+\begin{tabular}{c p{7.6cm} c c c}
 \toprule
-\textbf{No.} & \textbf{Pernyataan} & \textbf{Rata-rata} \\
+\textbf{No.} & \textbf{Pernyataan} & \textbf{Arah} & \textbf{Mentah (1--5)} & \textbf{Kontribusi (0--4)} \\
 \midrule
-P1 & Keinginan menggunakan aplikasi kembali. & \\
-P2 & Aplikasi dirasa rumit untuk digunakan. & \\
-P3 & Aplikasi dirasa mudah digunakan. & \\
-P4 & Kebutuhan bantuan orang lain atau teknisi. & \\
-P5 & Fitur-fitur aplikasi berjalan semestinya. & \\
-P6 & Terdapat ketidakkonsistenan pada aplikasi. & \\
-P7 & Aplikasi cepat dipahami orang lain. & \\
-P8 & Aplikasi dirasa membingungkan. & \\
-P9 & Tidak ada hambatan saat menggunakan aplikasi. & \\
-P10 & Perlu membiasakan diri sebelum menggunakan aplikasi. & \\
+P1 & Akan menggunakan aplikasi ini lagi. & + & 4,27 & 3,27 \\
+P2 & Aplikasi mudah digunakan. & + & 4,33 & 3,33 \\
+P3 & Membutuhkan bantuan orang lain/teknisi. & $-$ & 3,10 & 1,90 \\
+P4 & Fitur-fitur berjalan semestinya. & + & 4,47 & 3,47 \\
+P5 & Banyak hal tidak konsisten pada aplikasi. & $-$ & 2,73 & 2,27 \\
+P6 & Orang lain cepat memahami aplikasi. & + & 4,27 & 3,27 \\
+P7 & Aplikasi membingungkan. & $-$ & 2,13 & 2,87 \\
+P8 & Tidak ada hambatan saat menggunakan. & + & 4,20 & 3,20 \\
+P9 & Perlu membiasakan diri terlebih dahulu. & $-$ & 2,80 & 2,20 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Berdasarkan Tabel~\ref{tab:skor-sus}, aplikasi SmartCityApps memperoleh skor SUS rata-rata sebesar \rule{1.2cm}{0.4pt}. Mengacu pada \textit{benchmark} \citet{bangorDeterminingWhatIndividual2009}, skor tersebut berada pada kategori \rule{2.5cm}{0.4pt}, yang menunjukkan bahwa aplikasi \rule{4cm}{0.4pt}. Seluruh skenario tugas pada Tabel~\ref{tab:skenario-usabilitas} \rule{3cm}{0.4pt} oleh mayoritas responden, sehingga aplikasi dinilai efektif dalam mendukung alur pelaporan dari pengambilan foto hingga pengiriman laporan.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{bab_4/sus_per_item.png}
+    \caption{Kontribusi skor per pernyataan SUS (skala 0--4 terkoreksi-arah), diurutkan dari pernyataan terlemah ke terkuat. Pernyataan dengan kontribusi di bawah titik tengah (2,5) menandai aspek yang paling perlu diperbaiki.}
+    \label{fig:sus-per-item}
+\end{figure}
 
-Selain penilaian kuantitatif, responden memberikan umpan balik kualitatif melalui pertanyaan terbuka mengenai kelebihan utama aplikasi, bagian yang masih membingungkan atau perlu diperbaiki, serta kesediaan menggunakan aplikasi untuk melaporkan masalah lingkungan di sekitarnya. Rangkuman umpan balik ini \rule{4cm}{0.4pt} dan menjadi dasar usulan perbaikan antarmuka pada Bab~\ref{ch:simpulan}.
+\subsubsection{Analisis Sensitivitas dan Kualitas Respons}
+
+Pemeriksaan kualitas respons menemukan tiga responden (R20, R23, R29) yang memberikan jawaban identik (nilai 5) pada seluruh pernyataan, termasuk pada pasangan pernyataan positif dan negatif yang secara logis saling bertolak belakang. Pola \textit{straight-lining} ini mengindikasikan \textit{acquiescence bias} atau pengisian yang kurang cermat, dan masing-masing menghasilkan skor 55,6. Sebagai uji ketahanan (\textit{robustness}), analisis diulang dengan mengeluarkan ketiga responden tersebut. Hasilnya justru menguatkan kesimpulan: skor rata-rata naik menjadi 73,4 (95\% CI [67,7; 79,0]) dan konsistensi internal membaik menjadi $\alpha = 0{,}81$. Dengan demikian, kesimpulan bahwa aplikasi memiliki usabilitas pada kategori \textit{dapat diterima} bersifat \textit{robust} terhadap keberadaan respons anomali, dan seluruh 30 respons tetap dipertahankan pada pelaporan utama agar tidak mengurangi keterwakilan sampel.
+
+\subsubsection{Umpan Balik Kualitatif}
+
+Selain penilaian kuantitatif, responden memberikan umpan balik melalui tiga pertanyaan terbuka. Pada pertanyaan kelebihan utama, mayoritas responden menyoroti kemudahan dan efisiensi proses pelaporan serta nilai tambah klasifikasi otomatis instansi (``melaporkan masalah lingkungan menjadi mudah'', ``mampu membantu proses pelaporan pada instansi terkait dengan cepat dan efisien'', ``bisa meninjau hasil prediksi instansi''). Pada pertanyaan aspek yang perlu diperbaiki, sebagian besar responden menyatakan tidak menemukan kendala berarti, sementara masukan yang spesifik mengarah pada kejelasan umpan balik (\textit{feedback}) setelah laporan dikirim. Pada pertanyaan kesediaan menggunakan aplikasi untuk melaporkan masalah lingkungan, mayoritas responden menyatakan bersedia dengan alasan kepraktisan. Rangkuman umpan balik kualitatif ini selaras dengan temuan kuantitatif, yaitu fungsionalitas inti dinilai kuat sedangkan kejelasan alur pasca-pengiriman dan kurva pembelajaran awal menjadi ruang perbaikan, dan menjadi dasar usulan penyempurnaan antarmuka pada Bab~\ref{ch:simpulan}.
 
 % =====================================================================
 \section{Pembahasan dan Analisis Kesalahan}
@@ -524,4 +576,4 @@ Untuk menjawab konsekuensi latensi secara empiris, ketiga komponen \textit{pipel
 \end{tabular}
 \end{table}
 
-Pemilihan jalur \textit{on-server} juga menjaga \textit{footprint} sumber daya pada perangkat pengguna tetap minimum, sesuai tuntutan rumusan masalah pertama. Paket aplikasi Android tidak memuat model apa pun (direktori \texttt{assets/models} kosong); berkas APK \textit{debug} berukuran 216 MB (versi rilis lebih kecil setelah \textit{tree-shaking} dan \textit{split-per-ABI}), jauh di bawah tambahan 1,19 GB artefak ONNX yang harus disertakan apabila inferensi dilakukan sepenuhnya \textit{on-device}. Pada saat operasi, perangkat hanya mengirim satu permintaan \textit{multipart} berisi citra terkompresi berukuran ratusan kilobyte beserta narasi teks singkat, kemudian menerima respons JSON ringan; tidak ada komputasi model di sisi perangkat sehingga konsumsi memori, penyimpanan, dan daya pada perangkat pengguna tetap rendah.
+Pemilihan jalur \textit{on-server} juga menjaga \textit{footprint} sumber daya pada perangkat pengguna tetap minimum, sesuai tuntutan rumusan masalah pertama. Paket aplikasi Android tidak memuat model apa pun (direktori \texttt{assets/models} kosong); berkas APK \textit{debug} berukuran 216 MB (versi rilis lebih kecil setelah \textit{tree-shaking} dan \textit{split-per-ABI}), jauh di bawah total sekitar 7,3 GB artefak ONNX (\textit{image encoder} DINOv3 \textit{large} 1,1 GB, \textit{text encoder multilingual-E5 large} 6,2 GB, dan \textit{classifier head} CatBoost 31 MB) yang harus disertakan apabila inferensi dilakukan sepenuhnya \textit{on-device}. Pada saat operasi, perangkat hanya mengirim satu permintaan \textit{multipart} berisi citra terkompresi berukuran ratusan kilobyte beserta narasi teks singkat, kemudian menerima respons JSON ringan; tidak ada komputasi model di sisi perangkat sehingga konsumsi memori, penyimpanan, dan daya pada perangkat pengguna tetap rendah.

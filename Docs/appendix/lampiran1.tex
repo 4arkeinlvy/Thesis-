@@ -1,37 +1,113 @@
 % =====================================================================
-% LAMPIRAN A: MOCKUP TAMPILAN APLIKASI SMART CITY REPORTER
+% LAMPIRAN A: GALERI TAMPILAN APLIKASI SMART CITY REPORTER
 % =====================================================================
-\chapter{Mockup Tampilan Aplikasi Smart City Reporter}
+\chapter{Galeri Tampilan Aplikasi Smart City Reporter}
 \label{app:ui-mockup}
 
-Lampiran ini memuat galeri lengkap tangkapan layar antarmuka untuk seluruh layar utama aplikasi \textit{Smart City Reporter} yang dirancang pada Bagian~\ref{sec:layar} Bab~\ref{ch:metode}. Seluruh tangkapan layar dirender langsung dari \textit{widget} Flutter yang sebenarnya melalui \textit{golden screenshot test} (pengujian render deterministik) dengan data contoh yang representatif, sehingga tampilan bersifat konsisten dan dapat direproduksi tanpa bergantung pada koneksi jaringan. Pemisahan galeri tampilan ke lampiran menjaga pemaparan metodologi pada Bab~\ref{ch:metode} dan hasil pada Bab~\ref{ch:hasil} tetap padat.
+Lampiran ini memuat galeri lengkap tampilan antarmuka untuk seluruh layar aplikasi \textit{Smart City Reporter} yang dirancang pada Bagian~\ref{sec:layar} Bab~\ref{ch:metode} dan dilaporkan hasil implementasinya pada Bagian~\ref{sec:hasil-flutter} Bab~\ref{ch:hasil}. Galeri disusun dari dua sumber tangkapan layar yang saling melengkapi. \emph{Pertama}, alur lengkap peran Warga Pelapor (Bagian~A.1--A.3) ditangkap langsung dari perangkat Android fisik saat aplikasi berjalan \textit{end-to-end} terhadap server inferensi FastAPI dan \textit{backend} Supabase, sehingga memuat data nyata, antara lain foto kejadian, koordinat dan alamat hasil \textit{reverse-geocoding}, nilai \textit{confidence}, instansi tujuan beserta estimasi jarak, dan metadata model. \emph{Kedua}, layar yang aksesnya dibatasi peran Operator Instansi dan Moderator atau \textit{Super Admin} (Bagian~A.4--A.7) dirender secara deterministik melalui \textit{golden screenshot test} (pengujian render \textit{widget} Flutter yang sebenarnya dengan data contoh terkendali), karena akun berperan instansi belum di-\textit{provisioning} pada perangkat uji dan data lintas-instansi tidak dapat ditampilkan dari satu akun warga. Pendekatan \textit{golden render} menjaga tampilan tetap konsisten dan dapat direproduksi tanpa bergantung pada koneksi jaringan. Pemisahan galeri ke lampiran menjaga pemaparan metodologi pada Bab~\ref{ch:metode} dan hasil pada Bab~\ref{ch:hasil} tetap padat.
 
-\section*{A.1 Onboarding dan Autentikasi}
+% =====================================================================
+\section*{A.1 Alur Pembuatan dan Klasifikasi Laporan (Perangkat Fisik)}
 
 \begin{figure}[htbp]
     \centering
-    \begin{subfigure}[b]{0.30\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{image-androdid/buat-laporan.jpg}
+        \caption{Buat laporan}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{image-androdid/Hasil-analisis-ai.jpg}
+        \caption{Tinjauan hasil AI}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[height=6.2cm]{image-androdid/view-changes-instansi.jpg}
+        \caption{Ganti instansi}
+    \end{subfigure}
+    \caption{Alur inti pelaporan oleh Warga Pelapor pada perangkat Android fisik: layar buat laporan (ambil foto kamera/galeri, narasi singkat, dan akuisisi lokasi GPS) (a); layar tinjauan hasil AI yang menampilkan instansi prediksi teratas beserta \textit{confidence} ($88\%$), peringkat alternatif, instansi tujuan terdekat dengan estimasi jarak, dan konfirmasi lokasi pada peta (b); serta lembar koreksi kategori manual ``Ganti instansi'' yang memungkinkan warga menimpa prediksi AI sebelum laporan dikirim (c).}
+    \label{fig:app-pelaporan}
+\end{figure}
+
+% =====================================================================
+\section*{A.2 Status, Riwayat, dan Detail Laporan (Perangkat Fisik)}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.24\textwidth}
+        \centering
+        \includegraphics[height=5.6cm]{image-androdid/laporan-terkirim.jpg}
+        \caption{Timeline status}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.24\textwidth}
+        \centering
+        \includegraphics[height=5.6cm]{image-androdid/detail-laporan-terkirim.jpg}
+        \caption{Detail teknis}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.24\textwidth}
+        \centering
+        \includegraphics[height=5.6cm]{image-androdid/melihat-laporan.jpg}
+        \caption{Riwayat laporan}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.24\textwidth}
+        \centering
+        \includegraphics[height=5.6cm]{image-androdid/melihat-laporan-filter-terverifikasi.jpg}
+        \caption{Filter status}
+    \end{subfigure}
+    \caption{Pelacakan laporan oleh warga: detail laporan dengan \textit{timeline} status \textit{submitted}~$\rightarrow$~\textit{verified}~$\rightarrow$~\textit{in progress}~$\rightarrow$~\textit{resolved} (a); panel ``Detail teknis'' yang memuat pelapor, prediksi dan \textit{confidence} AI, instansi tujuan, estimasi jarak \textit{assignment}, serta nama dan versi model (b); daftar riwayat ``Laporan Saya'' dengan kartu \textit{thumbnail}, kategori, dan status terkini (c); dan daftar yang sama setelah disaring ke status \textit{Terverifikasi} (d).}
+    \label{fig:app-riwayat-detail}
+\end{figure}
+
+% =====================================================================
+\section*{A.3 Profil Warga (Perangkat Fisik)}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[height=7.4cm]{image-androdid/profile.jpg}
+    \caption{Layar profil Warga Pelapor pada perangkat fisik: nama, surel, nomor telepon, dan peran (\textit{Citizen reporter}) yang diambil dari tabel \texttt{profiles} Supabase, beserta pintasan ke pengaturan dan keluar akun.}
+    \label{fig:app-profil}
+\end{figure}
+
+% =====================================================================
+\section*{A.4 Onboarding dan Autentikasi (Render Golden)}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.235\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_onboarding.png}
         \caption{Onboarding}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.30\textwidth}
+    \begin{subfigure}[b]{0.235\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_login.png}
         \caption{Masuk akun}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.30\textwidth}
+    \begin{subfigure}[b]{0.235\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_register.png}
         \caption{Registrasi}
     \end{subfigure}
-    \caption{Layar onboarding tiga halaman serta layar masuk dan registrasi akun terverifikasi.}
+    \hfill
+    \begin{subfigure}[b]{0.235\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_forgot.png}
+        \caption{Lupa kata sandi}
+    \end{subfigure}
+    \caption{Layar onboarding tiga halaman serta layar masuk, registrasi akun terverifikasi, dan pemulihan kata sandi melalui surel.}
     \label{fig:app-onboarding}
 \end{figure}
 
-\section*{A.2 Beranda dan Buat Laporan}
+% =====================================================================
+\section*{A.5 Beranda, Peta, dan Pengaturan (Render Golden)}
 
 \begin{figure}[htbp]
     \centering
@@ -40,45 +116,7 @@ Lampiran ini memuat galeri lengkap tangkapan layar antarmuka untuk seluruh layar
         \includegraphics[width=\linewidth]{bab_3/ui/ui_dashboard.png}
         \caption{Beranda warga}
     \end{subfigure}
-    \hspace{0.05\textwidth}
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_create_report.png}
-        \caption{Buat laporan}
-    \end{subfigure}
-    \caption{Beranda warga dengan ringkasan status laporan dan peta laporan terdekat, serta layar buat laporan (ambil foto, narasi, dan lokasi).}
-    \label{fig:app-beranda-buat}
-\end{figure}
-
-\section*{A.3 Tinjauan Hasil AI, Riwayat, dan Detail Laporan}
-
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_ai_review.png}
-        \caption{Tinjauan hasil AI}
-    \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_my_reports.png}
-        \caption{Riwayat laporan}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_report_detail.png}
-        \caption{Detail laporan}
-    \end{subfigure}
-    \caption{Layar tinjauan hasil AI (instansi prediksi, \textit{confidence}, tiga prediksi teratas, instansi tujuan terdekat, dan koreksi kategori manual); daftar riwayat laporan beserta filter status; serta detail laporan dengan \textit{timeline} status dari \textit{submitted} hingga \textit{resolved}.}
-    \label{fig:app-ai-riwayat-detail}
-\end{figure}
-
-\section*{A.4 Peta, Profil, dan Pengaturan}
-
-\begin{figure}[htbp]
-    \centering
     \begin{subfigure}[b]{0.30\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_map_view.png}
@@ -87,29 +125,15 @@ Lampiran ini memuat galeri lengkap tangkapan layar antarmuka untuk seluruh layar
     \hfill
     \begin{subfigure}[b]{0.30\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_profile.png}
-        \caption{Profil}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_settings.png}
         \caption{Pengaturan}
     \end{subfigure}
-    \caption{Layar peta laporan dengan pin lokasi laporan dan filter status di atas ubin peta OpenStreetMap, layar profil pengguna, dan pengaturan aplikasi.}
-    \label{fig:app-peta-profil}
+    \caption{Beranda warga dengan ringkasan status laporan dan peta laporan terdekat; layar peta laporan dengan pin lokasi dan filter status di atas ubin OpenStreetMap; serta layar pengaturan aplikasi.}
+    \label{fig:app-beranda-peta}
 \end{figure}
 
-\section*{A.5 Layar Lupa Kata Sandi}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.30\textwidth]{bab_3/ui/ui_forgot.png}
-    \caption{Layar pemulihan kata sandi melalui surel.}
-    \label{fig:app-forgot}
-\end{figure}
-
-\section*{A.6 Tampilan Operator dan Admin Instansi}
+% =====================================================================
+\section*{A.6 Operator dan Admin Instansi (Render Golden)}
 
 \begin{figure}[htbp]
     \centering
@@ -118,20 +142,7 @@ Lampiran ini memuat galeri lengkap tangkapan layar antarmuka untuk seluruh layar
         \includegraphics[width=\linewidth]{bab_3/ui/ui_agency_inbox.png}
         \caption{Antrean instansi}
     \end{subfigure}
-    \hspace{0.05\textwidth}
-    \begin{subfigure}[b]{0.30\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{bab_3/ui/ui_agency_admin_profile.png}
-        \caption{Profil operator}
-    \end{subfigure}
-    \caption{Dasbor antrean operator instansi yang hanya menampilkan laporan ter-\textit{routing} sesuai peran melalui \textit{Row Level Security}, serta profil operator yang memuat lingkup instansi yang ditugaskan.}
-    \label{fig:app-operator}
-\end{figure}
-
-\section*{A.7 Penanganan Laporan dan Bukti Penyelesaian oleh Operator}
-
-\begin{figure}[htbp]
-    \centering
+    \hfill
     \begin{subfigure}[b]{0.30\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_detail_admin.png}
@@ -143,12 +154,43 @@ Lampiran ini memuat galeri lengkap tangkapan layar antarmuka untuk seluruh layar
         \includegraphics[width=\linewidth]{bab_3/ui/ui_evidence_sheet.png}
         \caption{Unggah bukti}
     \end{subfigure}
-    \hfill
+    \caption{Dasbor antrean Operator Instansi yang hanya menampilkan laporan ter-\textit{routing} sesuai peran melalui \textit{Row Level Security} (a); bilah aksi pembaruan status (\textit{verify}, \textit{reject}, \textit{in progress}, \textit{resolved}) saat operator membuka laporan instansinya (b); dan lembar unggah bukti penyelesaian yang wajib diisi sebelum laporan dapat ditandai selesai (c).}
+    \label{fig:app-operator}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_agency_admin_profile.png}
+        \caption{Profil operator}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
     \begin{subfigure}[b]{0.30\textwidth}
         \centering
         \includegraphics[width=\linewidth]{bab_3/ui/ui_detail_resolved.png}
         \caption{Laporan selesai}
     \end{subfigure}
-    \caption{Alur penanganan laporan oleh operator instansi: bilah aksi pembaruan status (\textit{verify}, \textit{reject}, \textit{in progress}, \textit{resolved}) saat operator membuka laporan instansinya (a); \textit{sheet} unggah bukti penyelesaian yang wajib diisi sebelum laporan dapat ditandai selesai (b); dan tampilan laporan yang telah selesai dengan \textit{timeline} status lengkap beserta bukti penyelesaian yang tersimpan (c).}
-    \label{fig:app-penanganan}
+    \caption{Profil operator yang memuat lingkup instansi yang ditugaskan (a), serta tampilan laporan yang telah selesai dengan \textit{timeline} status lengkap beserta bukti penyelesaian yang tersimpan (b).}
+    \label{fig:app-operator-profil}
+\end{figure}
+
+% =====================================================================
+\section*{A.7 Moderator atau Super Admin (Render Golden)}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_superadmin_inbox.png}
+        \caption{Antrean lintas instansi}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}[b]{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{bab_3/ui/ui_agency_registry.png}
+        \caption{Registri instansi}
+    \end{subfigure}
+    \caption{Tampilan peran Moderator atau \textit{Super Admin}: antrean global ``All agencies'' yang menampilkan laporan dari seluruh instansi dengan tapis instansi dan panel \textit{triage} (a); serta layar registri instansi (CRUD atas tabel \texttt{agencies}) yang memuat nama kantor, kategori, koordinat, dan penanda aktif, lengkap dengan aksi pemuatan ulang server \textit{routing} (b). Akses kedua layar ini dibatasi peran \textit{super\_admin} melalui \textit{Row Level Security}.}
+    \label{fig:app-superadmin}
 \end{figure}
