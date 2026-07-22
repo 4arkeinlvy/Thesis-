@@ -1,53 +1,54 @@
 \babel@toc {indonesian}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Perbandingan algoritma tokenizer subword.}}{26}{table.caption.10}%
-\contentsline {table}{\numberline {2.2}{\ignorespaces Perbandingan model \textit {encoder} teks.}}{38}{table.caption.11}%
-\contentsline {table}{\numberline {2.3}{\ignorespaces Perbandingan inferensi \textit {on-device} dan \textit {on-server}.}}{42}{table.caption.12}%
-\contentsline {table}{\numberline {2.4}{\ignorespaces Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}}{56}{table.caption.13}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Perbandingan algoritma tokenizer subword.}}{28}{table.caption.10}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Perbandingan model \textit {encoder} teks.}}{40}{table.caption.11}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Perbandingan inferensi \textit {on-device} dan \textit {on-server}.}}{44}{table.caption.12}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Perbandingan penelitian ini dengan pekerjaan multimodal terdahulu.}}{58}{table.caption.13}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Perbandingan aplikasi pelaporan publik sejenis.}}{64}{table.caption.19}%
-\contentsline {table}{\numberline {3.2}{\ignorespaces Pemetaan rumusan masalah ke komponen solusi.}}{64}{table.caption.20}%
-\contentsline {table}{\numberline {3.3}{\ignorespaces Distribusi sampel per instansi target setelah pemetaan.}}{70}{table.caption.24}%
-\contentsline {table}{\numberline {3.4}{\ignorespaces Pembagian dataset stratifikasi.}}{71}{table.caption.25}%
-\contentsline {table}{\numberline {3.5}{\ignorespaces Konfigurasi \textit {pod} RunPod untuk pelatihan dan ekstraksi \textit {embedding}.}}{73}{table.caption.26}%
-\contentsline {table}{\numberline {3.6}{\ignorespaces Daftar \textit {encoder} citra yang dievaluasi.}}{76}{table.caption.27}%
-\contentsline {table}{\numberline {3.7}{\ignorespaces Daftar \textit {encoder} teks yang dievaluasi.}}{77}{table.caption.28}%
-\contentsline {table}{\numberline {3.8}{\ignorespaces Hyperparameter CatBoost.}}{79}{table.caption.29}%
-\contentsline {table}{\numberline {3.9}{\ignorespaces Matriks rancangan eksperimen ablasi (4 \textit {encoder} citra \(\times \) 4 \textit {encoder} teks \(\times \) 2 varian \textit {head}).}}{82}{table.caption.30}%
-\contentsline {table}{\numberline {3.10}{\ignorespaces Spesifikasi \textit {endpoint} server FastAPI.}}{86}{table.caption.33}%
-\contentsline {table}{\numberline {3.11}{\ignorespaces Atribut tabel \texttt {profiles}.}}{92}{table.caption.36}%
-\contentsline {table}{\numberline {3.12}{\ignorespaces Atribut tabel \texttt {reports}.}}{93}{table.caption.37}%
-\contentsline {table}{\numberline {3.13}{\ignorespaces Atribut tabel \texttt {report\_evidence}.}}{94}{table.caption.38}%
-\contentsline {table}{\numberline {3.14}{\ignorespaces Atribut tabel \texttt {report\_assignments}.}}{94}{table.caption.39}%
-\contentsline {table}{\numberline {3.15}{\ignorespaces Atribut tabel \texttt {agencies}.}}{95}{table.caption.40}%
-\contentsline {table}{\numberline {3.16}{\ignorespaces Atribut tabel \texttt {report\_history}.}}{95}{table.caption.41}%
-\contentsline {table}{\numberline {3.17}{\ignorespaces Atribut tabel \texttt {report\_sla}.}}{96}{table.caption.42}%
-\contentsline {table}{\numberline {3.18}{\ignorespaces Ringkasan \textit {use case} utama SmartCityApps.}}{100}{table.caption.45}%
-\contentsline {table}{\numberline {3.19}{\ignorespaces \textit {Use case description} untuk Mendaftar atau Masuk Akun.}}{100}{table.caption.46}%
-\contentsline {table}{\numberline {3.20}{\ignorespaces \textit {Use case description} untuk Mengambil Foto Laporan.}}{101}{table.caption.47}%
-\contentsline {table}{\numberline {3.21}{\ignorespaces \textit {Use case description} untuk Menulis Narasi Laporan.}}{101}{table.caption.48}%
-\contentsline {table}{\numberline {3.22}{\ignorespaces \textit {Use case description} untuk Mengirim Laporan untuk Klasifikasi.}}{102}{table.caption.49}%
-\contentsline {table}{\numberline {3.23}{\ignorespaces \textit {Use case description} untuk Meninjau Hasil Klasifikasi AI.}}{102}{table.caption.50}%
-\contentsline {table}{\numberline {3.24}{\ignorespaces \textit {Use case description} untuk Mengoreksi Kategori Manual.}}{103}{table.caption.51}%
-\contentsline {table}{\numberline {3.25}{\ignorespaces \textit {Use case description} untuk Menyimpan Laporan ke Riwayat.}}{103}{table.caption.52}%
-\contentsline {table}{\numberline {3.26}{\ignorespaces \textit {Use case description} untuk Melihat Riwayat dan Peta Laporan.}}{104}{table.caption.53}%
-\contentsline {table}{\numberline {3.27}{\ignorespaces Modul dan layanan utama aplikasi Flutter.}}{110}{table.caption.61}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Perbandingan aplikasi pelaporan publik sejenis.}}{66}{table.caption.19}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Pemetaan rumusan masalah ke komponen solusi.}}{66}{table.caption.20}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Distribusi sampel per instansi target setelah pemetaan.}}{72}{table.caption.24}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Pembagian dataset stratifikasi.}}{73}{table.caption.25}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Konfigurasi \textit {pod} RunPod untuk pelatihan dan ekstraksi \textit {embedding}.}}{75}{table.caption.26}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Daftar \textit {encoder} citra yang dievaluasi.}}{79}{table.caption.27}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Daftar \textit {encoder} teks yang dievaluasi.}}{79}{table.caption.28}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Hyperparameter CatBoost.}}{81}{table.caption.29}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces Matriks rancangan eksperimen ablasi (4 \textit {encoder} citra \(\times \) 4 \textit {encoder} teks \(\times \) 2 varian \textit {head}).}}{84}{table.caption.30}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Spesifikasi \textit {endpoint} server FastAPI.}}{88}{table.caption.33}%
+\contentsline {table}{\numberline {3.11}{\ignorespaces Atribut tabel \texttt {profiles}.}}{94}{table.caption.36}%
+\contentsline {table}{\numberline {3.12}{\ignorespaces Atribut tabel \texttt {reports}.}}{95}{table.caption.37}%
+\contentsline {table}{\numberline {3.13}{\ignorespaces Atribut tabel \texttt {report\_evidence}.}}{96}{table.caption.38}%
+\contentsline {table}{\numberline {3.14}{\ignorespaces Atribut tabel \texttt {report\_assignments}.}}{96}{table.caption.39}%
+\contentsline {table}{\numberline {3.15}{\ignorespaces Atribut tabel \texttt {agencies}.}}{97}{table.caption.40}%
+\contentsline {table}{\numberline {3.16}{\ignorespaces Atribut tabel \texttt {report\_history}.}}{97}{table.caption.41}%
+\contentsline {table}{\numberline {3.17}{\ignorespaces Atribut tabel \texttt {report\_sla}.}}{98}{table.caption.42}%
+\contentsline {table}{\numberline {3.18}{\ignorespaces Ringkasan \textit {use case} utama SmartCityApps.}}{101}{table.caption.44}%
+\contentsline {table}{\numberline {3.19}{\ignorespaces \textit {Use case description} untuk Mendaftar atau Masuk Akun.}}{102}{table.caption.45}%
+\contentsline {table}{\numberline {3.20}{\ignorespaces \textit {Use case description} untuk Mengambil Foto Laporan.}}{102}{table.caption.46}%
+\contentsline {table}{\numberline {3.21}{\ignorespaces \textit {Use case description} untuk Menulis Narasi Laporan.}}{103}{table.caption.47}%
+\contentsline {table}{\numberline {3.22}{\ignorespaces \textit {Use case description} untuk Mengirim Laporan untuk Klasifikasi.}}{103}{table.caption.48}%
+\contentsline {table}{\numberline {3.23}{\ignorespaces \textit {Use case description} untuk Meninjau Hasil Klasifikasi AI.}}{104}{table.caption.49}%
+\contentsline {table}{\numberline {3.24}{\ignorespaces \textit {Use case description} untuk Mengoreksi Kategori Manual.}}{104}{table.caption.50}%
+\contentsline {table}{\numberline {3.25}{\ignorespaces \textit {Use case description} untuk Menyimpan Laporan ke Riwayat.}}{105}{table.caption.51}%
+\contentsline {table}{\numberline {3.26}{\ignorespaces \textit {Use case description} untuk Melihat Riwayat dan Peta Laporan.}}{105}{table.caption.52}%
+\contentsline {table}{\numberline {3.27}{\ignorespaces Modul dan layanan utama aplikasi Flutter.}}{111}{table.caption.60}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Lingkungan perangkat lunak utama.}}{117}{table.caption.62}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Distribusi sampel per instansi (dinas) pada set train.}}{119}{table.caption.64}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Metrik kinerja konfigurasi terbaik pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{119}{table.caption.65}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{120}{table.caption.66}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Hasil ablasi modalitas pada set uji.}}{121}{table.caption.67}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Hasil ablasi kalibrasi pada set uji.}}{122}{table.caption.69}%
-\contentsline {table}{\numberline {4.7}{\ignorespaces Macro F1 (CatBoost+PGS) pada matrix grid pasangan encoder.}}{125}{table.caption.71}%
-\contentsline {table}{\numberline {4.8}{\ignorespaces Validasi paritas numerik PyTorch terhadap ONNX pada set uji.}}{126}{table.caption.73}%
-\contentsline {table}{\numberline {4.9}{\ignorespaces Contoh perutean instansi terdekat dari hasil klasifikasi dan koordinat laporan.}}{132}{table.caption.77}%
-\contentsline {table}{\numberline {4.10}{\ignorespaces Skenario tugas alur inti pelaporan yang dicoba setiap responden sebelum mengisi kuesioner SUS.}}{135}{table.caption.78}%
-\contentsline {table}{\numberline {4.11}{\ignorespaces Profil 30 responden evaluasi usabilitas.}}{135}{table.caption.79}%
-\contentsline {table}{\numberline {4.12}{\ignorespaces Statistik deskriptif skor SUS aplikasi SmartCityApps ($n = 30$).}}{136}{table.caption.80}%
-\contentsline {table}{\numberline {4.13}{\ignorespaces Rekapitulasi per pernyataan SUS: rata-rata respons mentah (skala 1--5) dan kontribusi skor terkoreksi-arah (skala 0--4). Tanda (+) menandai pernyataan positif dan ($-$) pernyataan negatif.}}{138}{table.caption.83}%
-\contentsline {table}{\numberline {4.14}{\ignorespaces Latensi inferensi per tahap pada satu sampel (diukur pada CPU lingkungan pengembangan, rerata 20 iterasi setelah \textit {warm-up}).}}{142}{table.caption.86}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Lingkungan perangkat lunak utama.}}{119}{table.caption.61}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Distribusi sampel per instansi (dinas) pada set train.}}{121}{table.caption.63}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Metrik kinerja konfigurasi terbaik pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{121}{table.caption.64}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Metrik per-kelas pada set uji (DINOv3 large + mE5 large + CatBoost+PGS).}}{123}{table.caption.65}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Hasil ablasi modalitas pada set uji.}}{123}{table.caption.66}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Hasil ablasi kalibrasi pada set uji.}}{125}{table.caption.68}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Macro F1 (CatBoost+PGS) pada matriks pasangan encoder.}}{127}{table.caption.70}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Validasi paritas numerik PyTorch terhadap ONNX pada set uji.}}{128}{table.caption.72}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Contoh perutean instansi terdekat dari hasil klasifikasi dan koordinat laporan.}}{133}{table.caption.75}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces Skenario tugas alur inti pelaporan yang dicoba setiap responden sebelum mengisi kuesioner SUS.}}{136}{table.caption.76}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces Profil 30 responden evaluasi usabilitas.}}{137}{table.caption.77}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces Statistik deskriptif skor SUS aplikasi SmartCityApps ($n = 30$).}}{137}{table.caption.78}%
+\contentsline {table}{\numberline {4.13}{\ignorespaces Rekapitulasi per pernyataan SUS: rata-rata respons mentah (skala 1--5) dan kontribusi skor terkoreksi-arah (skala 0--4). Tanda (+) menandai pernyataan positif dan ($-$) pernyataan negatif.}}{139}{table.caption.81}%
+\contentsline {table}{\numberline {4.14}{\ignorespaces Latensi inferensi per tahap pada satu sampel (diukur pada CPU lingkungan pengembangan, rerata 20 iterasi setelah \textit {warm-up}).}}{143}{table.caption.84}%
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

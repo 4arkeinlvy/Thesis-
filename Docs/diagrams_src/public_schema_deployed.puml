@@ -1,0 +1,173 @@
+@startuml public_schema_deployed
+!include _thesis_style.puml
+
+' ============================================================
+' Skema "public" yang ter-deploy pada Supabase (PostgreSQL).
+' Transkripsi lengkap dan setia dari definisi skema ter-deploy
+' (dump kolom/tipe/constraint), bukan tangkapan layar.
+' reports = aggregate root; kolom datar penugasan/penyelesaian
+' pada reports adalah proyeksi-baca yang disinkronkan trigger
+' dari report_assignments & report_evidence (lihat catatan).
+' ============================================================
+
+hide circle
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 56
+skinparam roundCorner 6
+skinparam shadowing false
+skinparam note {
+  BackgroundColor #FEF9E7
+  BorderColor #B7950B
+  FontColor #5B4A06
+}
+skinparam legendBackgroundColor #F8F9F9
+skinparam legendBorderColor #2E4053
+
+' ===================== ENTITAS =====================
+
+entity "profiles" as Profiles #EBF5FB {
+  * id : uuid <<PK>>
+  --
+  * full_name : text
+  * email : text <<Unique>>
+  * phone_number : text
+  profile_photo_url : text
+  * is_moderator : boolean
+  * role : user_role
+  assigned_agency : issue_category
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+
+entity "reports  «aggregate root»" as Reports #FBFCFD {
+  * id : uuid <<PK>>
+  --
+  * user_id : uuid <<FK profiles>>
+  * reporter_name : text
+  * reporter_email : text
+  * category : issue_category
+  * ai_prediction : text
+  * ai_confidence : numeric
+  * ai_probabilities : jsonb
+  ai_model_name : text
+  ai_model_version : text
+  * image_url : text
+  * description : text
+  * latitude : float8
+  * longitude : float8
+  * address : text
+  * status : report_status
+  * visibility : report_visibility
+  duplicate_of : uuid <<FK reports>>
+  verified_by : uuid <<FK profiles>>
+  verified_at : timestamptz
+  rejection_reason : text
+  assigned_agency_id : text
+  assigned_agency_name : text
+  assigned_agency_category : issue_category
+  assigned_distance_meters : float8
+  routing_method : text
+  resolution_evidence_photo_url : text
+  resolution_note : text
+  resolved_by : uuid <<FK profiles>>
+  resolved_at : timestamptz
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+
+entity "report_evidence" as Evidence #FEF5E7 {
+  * id : uuid <<PK>>
+  --
+  * report_id : uuid <<FK reports>>
+  * kind : evidence_kind
+  * bucket : text
+  * object_path : text
+  content_type : text
+  uploaded_by : uuid <<FK profiles>>
+  * created_at : timestamptz
+}
+
+entity "report_assignments" as Assignments #FDF2E9 {
+  * id : uuid <<PK>>
+  --
+  * report_id : uuid <<FK reports>>
+  agency_id : text <<FK agencies>>
+  agency_name : text
+  agency_category : issue_category
+  distance_meters : float8
+  routing_method : text
+  * status : assignment_status
+  reason : text
+  assigned_by : uuid <<FK profiles>>
+  * created_at : timestamptz
+}
+
+entity "agencies" as Agencies #EBF5FB {
+  * id : text <<PK>>
+  --
+  * name : text
+  * category : issue_category
+  latitude : float8
+  longitude : float8
+  * is_active : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+
+entity "report_history" as History #F5EEF8 {
+  * id : uuid <<PK>>
+  --
+  * report_id : uuid <<FK reports>>
+  * status : report_status
+  * note : text
+  updated_by : uuid <<FK profiles>>
+  * created_at : timestamptz
+}
+
+entity "report_sla" as Sla #EAFAF1 {
+  * report_id : uuid <<PK, FK reports>>
+  --
+  first_response_due_at : timestamptz
+  resolution_due_at : timestamptz
+  first_response_at : timestamptz
+  breached_at : timestamptz
+  * created_at : timestamptz
+  * updated_at : timestamptz
+}
+
+' ===================== RELASI =====================
+
+Profiles ||--o{ Reports     : "pelapor (user_id)"
+Reports  ||--o{ Evidence
+Reports  ||--o{ Assignments
+Reports  ||--o| Sla
+Reports  ||--o{ History
+Reports  ||--o{ Reports     : "duplicate_of"
+Agencies ||--o{ Assignments
+
+' ===================== CATATAN =====================
+
+note bottom of Reports
+**Proyeksi-baca (sinkron trigger).** Kolom datar
+penugasan & penyelesaian pada reports
+(assigned_agency_*, assigned_distance_meters,
+routing_method, resolution_*, resolved_*) adalah
+salinan baca yang disinkronkan trigger dari
+report_assignments & report_evidence, agar klien
+Realtime cukup membaca satu tabel.
+**FK audit ke profiles**: verified_by, resolved_by
+(reports), updated_by (report_history), uploaded_by
+(report_evidence), assigned_by (report_assignments).
+Rincian enum & RLS: Lampiran D.
+end note
+
+legend right
+|= Notasi |= Arti |
+| * | wajib (NOT NULL) |
+| PK / FK | kunci primer / asing |
+| crow's foot | relasi satu-ke-banyak |
+endlegend
+
+@enduml

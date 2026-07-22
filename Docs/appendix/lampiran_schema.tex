@@ -1,0 +1,23 @@
+% =====================================================================
+% LAMPIRAN: SKEMA BASIS DATA TER-DEPLOY (SUPABASE)
+% =====================================================================
+\chapter{Skema Basis Data Ter-deploy pada Supabase}
+\label{app:db-schema}
+
+Lampiran ini menyajikan tangkapan layar dua skema basis data yang benar-benar ter-deploy pada Supabase (hasil visualisasi Supabase Studio \textit{Schema Visualizer}), yaitu skema \texttt{public} aplikasi (Gambar~\ref{fig:erd-supabase}) dan skema \texttt{storage} bawaan Supabase (Gambar~\ref{fig:storage-schema}). Kedua diagram ditampilkan dalam orientasi lanskap memenuhi halaman agar seluruh tabel beserta kolom, tipe data, dan relasi antar-tabelnya dapat terbaca. Rancangan konseptual skema \texttt{public} beserta mekanisme \textit{proyeksi-baca} yang disinkronkan \textit{trigger} dibahas pada Bab~\ref{ch:metode} (Gambar~\ref{fig:db-schema}).
+
+\begin{sidewaysfigure}
+    \centering
+    \includegraphics[width=0.96\textheight, height=0.82\textwidth, keepaspectratio]{supabase/public_schema_deployed.png}
+    \caption[Skema basis data \texttt{public} ter-deploy pada Supabase (Supabase Studio)]{Skema basis data \texttt{public} yang ter-deploy pada Supabase (hasil visualisasi Supabase Studio): akar agregat \texttt{reports} dengan tabel anak \texttt{report\_evidence}, \texttt{report\_assignments}, \texttt{report\_history}, dan \texttt{report\_sla}, registri \texttt{agencies}, serta \texttt{profiles}. Rancangan konseptualnya beserta mekanisme proyeksi-baca disajikan pada Gambar~\ref{fig:db-schema}.}
+    \label{fig:erd-supabase}
+\end{sidewaysfigure}
+
+Sementara itu, skema \texttt{storage} bawaan Supabase (Gambar~\ref{fig:storage-schema}) dikelola sepenuhnya oleh layanan Supabase Storage. Aplikasi hanya merujuk secara logis ke tabel \texttt{objects} dan \texttt{buckets}, sedangkan tabel lainnya (seperti \texttt{s3\_multipart\_uploads} dan \texttt{vector\_indexes}) merupakan internal Supabase Storage dan tidak digunakan aplikasi.
+
+\begin{sidewaysfigure}
+    \centering
+    \includegraphics[width=0.96\textheight, height=0.82\textwidth, keepaspectratio]{supabase/storage_schema.png}
+    \caption[Skema \textit{storage} yang dikelola Supabase]{Skema \texttt{storage} bawaan Supabase (hasil visualisasi Supabase Studio), ditampilkan dalam orientasi lanskap penuh agar seluruh tabel terbaca. Aplikasi hanya merujuk secara logis tabel \texttt{objects} (melalui \texttt{bucket\_id} serta \texttt{name}/\texttt{object\_path}) dan \texttt{buckets}; tabel lain seperti \texttt{s3\_multipart\_uploads} dan \texttt{vector\_indexes} merupakan internal Supabase Storage dan tidak digunakan aplikasi.}
+    \label{fig:storage-schema}
+\end{sidewaysfigure}

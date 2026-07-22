@@ -1,7 +1,7 @@
 \chapter{TINJAUAN REFERENSI}
 \label{ch:tinjauan}
 
-Bab ini memaparkan landasan teoretis yang menjadi pijakan rancangan sistem klasifikasi multimodal pada penelitian ini. Pemaparan disusun dari konsep yang paling umum, yaitu \textit{smart city} dan partisipasi publik, menuju konsep yang lebih spesifik, yaitu akuisisi data melalui \textit{web scraping}, kerangka kecerdasan buatan, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi, mekanisme \textit{attention}, arsitektur \textit{Transformer}, keluarga \textit{backbone} visual dan \textit{encoder} teks modern, fusi multimodal, ekosistem inferensi ONNX, permodelan UML, kontainerisasi Docker, hingga \textit{stack} aplikasi mobile dan \textit{web framework}. Setiap bagian berusaha menjelaskan tidak hanya definisi, melainkan juga motivasi, sejarah singkat, dan formulasi matematis bila diperlukan, sebagai dasar bagi keputusan metodologis yang dijelaskan pada Bab Metode Penelitian.
+Bab ini memaparkan landasan teoretis yang menjadi pijakan rancangan sistem klasifikasi multimodal pada penelitian ini. Pemaparan disusun dari konsep yang paling umum, yaitu \textit{smart city} dan partisipasi publik, menuju konsep yang lebih spesifik, yaitu akuisisi data melalui \textit{web scraping}, kerangka kecerdasan buatan, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi, mekanisme \textit{attention}, arsitektur \textit{Transformer}, keluarga \textit{backbone} visual dan \textit{encoder} teks modern, fusi multimodal, ekosistem inferensi ONNX, permodelan UML, kontainerisasi Docker, hingga \textit{stack} aplikasi mobile dan \textit{web framework}. Setiap bagian menjelaskan definisi, motivasi, sejarah singkat, dan formulasi matematis bila diperlukan sebagai dasar bagi keputusan metodologis yang dijelaskan pada Bab Metode Penelitian.
 
 Pemilihan rujukan memprioritaskan publikasi mutakhir periode 2021--2026 untuk menggambarkan kondisi terkini, khususnya pada \textit{backbone} visual dan \textit{encoder} teks yang dipakai. Namun, beberapa rujukan fondasional yang lebih lama dari lima tahun tetap disitasi pada sumber aslinya karena bersifat normatif atau merupakan asal-usul metode yang dipakai langsung pada penelitian ini, contohnya algoritma CatBoost \citep{prokhorenkovaCatBoost2018}, arsitektur \textit{Transformer}, notasi UML \citep{boochUML2005}, \textit{C4 model} \citep{brownC42018}, serta standar \textit{flowchart} ISO 5807 \citep{iso5807}. Rujukan semacam ini diperlakukan sebagai pengecualian fondasional, bukan sebagai klaim kebaruan.
 
@@ -459,7 +459,7 @@ Hasil eksperimen (Bab~\ref{ch:hasil}) menunjukkan DINOv3 dan EVA-02 unggul, seme
 \label{sec:textencoder}
 % =====================================================================
 
-Bagian ini memaparkan model \textit{encoder} teks yang relevan dengan klasifikasi dokumen Bahasa Indonesia, yaitu BERT, mBERT, IndoBERT, Cendol-mT5, BGE-M3, dan keluarga E5 multibahasa.
+Bagian ini memaparkan model \textit{encoder} teks yang relevan dengan klasifikasi dokumen bahasa Indonesia, yaitu BERT, mBERT, IndoBERT, Cendol-mT5, BGE-M3, dan keluarga E5 multibahasa.
 
 \subsection{\textit{Encoder} Teks Pembanding}
 \label{sec:textencoder-pembanding}
@@ -472,11 +472,11 @@ BERT \citep{devlinBERT2019} adalah \textit{Transformer encoder} dua arah yang di
 
 \subsubsection{IndoBERT}
 
-IndoBERT \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga \textit{Transformer encoder} yang dilatih khusus pada korpus Bahasa Indonesia melalui dua jalur publikasi, yaitu IndoLEM/IndoBERT \citep{kotoIndoLEM2020} dan IndoNLU/IndoBERT \citep{wilieIndoNLU2020}. Arsitekturnya identik dengan BERT, namun dengan tokenizer dan korpus pra-latih spesifik Bahasa Indonesia, sehingga menghasilkan representasi yang lebih kaya pada idiom, ejaan, dan istilah lokal dibanding mBERT.
+IndoBERT \citep{kotoIndoLEM2020,wilieIndoNLU2020} adalah keluarga \textit{Transformer encoder} yang dilatih khusus pada korpus bahasa Indonesia melalui dua jalur publikasi, yaitu IndoLEM/IndoBERT \citep{kotoIndoLEM2020} dan IndoNLU/IndoBERT \citep{wilieIndoNLU2020}. Arsitekturnya identik dengan BERT, namun dengan tokenizer dan korpus pra-latih spesifik bahasa Indonesia, sehingga menghasilkan representasi yang lebih kaya pada idiom, ejaan, dan istilah lokal dibanding mBERT.
 
 \subsubsection{Cendol-mT5}
 
-Cendol \citep{cahyawijayaCendol2024} adalah keluarga model bahasa berbasis instruksi yang dirilis oleh IndoNLP untuk Bahasa Indonesia dan bahasa daerah Nusantara. Sub-keluarga Cendol-mT5 dibangun di atas arsitektur mT5 (\textit{encoder-decoder}); pada penggunaan sebagai \textit{encoder} kalimat, hanya bagian \textit{encoder} mT5 yang dimanfaatkan dengan \textit{mean pooling} yang dinormalisasi. mT5 \citep{xueMT52021} adalah varian multibahasa T5 yang dilatih pada korpus mC4 mencakup 101 bahasa dengan tujuan \textit{span corruption}.
+Cendol \citep{cahyawijayaCendol2024} adalah keluarga model bahasa berbasis instruksi yang dirilis oleh IndoNLP untuk bahasa Indonesia dan bahasa daerah Nusantara. Sub-keluarga Cendol-mT5 dibangun di atas arsitektur mT5 (\textit{encoder-decoder}); pada penggunaan sebagai \textit{encoder} kalimat, hanya bagian \textit{encoder} mT5 yang dimanfaatkan dengan \textit{mean pooling} yang dinormalisasi. mT5 \citep{xueMT52021} adalah varian multibahasa T5 yang dilatih pada korpus mC4 mencakup 101 bahasa dengan tujuan \textit{span corruption}.
 
 \subsubsection{BGE-M3}
 
@@ -804,7 +804,7 @@ Arsitektur yang diuji adalah jaringan saraf dalam dengan dua jalur paralel, yait
 
 \subsubsection{Kesimpulan}
 
-Penelitian ini mengambil inspirasi dari skema fusi konkatenasi pada lapisan tinggi yang juga dipakai oleh \citet{ofliMultimodalDisaster2020}. Perbedaan utamanya yaitu pemilihan \textit{encoder} (VGG16 dan GloVe-CNN versus DINOv3 \textit{large} dan \textit{multilingual-E5 large}), domain (Twitter berbahasa Inggris versus CRM Jakarta berbahasa Indonesia), dan \textit{classifier head} (\textit{fully connected layer} versus CatBoost dengan kalibrasi PGS). Karena DINOv3 dan \textit{multilingual-E5} merupakan \textit{foundation model} yang dilatih pada data jauh lebih besar daripada VGG16 dan GloVe, penelitian ini mengharapkan kualitas representasi yang lebih kuat tanpa perlu pelatihan ulang \textit{encoder}.
+Penelitian ini mengambil inspirasi dari skema fusi konkatenasi pada lapisan tinggi yang juga dipakai oleh \citet{ofliMultimodalDisaster2020}. Perbedaan utamanya yaitu pemilihan \textit{encoder} (VGG16 dan GloVe-CNN versus DINOv3 \textit{large} dan \textit{multilingual-E5 large}), domain (Twitter berbahasa Inggris versus CRM Jakarta berbahasa Indonesia), dan \textit{classifier head} (\textit{fully connected layer} versus CatBoost dengan kalibrasi PGS). Karena DINOv3 dan \textit{multilingual-E5} merupakan \textit{foundation model} yang dilatih pada data jauh lebih besar daripada VGG16 dan GloVe, pemilihan kedua model tersebut ditujukan untuk memperoleh representasi yang kuat tanpa perlu pelatihan ulang \textit{encoder}.
 
 \subsection{Alam, Ofli, dan Imran (2018): CrisisMMD, Dataset Multimodal Bencana}
 
@@ -818,7 +818,7 @@ CrisisMMD berisi 16.058 \textit{tweet} berlabel dengan tiga skema anotasi berlap
 
 \subsubsection{Kesimpulan}
 
-Penelitian ini secara struktural mengikuti praktik baik CrisisMMD, yaitu menyediakan dataset terstratifikasi pada partisi \textit{train}, validasi, dan uji dengan label dinas yang dibersihkan dari ratusan SKPD mentah. Perbedaan kontribusi pada aspek dataset terletak pada bahasa target (Bahasa Indonesia versus Inggris), kanal pelaporan (CRM Jakarta yang merupakan portal resmi pemerintah daerah versus Twitter yang merupakan media sosial publik), dan jumlah kategori (sembilan dinas operasional versus tiga skema anotasi). Skala dataset penelitian ini (61.773 sampel) lebih besar daripada CrisisMMD pada satu skema anotasi, sehingga memberikan ruang lebih luas untuk pelatihan \textit{classifier head}.
+Penelitian ini secara struktural mengikuti praktik baik CrisisMMD, yaitu menyediakan dataset terstratifikasi pada partisi \textit{train}, validasi, dan uji dengan label dinas yang dibersihkan dari ratusan SKPD mentah. Perbedaan kontribusi pada aspek dataset terletak pada bahasa target (bahasa Indonesia versus bahasa Inggris), kanal pelaporan (CRM Jakarta yang merupakan portal resmi pemerintah daerah versus Twitter yang merupakan media sosial publik), dan jumlah kategori (sembilan dinas operasional versus tiga skema anotasi). Skala dataset penelitian ini (61.773 sampel) lebih besar daripada CrisisMMD pada satu skema anotasi, sehingga memberikan ruang lebih luas untuk pelatihan \textit{classifier head}.
 
 \subsection{Koshy dan Elango (2023): Multimodal Tweet Classification dengan Transformer Bidirectional Attention}
 
@@ -860,4 +860,4 @@ Penelitian ini & Citra + teks & DINOv3 large + multilingual-E5 large & Konkatena
 
 \bigskip
 
-Bab ini telah memaparkan landasan teoretis yang menopang penelitian ini, mulai dari konteks \textit{smart city} dan partisipasi publik, akuisisi data melalui \textit{web scraping}, kerangka AI/ML/DL, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi melalui PCA, mekanisme \textit{attention} dan \textit{Transformer}, arsitektur \textit{backbone} visual modern (DINOv3, EVA-02, Hiera), model \textit{encoder} teks Bahasa Indonesia dan multibahasa (BERT, IndoBERT, Cendol-mT5, BGE-M3, multilingual-E5), skema fusi multimodal, ekosistem ONNX dan \textit{ONNX Runtime}, perbandingan inferensi \textit{on-device} versus \textit{on-server}, permodelan UML pada pengembangan aplikasi, lanskap aplikasi mobile dengan Flutter, basis data \textit{cloud} Supabase, kontainerisasi Docker, \textit{web framework} FastAPI, metrik evaluasi, teknik pelatihan, hingga penelitian terkait yang menjadi titik berangkat metodologis. Bab Metode Penelitian berikutnya akan memanfaatkan landasan ini untuk mendefinisikan rancangan eksperimen, prosedur ekspor model, dan rancangan sistem secara konkret.
+Bab ini telah memaparkan landasan teoretis yang menopang penelitian ini, mulai dari konteks \textit{smart city} dan partisipasi publik, akuisisi data melalui \textit{web scraping}, kerangka AI/ML/DL, pra-proses citra dan teks, ekstraksi fitur dan reduksi dimensi melalui PCA, mekanisme \textit{attention} dan \textit{Transformer}, arsitektur \textit{backbone} visual modern (DINOv3, EVA-02, Hiera), model \textit{encoder} teks bahasa Indonesia dan multibahasa (BERT, IndoBERT, Cendol-mT5, BGE-M3, multilingual-E5), skema fusi multimodal, ekosistem ONNX dan \textit{ONNX Runtime}, perbandingan inferensi \textit{on-device} versus \textit{on-server}, permodelan UML pada pengembangan aplikasi, lanskap aplikasi mobile dengan Flutter, basis data \textit{cloud} Supabase, kontainerisasi Docker, \textit{web framework} FastAPI, metrik evaluasi, teknik pelatihan, hingga penelitian terkait yang menjadi titik berangkat metodologis. Bab Metode Penelitian berikutnya akan memanfaatkan landasan ini untuk mendefinisikan rancangan eksperimen, prosedur ekspor model, dan rancangan sistem secara konkret.

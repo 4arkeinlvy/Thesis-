@@ -1,0 +1,157 @@
+@startuml storage_schema
+!include _thesis_style.puml
+
+' ============================================================
+' Supabase-managed "storage" schema (transkripsi setia dari
+' Supabase Studio Schema Visualizer atas proyek yang ter-deploy).
+' Aplikasi hanya merujuk secara logis ke tabel objects & buckets
+' (disorot biru); tabel lain dikelola internal oleh Supabase
+' Storage dan tidak digunakan aplikasi.
+' ============================================================
+
+hide circle
+skinparam dpi 200
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 60
+skinparam roundCorner 6
+skinparam shadowing false
+skinparam note {
+  BackgroundColor #FEF9E7
+  BorderColor #B7950B
+  FontColor #5B4A06
+}
+skinparam legendBackgroundColor #F8F9F9
+skinparam legendBorderColor #2E4053
+
+' ===================== TABEL YANG DIPAKAI APLIKASI =====================
+
+entity "storage.buckets" as Buckets #D6EAF8 {
+  * id : text <<PK>>
+  --
+  name : text
+  owner : uuid
+  public : boolean
+  avif_autodetection : boolean
+  file_size_limit : int8
+  allowed_mime_types : _text
+  owner_id : text
+  type : buckettype
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "storage.objects" as Objects #D6EAF8 {
+  * id : uuid <<PK>>
+  --
+  bucket_id : text <<FK buckets>>
+  name : text
+  owner : uuid
+  metadata : jsonb
+  path_tokens : _text
+  version : text
+  owner_id : text
+  user_metadata : jsonb
+  last_accessed_at : timestamptz
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+' ===================== TABEL INTERNAL SUPABASE =====================
+
+entity "storage.s3_multipart_uploads" as Multipart #F4F6F7 {
+  * id : text <<PK>>
+  --
+  in_progress_size : int8
+  upload_signature : text
+  bucket_id : text
+  key : text
+  version : text
+  owner_id : text
+  user_metadata : jsonb
+  metadata : jsonb
+  created_at : timestamptz
+}
+
+entity "storage.s3_multipart_uploads_parts" as MultipartParts #F4F6F7 {
+  * id : uuid <<PK>>
+  --
+  upload_id : text <<FK multipart>>
+  size : int8
+  part_number : int4
+  bucket_id : text
+  key : text
+  etag : text
+  owner_id : text
+  version : text
+  created_at : timestamptz
+}
+
+entity "storage.vector_indexes" as VectorIndexes #F4F6F7 {
+  * id : text <<PK>>
+  --
+  name : text
+  bucket_id : text
+  data_type : text
+  dimension : int4
+  distance_metric : text
+  metadata_configuration : jsonb
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "storage.buckets_vectors" as BucketsVectors #F4F6F7 {
+  * id : text <<PK>>
+  --
+  type : buckettype
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "storage.buckets_analytics" as BucketsAnalytics #F4F6F7 {
+  * id : uuid <<PK>>
+  --
+  name : text
+  type : buckettype
+  format : text
+  deleted_at : timestamptz
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "storage.migrations" as Migrations #F4F6F7 {
+  * id : int4 <<PK>>
+  --
+  name : varchar
+  hash : varchar
+  executed_at : timestamp
+}
+
+' ===================== RELASI =====================
+
+Buckets  ||--o{ Objects        : "bucket_id"
+Multipart ||--o{ MultipartParts : "upload_id"
+
+' ===================== CATATAN =====================
+
+note bottom of Objects
+**Pemakaian oleh aplikasi**
+Aplikasi hanya merujuk secara logis ke
+**objects** dan **buckets** (disorot biru):
+berkas disimpan sebagai pasangan
+bucket + object_path pada bucket privat,
+lalu diakses melalui signed URL.
+Tabel berwarna abu (multipart, vector,
+analytics, migrations) dikelola internal
+oleh Supabase Storage dan tidak dipakai.
+end note
+
+legend right
+|= Notasi |= Arti |
+| * | kunci primer |
+| PK / FK | kunci primer / asing |
+| biru | tabel yang dipakai aplikasi |
+| abu | tabel internal Supabase |
+endlegend
+
+@enduml
