@@ -57,3 +57,12 @@ Docs/standalone_builds/multi_instansi_driver.tex
 
 # AI assistant guidance file kept local only
 CLAUDE.md
+
+# Scratch experiment scripts kept local only (not part of the thesis)
+scratch/
+
+# Placeholder / example text (not part of the thesis)
+Docs/example.txt
+
+# LaTeX bibtex log
+*.blg
