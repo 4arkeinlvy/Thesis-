@@ -66,3 +66,12 @@ Docs/example.txt
 
 # LaTeX bibtex log
 *.blg
+
+# Orphaned standalone build outputs (pgs/multi-instansi sources already removed)
+Docs/standalone_builds/
+
+# Stray test scratch (broken dir name)
+Docs/test /
+
+# Pre-thesis proposal document (not part of the thesis)
+Docs/Proposal  Pre Thesis.odt
