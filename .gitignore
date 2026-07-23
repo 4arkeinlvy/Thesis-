@@ -48,3 +48,12 @@ smartCityReport/smart_city_reporter_app/env/*.json
 *.app
 # Pasted PAT scratch file
 token.txt
+
+# pgs / multi-instansi analysis sources kept local only — not published
+Docs/chapters/pgs_analysis.tex
+Docs/chapters/multi_instansi_handling.tex
+Docs/standalone_builds/pgs_driver.tex
+Docs/standalone_builds/multi_instansi_driver.tex
+
+# AI assistant guidance file kept local only
+CLAUDE.md

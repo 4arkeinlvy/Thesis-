@@ -1,0 +1,4 @@
+[submodule "smartCityReport"]
+	path = smartCityReport
+	url = https://github.com/4arkeinlvy/smartCityReport.git
+	branch = main

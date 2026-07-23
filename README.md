@@ -17,14 +17,6 @@ CRM agency categories. A deterministic rule-based engine then combines the predi
 *dinas* with the report's GPS coordinates to route it to the nearest active relevant
 unit — near-instant distribution with no human in the loop.
 
-### Key results
-
-| Metric | Value |
-| --- | --- |
-| Macro F1-score (9,266-report held-out test set) | **0.7747** |
-| Accuracy / Balanced accuracy | 0.8074 / 0.7916 |
-| System Usability Scale (n = 30 citizen testers) | **71.6** — *Acceptable* |
-
 **Keywords:** smart city, multimodal classification, early fusion, CatBoost,
 Posterior Gaussian Sampling, Jakarta CRM.
 
@@ -107,4 +99,5 @@ Docker, and app run instructions.
 
 - Raw questionnaire data / screenshots with respondent names (PII), credentials,
   large datasets, and model checkpoints are intentionally **not** committed.
-- `CLAUDE.md` holds repo-specific guidance for the Claude Code assistant.
+- `smartCityReport/` is linked as a Git submodule (see `.gitmodules`); clone with
+  `git clone --recurse-submodules` to fetch it.
